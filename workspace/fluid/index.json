@@ -1,0 +1,712 @@
+{
+  "@context": {
+    "@vocab": "http://josd.github.io/fluid#",
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "gps": "http://josd.github.io/fluid/gps/gps-schema#",
+    "this": "http://localhost/ephemereal#"
+  },
+  "@type": [
+    "this:Fluid"
+  ],
+  "gps:name": [
+    {
+      "@value": "fluid"
+    }
+  ],
+  "meta:operation":[
+    {
+      "operation": "0_answer.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/3outof5/sample.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/3outof5/query.n3"
+        ]
+      },
+      "output": "answer.n3",
+      "description": "----------\n3 out of 5\n----------\n\nMeet 3 criteria out of 5.\n\nThe tests are at http://josd.github.io/fluid/3outof5/test\n"
+    },
+    {
+      "operation": "1_biE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/bi/biP.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/bi/biQ.n3"
+        ]
+      },
+      "output": "biE.n3",
+      "description": "---------\nBuilt-ins\n---------\n\nUnit tests for EYE built-ins.\n\nThe tests are at http://josd.github.io/fluid/bi/test\n"
+    },
+    {
+      "operation": "2_bmi_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/bmi/bmi_instances.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmi/bmi_rules.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmi/weightStatus_rules.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmi/age_rules_backward.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/bmi/bmi_query.n3"
+        ]
+      },
+      "output": "bmi_proof.n3",
+      "description": "---------------\nBody Mass Index\n---------------\n\nCalculation of the body mass index.\n\nThe tests are at http://josd.github.io/fluid/bmi/test\n"
+    },
+    {
+      "operation": "3_10tt_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt1.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt2.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt3.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt4.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt5.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt6.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt7.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt8.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt9.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/1tt10.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/bmt/query.n3"
+        ]
+      },
+      "output": "10tt_proof.n3",
+      "description": "------------------\nBasic MONADIC Test\n------------------\n\nSee https://github.com/josd/bmb\n\nThe tests are at http://josd.github.io/fluid/bmt/test\n"
+    },
+    {
+      "operation": "4_crypto-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/crypto/cryptoP.n3"
+        ]
+      },
+      "pass": true,
+      "output": "crypto-proof.n3",
+      "description": "-----------\nCrypo tests\n-----------\n\nThe tests are at http://josd.github.io/fluid/crypto/test\n"
+    },
+    {
+      "operation": "5_proof-001.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/cs/rules-001.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/cs/query-001.n3"
+        ],
+        "turtle": [
+          "https://raw.githubusercontent.com/josd/fluid/master/cs/data-001.n3"
+        ]
+      },
+      "output": "proof-001.n3",
+      "description": "---------------\nControl Systems\n---------------\n\nThe tests are at http://josd.github.io/fluid/cs/test\n"
+    },
+    {
+      "operation": "6_deE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/de/de.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/de/deA.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/de/deQ.n3"
+        ]
+      },
+      "output": "deE.n3",
+      "description": "-----------------------\nDisjunction Elimination\n-----------------------\n\nThe tests are at http://josd.github.io/fluid/de/test\n"
+    },
+    {
+      "operation": "7_dpE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/dp/dp.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/dp/dpQ.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "dpE.n3",
+      "description": "-------------------\nDining Philosophers\n-------------------\n\nSee http://www.cs.utk.edu/~plank/plank/classes/cs560/560/notes/Dphil/lecture.html\n\nThe tests are at http://josd.github.io/fluid/dp/test\n"
+    },
+    {
+      "operation": "8_dpe_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/dpe/dpe_theory.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/dpe/dpe_assumption.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/dpe/dpe_query.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "dpe_proof.n3",
+      "description": "-------------------------\nDiamond Property Equality\n-------------------------\n\nThe tests are at http://josd.github.io/fluid/dpe/test\n"
+    },
+    {
+      "operation": "9_test-proof-1000.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/dt/test-facts.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/dt/test-dt-1000.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/dt/test-query.n3"
+        ]
+      },
+      "output": "test-proof-1000.n3",
+      "description": "-------------\nDeep Taxonomy\n-------------\n\nSee http://ruleml.org/WellnessRules/files/WellnessRulesN3-2009-11-10.pdf\n\nThe tests are at http://josd.github.io/fluid/dt/test\n"
+    },
+    {
+      "operation": "10_easterE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/easter/easterP.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/easter/easterF.n3"
+        ]
+      },
+      "output": "easterE.n3",
+      "description": "-----------\nEaster Date\n-----------\n\nThe tests are at http://josd.github.io/fluid/easter/test\n"
+    },
+    {
+      "operation": "11_einsteinE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/einstein/einstein.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/einstein/einsteinQ.n3"
+        ]
+      },
+      "output": "einsteinE.n3",
+      "description": "---------------\nEinstein Riddle\n---------------\n\nThe situation:\n- There are 5 houses in five different colors.\n- In each house lives a person with a different nationality.\n- These five owners drink a certain type of beverage, smoke a certain brand of cigar and keep a certain pet.\n- No owners have the same pet, smoke the same brand of cigar or drink the same beverage.\n\nThe question is:\n  Who owns the fish?\n\nThe tests are at http://josd.github.io/fluid/einstein/test\n"
+    },
+    {
+      "operation": "12_result.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/equation4/polynomial.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/equation4/query.n3"
+        ]
+      },
+      "nope": true,
+      "output": "result.n3",
+      "description": "---------------------\nEquations of degree 4\n---------------------\n\nInspired by http://alain.colmerauer.free.fr/alcol/ArchivesPublications/Equation4/Equation4.pdf\n\nThe tests are at http://josd.github.io/fluid/equation4/test\n"
+    },
+    {
+      "operation": "13_fcm_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/fcm/fcm-plugin.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/fcm/fl-rules.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/fcm/example001P.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/fcm/example002P.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/fcm/example003Q.n3"
+        ]
+      },
+      "output": "fcm_proof.n3",
+      "description": "--------------------\nFuzzy Cognitive Maps\n--------------------\n\nFuzzy cognitive maps use directed graphs to represent knowledge and the\nfuzzy set theory to give variables a membership between zero and one\ninstead of only the values zero and one. On top of that it allows us to\ndenote the relation between two variables with a correlation coefficient.\nDecisions are made by using an iterative algorithm.\n\nThe tests are at http://josd.github.io/fluid/fcm/test\n"
+    },
+    {
+      "operation": "14_fgcm_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/fgcm/fgcm-plugin.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/fcm/fl-rules.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/fgcm/patient.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/fgcm/fgcm-model.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/fgcm/fgcm-query.n3"
+        ]
+      },
+      "output": "fgcm_proof.n3",
+      "description": "-------------------------\nFuzzy Grey Cognitive Maps\n-------------------------\n\nDecision support systems are extremely useful in the medical domain.\nThe creation of such systems requires precise medical parameters which\nare not always available. One possible solution is to approximate such\nparameters, knowing they won’t be completely correct. However, this\nerror can have a big impact on the result. Recently prof. J. L. Salmeron\nhas proposed a new technology named fuzzy grey cognitive maps. This\ntechnology enables someone to deal with a lot of uncertainty. Therefore\nfuzzy grey cognitive maps seem like a perfect fit to use for medical\npurposes.\n\nFuzzy cognitive maps use directed graphs to represent knowledge and the\nfuzzy set theory to give variables a membership between zero and one\ninstead of only the values zero and one. On top of that it allows us to\ndenote the relation between two variables with a correlation coefficient.\nDecisions are made by using an iterative algorithm.\n\nAn extension of fuzzy cognitive maps, named fuzzy grey cognitive maps,\nintroduces the use of intervals as the value for both the relation\nbetween two variables and the variable itself. This severely improves\nthe expressivity and the possibility to handle uncertain variables and\nrelations. We implement the algorithm using N3 and the EYE reasoner.\nThe fact that relations do not have to be given a precise value is a\ntremendous benefit.\n\n-- Gijs Muys\n\nThe tests are at http://josd.github.io/fluid/fgcm/test\n"
+    },
+    {
+      "operation": "15_fibE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/fib/fib.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/fib/fibQ.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "fibE.n3",
+      "description": "-----------------\nFibonacci Numbers\n-----------------\n\nThe tests are at http://josd.github.io/fluid/fib/test\n"
+    },
+    {
+      "operation": "16_gedcom-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/gedcom/gedcom-facts.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/gedcom/gedcom-relations.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/gedcom/rpo-rules.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/gedcom/gedcom-filter.n3"
+        ]
+      },
+      "output": "gedcom-proof.n3",
+      "description": "-------------------------------\nGenealogical Data Communication\n-------------------------------\n\nThe tests are at http://josd.github.io/fluid/gedcom/test\n"
+    },
+    {
+      "operation": "17_testE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/glass/test.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/glass/testQ.n3"
+        ]
+      },
+      "output": "testE.n3",
+      "description": "------------------------\nGraph Literal ASSemblies\n------------------------\n\nThe tests are at http://josd.github.io/fluid/glass/test\n"
+    },
+    {
+      "operation": "18_graph.proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/graph/graph.axiom.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/graph/rpo-rules.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/graph/graph.filter.n3"
+        ]
+      },
+      "output": "graph.proof.n3",
+      "description": "----------------------\nTraversing Graph Paths\n----------------------\n\nThe tests are at http://josd.github.io/fluid/graph/test\n"
+    },
+    {
+      "operation": "19_hanoiE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/hanoi/hanoi.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "pass": true,
+      "output": "hanoiE.n3",
+      "description": "---------------\nTowers of Hanoi\n---------------\n\nSee https://www.cpp.edu/~jrfisher/www/prolog_tutorial/2_3.html\n\nThe tests are at http://josd.github.io/fluid/hanoi/test\n"
+    },
+    {
+      "operation": "20_undefined",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/image/year.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/image/easter.n3"
+        ],
+        "query": [
+          "ype.pvm"
+        ]
+      },
+      "description": "------------\nEaster Image\n------------\n\nThe tests are at http://josd.github.io/fluid/image/test\n"
+    },
+    {
+      "operation": "21_iq_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/iq/iq.n3"
+        ]
+      },
+      "output": "iq_proof.n3",
+      "description": "-----------------------\nImplicit Quantification\n-----------------------\n\nThe tests are at http://josd.github.io/fluid/iq/test\n"
+    },
+    {
+      "operation": "22_lldmE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/lldm/lldmD.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/lldm/lldmP.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/lldm/lldmF.n3"
+        ]
+      },
+      "output": "lldmE.n3",
+      "description": "----------------------------------\nLeg Length Discrepancy Measurement\n----------------------------------\n\nSee http://www.agfa.com/w3c/2002/10/medicad/op/\n\nThe tests are at http://josd.github.io/fluid/lldm/test\n"
+    },
+    {
+      "operation": "23_medicE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/medic/medic.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/medic/medicF.n3"
+        ]
+      },
+      "output": "medicE.n3",
+      "description": "-----------------------\nMedication Prescription\n-----------------------\n\nThe tests are at http://josd.github.io/fluid/medic/test\n"
+    },
+    {
+      "operation": "24_mmln-gv-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/mmln/mmln-gv-example.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/mmln/mmln-gv-mln.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/mmln/mmln-plugin.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/mmln/mmln-gv-query.n3"
+        ]
+      },
+      "output": "mmln-gv-proof.n3",
+      "description": "-----------------------------\nMONADIC Markov Logic Networks\n-----------------------------\n\nProbabilistic reasoning using a method inspired by Markov Logic Networks (MLN).\n\nInspired by http://espace.library.uq.edu.au/view/UQ:344936/s4086748_phd_submission.pdf\n\nThe tests are at http://josd.github.io/fluid/mmln/test\n"
+    },
+    {
+      "operation": "25_nbbn_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/nbbn/nbbn-plugin.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/nbbn/nbbn-model.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/nbbn/nbbn-query.n3"
+        ]
+      },
+      "output": "nbbn_proof.n3",
+      "description": "------------------------------\nNaive Bayesian Belief Networks\n------------------------------\n\nProbabilistic reasoning using a method inspired by Bayesian Belief Networks (BBN).\n\nThe tests are at http://josd.github.io/fluid/nbbn/test\n"
+    },
+    {
+      "operation": "26_numeral_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "turtle": [
+          "https://raw.githubusercontent.com/josd/fluid/master/numeral/numeral.n3"
+        ]
+      },
+      "pass": true,
+      "output": "numeral_proof.n3",
+      "description": "------------\nRDF Numerals\n------------\n\nThe tests are at http://josd.github.io/fluid/numeral/test\n"
+    },
+    {
+      "operation": "27_pi-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/pi/pi.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/pi/pi-query.n3"
+        ]
+      },
+      "output": "pi-proof.n3",
+      "description": "------------------------------------\nCalculate pi using Nilakantha series\n------------------------------------\n\nSee http://www.wikihow.com/Calculate-Pi\n\nThe tests are at http://josd.github.io/fluid/pi/test\n"
+    },
+    {
+      "operation": "28_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/pptbank/bankSW.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/pptbank/checking.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/pptbank/query.n3"
+        ]
+      },
+      "output": "proof.n3",
+      "description": "---------------\nPapertrail Bank\n---------------\n\nSee http://www.w3.org/DesignIssues/PaperTrail.html\nOriginal http://www.w3.org/2000/10/swap/ppt-bank/checking.n3\n\nThe tests are at http://josd.github.io/fluid/pptbank/test\n"
+    },
+    {
+      "operation": "29_resto-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/resto/resto.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/resto/restoG.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "resto-proof.n3",
+      "description": "-----------------\nRESTdesc Original\n-----------------\n\nSee http://restdesc.org/\n\nThe tests are at http://josd.github.io/fluid/resto/test\n"
+    },
+    {
+      "operation": "30_path-9-3-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/restpath/initial.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/restpath/path-9-3.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/restpath/goal.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "path-9-3-proof.n3",
+      "description": "-------------\nRESTdesc Path\n-------------\n\nSee https://github.com/RubenVerborgh/RESTdesc-Composition-Benchmark\n\nThe tests are at http://josd.github.io/fluid/restpath/test\n"
+    },
+    {
+      "operation": "31_rifE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/rif/rifP.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/rif/rifQ.n3"
+        ]
+      },
+      "output": "rifE.n3",
+      "description": "---------------------------\nRIF Datatypes and Built-Ins\n---------------------------\n\nSee https://www.w3.org/TR/rif-dtb/\n\nThe tests are at http://josd.github.io/fluid/rif/test\n"
+    },
+    {
+      "operation": "32_food-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/rpo/food-example.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/rpo/food.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/rpo/rdfs-subClassOf.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/rpo/food-query.n3"
+        ]
+      },
+      "output": "food-proof.n3",
+      "description": "------------\nRDF plus OWL\n------------\n\nSee https://www.w3.org/RDF/ plus https://www.w3.org/OWL/\n\nThe tests are at http://josd.github.io/fluid/rpo/test\n"
+    },
+    {
+      "operation": "33_randomsample-proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/rs/randomsample-rule.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/rs/randomsample-query.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "randomsample-proof.n3",
+      "description": "-------------\nRandom Sample\n-------------\n\nTaking a random sample of 25 triples from 1000 triples.\n\nThe tests are at http://josd.github.io/fluid/rs/test\n"
+    },
+    {
+      "operation": "34_skos_mv_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/skos/skos-mapping-sample-snomed-icd10.n3",
+          "https://raw.githubusercontent.com/josd/fluid/master/skos/skos-mapping-validation-rules.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/skos/skos-mapping-validation-query.n3"
+        ]
+      },
+      "output": "skos_mv_proof.n3",
+      "description": "-----------------------\nSKOS Mapping Validation\n-----------------------\n\nSee https://www.w3.org/2004/02/skos/\n\nThe tests are at http://josd.github.io/fluid/skos/test\n"
+    },
+    {
+      "operation": "35_socrates_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/socrates/socrates.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/socrates/socratesF.n3"
+        ]
+      },
+      "output": "socrates_proof.n3",
+      "description": "------------------\nSocrates Inference\n------------------\n\nThe tests are at http://josd.github.io/fluid/socrates/test\n"
+    },
+    {
+      "operation": "36_takE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/tak/tak.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/tak/takQ.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "takE.n3",
+      "description": "-----------------\nTakeuchi Function\n-----------------\n\nSee https://en.wikipedia.org/wiki/Tak_(function)\n\nThe tests are at http://josd.github.io/fluid/tak/test\n"
+    },
+    {
+      "operation": "37_proof-001.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/tfcontext/rules-001.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/tfcontext/query-001.n3"
+        ],
+        "turtle": [
+          "https://raw.githubusercontent.com/josd/fluid/master/tfcontext/data-001.n3"
+        ]
+      },
+      "output": "proof-001.n3",
+      "description": "-------------------\nTensor Flow Context\n-------------------\n\nThe tests are at http://josd.github.io/fluid/tfcontext/test\n"
+    },
+    {
+      "operation": "38_turing_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/turing/turing.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/turing/turingQ.n3"
+        ]
+      },
+      "output": "turing_proof.n3",
+      "description": "--------------\nTuring Machine\n--------------\n\nTuring completeness test case.\nSee http://en.wikipedia.org/wiki/Prolog#Turing_completeness\n\nThe tests are at http://josd.github.io/fluid/turing/test\n"
+    },
+    {
+      "operation": "39_usmE.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/usm/usmP.n3"
+        ],
+        "query": [
+          "https://raw.githubusercontent.com/josd/fluid/master/usm/usmQ.n3"
+        ]
+      },
+      "tactic": "limited-answer 1",
+      "output": "usmE.n3",
+      "description": "------------------------\nUniversal Skolem Machine\n------------------------\n\nSee http://skolemmachines.org/reports/SkolemMachines.pdf\n\nThe tests are at http://josd.github.io/fluid/usm/test\n"
+    },
+    {
+      "operation": "40_utf8_proof.n3",
+      "@type": [
+        "this:EyeOperation"
+      ],
+      "input": {
+        "n3": [
+          "https://raw.githubusercontent.com/josd/fluid/master/utf8/utf8.n3"
+        ]
+      },
+      "pass": true,
+      "output": "utf8_proof.n3",
+      "description": "-------------\nUTF8 Literals\n-------------\n\nThe tests are at http://josd.github.io/fluid/utf8/test\n"
+    }
+  ]
+}

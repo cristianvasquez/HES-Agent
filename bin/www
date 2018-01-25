@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+/**
+ * Module dependencies.
+ */
+var config = require("../config");
+const program = require('commander');
+var fu = require('../server/persistence');
+var debug = require('debug')('the-hydra-eye-js:server');
+resolve = require('path').resolve
+var pjson = require('../package.json');
+
+program
+    .version(pjson.version, '-v, --version')
+    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', config.eyePath)
+    .option('--verbose', 'verbose mode');
+
+program
+    .command('serve <directory>')
+    .description('start a server')
+    .option('-a, --app <app_entrypoint>', 'API entrypoint', config.appEntrypoint)
+    .option('-p, --port <port>', 'server port', config.port)
+    .action(function(directory, options){
+        let absolutePath = resolve(directory);
+
+        // Check directory
+        if (fu.exists(absolutePath)){
+            console.log('Starting Hydra eye server\n');
+
+            config.eyePath = program.eye;
+            config.port = options.port;
+            config.appEntrypoint = options.app;
+            config.workSpacePath = absolutePath;
+            config.verbose = program.verbose;
+            console.log('Workspace: [%s]\nRoot :%s',config.workSpacePath, JSON.stringify(fu.readDir(config.workSpacePath), 2));
+
+            serve();
+        } else {
+            console.error("Cannot open directory [%s]",directory);
+        }
+
+    });
+
+program
+    .command('*')
+    .action(function(command){
+        console.log('command %s not recognized (hes --help)',command);
+    });
+
+if (!process.argv.slice(2).length) {
+    program.outputHelp();
+}
+
+program.parse(process.argv);
+
+// Only call when the config is set up
+function serve(){
+
+    var app = require('../server/app');
+    var http = require('http');
+    var reasoner = require('../server/reasoning');
+
+    reasoner.invokeEye(config.eyePath + " --version")
+        .then(function (result) {
+            console.log(result.stderr);
+
+            /**
+             * Get port from environment and store in Express.
+             */
+            var port = normalizePort(config.port);
+            app.set('port', port);
+
+            /**
+             * Create HTTP server.
+             */
+
+            var server = http.createServer(app);
+
+            /**
+             * Listen on provided port, on all network interfaces.
+             */
+            server.listen(port);
+            server.on('error', onError);
+            server.on('listening', onListening);
+
+
+            /**
+             * Normalize a port into a number, string, or false.
+             */
+            function normalizePort(val) {
+                let port = parseInt(val, 10);
+                if (isNaN(port)) {
+                    // named pipe
+                    return val;
+                }
+                if (port >= 0) {
+                    // port number
+                    return port;
+                }
+                return false;
+            }
+
+            /**
+             * Event listener for HTTP server "error" event.
+             */
+
+            function onError(error) {
+                if (error.syscall !== 'listen') {
+                    throw error;
+                }
+                var bind = typeof port === 'string'
+                    ? 'Pipe ' + port
+                    : 'Port ' + port;
+                // handle specific listen errors with friendly messages
+                switch (error.code) {
+                    case 'EACCES':
+                        console.error(bind + ' requires elevated privileges');
+                        process.exit(1);
+                        break;
+                    case 'EADDRINUSE':
+                        console.error(bind + ' is already in use');
+                        process.exit(1);
+                        break;
+                    default:
+                        throw error;
+                }
+            }
+
+            /**
+             * Event listener for HTTP server "listening" event.
+             */
+
+            function onListening() {
+                let addr = server.address();
+                let bind = typeof addr === 'string'
+                    ? 'pipe ' + addr
+                    : 'port ' + addr.port;
+                debug('Listening on ' + bind);
+            }
+
+        })
+        .catch(function (error) {
+            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", config.eyePath);
+            console.error(error)
+        });
+
+}

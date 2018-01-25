@@ -28,12 +28,12 @@ describe("Resolve utils", function() {
             );
         });
 
-        it("Does leaves an url as the same", function() {
+        it("Does leave an url as the same", function() {
             let result = resolve.specToPublic(__dirname, "http://www.example.org");
             expect(result).to.deep.equal(["http://www.example.org"]);
         });
 
-        it("Does leaves an url as the same", function() {
+        it("Does leave an url as the same", function() {
             let result = resolve.specToPublic(__dirname, "https://www.example.org");
             expect(result).to.deep.equal(["https://www.example.org"]);
         });

@@ -7,22 +7,27 @@ const resourcesEntryPoint = process.env.RESOURCES_ENTRY_POINT || "resource";
 const port = process.env.PORT || '3000';
 
 var config = {
-    port:port,
-    appEntrypoint: appEntrypoint,
-    resourcesEntryPoint: resourcesEntryPoint,
-    workSpacePath: workSpacePath,
-
-    indexFile: 'index.json',
-    eyePath: eyePath,
-    verbose: false,
-
+    serverOptions:{
+        port:port,
+        appEntrypoint: appEntrypoint,
+        resourcesEntryPoint: resourcesEntryPoint,
+        workSpacePath: workSpacePath,
+        verbose: false
+    },
+    defaultEyeOptions:{
+        eyePath: eyePath
+    },
+    defaultProcessorOptions:{
+        showFiles:true,
+        showDirectories:true,
+        hydraOperations:["GET","DELETE"],
+        indexFile: 'index.json'
+    },
     defaultContext: {
         "@vocab": "http://josd.github.io/fluid#",
         "hydra": "http://www.w3.org/ns/hydra/core#",
         "gps": "http://josd.github.io/fluid/gps/gps-schema#",
         "this": "http://localhost/ephemereal#"
     }
-
 };
-
 module.exports = config;

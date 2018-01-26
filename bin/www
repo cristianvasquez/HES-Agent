@@ -2,42 +2,39 @@
 /**
  * Module dependencies.
  */
-var config = require("../config");
+const config = require("../config");
 const program = require('commander');
-var fu = require('../server/persistence');
-var debug = require('debug')('the-hydra-eye-js:server');
+const fu = require('../server/persistence');
+const debug = require('debug')('the-hydra-eye-js:server');
 resolve = require('path').resolve
-var pjson = require('../package.json');
+const pjson = require('../package.json');
 
 program
     .version(pjson.version, '-v, --version')
-    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', config.eyePath)
+    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', config.defaultEyeOptions.eyePath)
     .option('--verbose', 'verbose mode');
 
 program
     .command('serve <directory>')
     .description('start a server')
-    .option('-a, --app <app_entrypoint>', 'API entrypoint', config.appEntrypoint)
-    .option('-p, --port <port>', 'server port', config.port)
+    .option('-a, --app <app_entrypoint>', 'API entrypoint', config.serverOptions.appEntrypoint)
+    .option('-p, --port <port>', 'server port', config.serverOptions.port)
     .action(function(directory, options){
         let absolutePath = resolve(directory);
 
         // Check directory
         if (fu.exists(absolutePath)){
             console.log('Starting Hydra eye server\n');
-
-            config.eyePath = program.eye;
-            config.port = options.port;
-            config.appEntrypoint = options.app;
-            config.workSpacePath = absolutePath;
-            config.verbose = program.verbose;
-            console.log('Workspace: [%s]\nRoot :%s',config.workSpacePath, JSON.stringify(fu.readDir(config.workSpacePath), 2));
-
+            config.serverOptions.eyePath = program.eye;
+            config.serverOptions.port = options.port;
+            config.serverOptions.appEntrypoint = options.app;
+            config.serverOptions.workSpacePath = absolutePath;
+            config.serverOptions.verbose = program.verbose;
+            console.log('Workspace: [%s]\nRoot :%s',config.serverOptions.workSpacePath, JSON.stringify(fu.readDir(config.serverOptions.workSpacePath), 2));
             serve();
         } else {
             console.error("Cannot open directory [%s]",directory);
         }
-
     });
 
 program
@@ -55,25 +52,27 @@ program.parse(process.argv);
 // Only call when the config is set up
 function serve(){
 
-    var app = require('../server/app');
-    var http = require('http');
-    var reasoner = require('../server/reasoning');
+    let app = require('../server/app');
+    let http = require('http');
+    let reasoner = require('../server/reasoning');
 
-    reasoner.invokeEye(config.eyePath + " --version")
+    let currentOptions = config.serverOptions;
+
+    reasoner.invokeEye(currentOptions.eyePath + " --version")
         .then(function (result) {
             console.log(result.stderr);
 
             /**
              * Get port from environment and store in Express.
              */
-            var port = normalizePort(config.port);
+            let port = normalizePort(currentOptions.port);
             app.set('port', port);
 
             /**
              * Create HTTP server.
              */
 
-            var server = http.createServer(app);
+            let server = http.createServer(app);
 
             /**
              * Listen on provided port, on all network interfaces.
@@ -107,7 +106,7 @@ function serve(){
                 if (error.syscall !== 'listen') {
                     throw error;
                 }
-                var bind = typeof port === 'string'
+                let bind = typeof port === 'string'
                     ? 'Pipe ' + port
                     : 'Port ' + port;
                 // handle specific listen errors with friendly messages

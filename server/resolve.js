@@ -1,5 +1,4 @@
-var config = require('../config');
-const path = require('path');
+const serverOptions = require("../config").serverOptions;
 const fu = require("./persistence");
 
 function root(req){
@@ -11,27 +10,34 @@ function base(req){
 }
 
 function apiPath(req){
-    return root(req)+"/"+config.appEntrypoint
+    return root(req)+"/"+serverOptions.appEntrypoint
 }
 
 function resourcesPath(req){
-    return root(req)+"/"+config.resourcesEntryPoint
+    return root(req)+"/"+serverOptions.resourcesEntryPoint
 }
 
 function localPathToPublic(localPath, req){
-    return localPath.replaceAll(config.workSpacePath,resourcesPath(req));
+    return localPath.replaceAll(serverOptions.workSpacePath,resourcesPath(req));
 }
 
 function resourceToLocal(req){
-    return base(req).replaceAll(resourcesPath(req),config.workSpacePath);
+    let publicUrl = base(req);
+    let result =  publicUrl.replaceAll(resourcesPath(req),serverOptions.workSpacePath);
+    if (result === publicUrl){
+        throw new Error("Cannot resolve to persistence layer")
+    } else return result;
 }
 
 function publicToLocal(publicUrl, req){
-    return publicUrl.replaceAll(apiPath(req),config.workSpacePath);
+    let result = publicUrl.replaceAll(apiPath(req),serverOptions.workSpacePath);
+    if (result === publicUrl){
+        throw new Error("Cannot resolve to persistence layer")
+    } else return result;
 }
 
 var validUrl = require('valid-url');
-
+var path = require('path');
 
 function specToPublic(currentPath, specPath) {
 
@@ -40,7 +46,7 @@ function specToPublic(currentPath, specPath) {
     if (specPath.startsWith('.')){ // Relative path
         targetDirectory = path.join(currentPath, specPath);
     } else if (specPath.startsWith('file://resources')) { // absolute
-        targetDirectory = path.resolve(specPath.replaceAll('file://resources', config.workSpacePath));
+        targetDirectory = path.resolve(specPath.replaceAll('file://resources', serverOptions.workSpacePath));
     } else if (validUrl.isUri(specPath)) { // other uri resources
         return [specPath]
     } else {
@@ -56,7 +62,7 @@ function specToPublic(currentPath, specPath) {
         throw Error(errorMessage);
     }
 
-    return files.filter(x=>!x.endsWith(config.indexFile));
+    return files.filter(x=>!x.endsWith(serverOptions.indexFile));
 }
 
 module.exports = {
@@ -64,6 +70,6 @@ module.exports = {
     apiPath:apiPath,
     localPathToPublic:localPathToPublic,
     publicToLocal:publicToLocal,
-    specToPublic:specToPublic,
-    resourceToLocal:resourceToLocal
+    resourceToLocal:resourceToLocal,
+    specToPublic:specToPublic
 };

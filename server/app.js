@@ -1,18 +1,12 @@
-var config = require("../config");
+let express = require('express');
+let path = require('path');
+let logger = require('morgan');
+let cookieParser = require('cookie-parser');
 
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var index = require('./routes/index');
-var hes = require('./routes/hes');
-var eye = require('./routes/eye');
-var resources = require('./routes/resources');
-
-var app = express();
+let app = express();
 
 // Adds text/plain and text/turtle parsing
-var bodyParser = require('body-parser');
+let bodyParser = require('body-parser');
 
 app.use(bodyParser.text());
 app.use(bodyParser.text({ type: 'text/turtle' }));
@@ -26,10 +20,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+let serverOptions = require("../config").serverOptions;
+let defaultProcessorOptions = require("../config").defaultProcessorOptions;
+
+let index = require('./routes/index');
+let resources = require('./routes/resources');
+var HES = require('./routes/hes');
+
 app.use('/', index);
-app.use('/'+ config.resourcesEntryPoint, resources);
-app.use('/'+ config.appEntrypoint, hes);
-app.use('/eye', eye);
+app.use('/'+ serverOptions.resourcesEntryPoint, resources);
+app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -56,11 +57,22 @@ app.use(function(err, req, res, next) {
 
 // Globals
 String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
+    let target = this;
     return target.split(search).join(replacement);
 };
 
-if (config.verbose){
+String.prototype.beforeLast = function(){
+    let target = this;
+    return target.substr(0,target.lastIndexOf('/'));
+};
+
+String.prototype.lastSegment = function(){
+    let target = this;
+    return target.substr(target.lastIndexOf('/') + 1);
+};
+
+
+if (serverOptions.verbose){
 
     function print (path, layer) {
         if (layer.route) {

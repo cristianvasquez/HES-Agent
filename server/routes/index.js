@@ -1,15 +1,9 @@
 const resolve = require("../resolve");
-
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
 router.get("/", function(req, res, next) {
-    // res.redirect(resolve.apiPath(req));
-    res.json(
-        {
-            api:resolve.apiPath(req)
-        }
-    );
+     res.redirect(resolve.apiPath(req));
 });
 
 module.exports = router;

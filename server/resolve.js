@@ -1,5 +1,4 @@
 const serverOptions = require("../config").serverOptions;
-const fu = require("./persistence");
 
 function root(req){
     return "http://"+req.headers.host;
@@ -36,34 +35,6 @@ function publicToLocal(publicUrl, req){
     } else return result;
 }
 
-var validUrl = require('valid-url');
-var path = require('path');
-
-function specToPublic(currentPath, specPath) {
-
-    let targetDirectory,files;
-
-    if (specPath.startsWith('.')){ // Relative path
-        targetDirectory = path.join(currentPath, specPath);
-    } else if (specPath.startsWith('file://resources')) { // absolute
-        targetDirectory = path.resolve(specPath.replaceAll('file://resources', serverOptions.workSpacePath));
-    } else if (validUrl.isUri(specPath)) { // other uri resources
-        return [specPath]
-    } else {
-        let errorMessage = specPath+" not recognized";
-        console.error(errorMessage);
-        throw Error(errorMessage);
-    }
-
-    files = fu.readDir(targetDirectory).files;
-    if (!files){
-        let errorMessage = "404 ["+targetDirectory+"]";
-        console.error(errorMessage);
-        throw Error(errorMessage);
-    }
-
-    return files.filter(x=>!x.endsWith(serverOptions.indexFile));
-}
 
 module.exports = {
     base:base,
@@ -71,5 +42,4 @@ module.exports = {
     localPathToPublic:localPathToPublic,
     publicToLocal:publicToLocal,
     resourceToLocal:resourceToLocal,
-    specToPublic:specToPublic
 };

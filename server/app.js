@@ -61,17 +61,6 @@ String.prototype.replaceAll = function(search, replacement) {
     return target.split(search).join(replacement);
 };
 
-String.prototype.beforeLast = function(){
-    let target = this;
-    return target.substr(0,target.lastIndexOf('/'));
-};
-
-String.prototype.lastSegment = function(){
-    let target = this;
-    return target.substr(target.lastIndexOf('/') + 1);
-};
-
-
 if (serverOptions.verbose){
 
     function print (path, layer) {

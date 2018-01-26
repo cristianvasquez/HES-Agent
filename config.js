@@ -12,22 +12,23 @@ var config = {
         appEntrypoint: appEntrypoint,
         resourcesEntryPoint: resourcesEntryPoint,
         workSpacePath: workSpacePath,
-        verbose: false
+        verbose: false,
+        indexFile: 'index.json'
     },
+
     defaultEyeOptions:{
         eyePath: eyePath
     },
+
     defaultProcessorOptions:{
         showFiles:true,
         showDirectories:true,
-        hydraOperations:["GET","DELETE"],
-        indexFile: 'index.json'
+        hydraOperations:["GET","DELETE","COPY"]
     },
     defaultContext: {
-        "@vocab": "http://josd.github.io/fluid#",
         "hydra": "http://www.w3.org/ns/hydra/core#",
-        "gps": "http://josd.github.io/fluid/gps/gps-schema#",
-        "this": "http://localhost/ephemereal#"
-    }
+        "fluid": "http://josd.github.io/fluid#",
+        "hes": "http://cristianvasquez.github.io/hes#"
+    },
 };
 module.exports = config;

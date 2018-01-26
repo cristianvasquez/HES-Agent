@@ -2,35 +2,36 @@
 /**
  * Module dependencies.
  */
-const config = require("../config");
+const serverOptions = require("../config").serverOptions;
+const defaultEyeOptions = require("../config").defaultEyeOptions;
 const program = require('commander');
 const fu = require('../server/persistence');
 const debug = require('debug')('the-hydra-eye-js:server');
-resolve = require('path').resolve
 const pjson = require('../package.json');
+resolve = require('path').resolve
 
 program
     .version(pjson.version, '-v, --version')
-    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', config.defaultEyeOptions.eyePath)
+    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', defaultEyeOptions.eyePath)
     .option('--verbose', 'verbose mode');
 
 program
     .command('serve <directory>')
     .description('start a server')
-    .option('-a, --app <app_entrypoint>', 'API entrypoint', config.serverOptions.appEntrypoint)
-    .option('-p, --port <port>', 'server port', config.serverOptions.port)
+    .option('-a, --app <app_entrypoint>', 'API entrypoint', serverOptions.appEntrypoint)
+    .option('-p, --port <port>', 'server port', serverOptions.port)
     .action(function(directory, options){
         let absolutePath = resolve(directory);
 
         // Check directory
         if (fu.exists(absolutePath)){
             console.log('Starting Hydra eye server\n');
-            config.serverOptions.eyePath = program.eye;
-            config.serverOptions.port = options.port;
-            config.serverOptions.appEntrypoint = options.app;
-            config.serverOptions.workSpacePath = absolutePath;
-            config.serverOptions.verbose = program.verbose;
-            console.log('Workspace: [%s]\nRoot :%s',config.serverOptions.workSpacePath, JSON.stringify(fu.readDir(config.serverOptions.workSpacePath), 2));
+            defaultEyeOptions.eyePath = program.eye;
+            serverOptions.port = options.port;
+            serverOptions.appEntrypoint = options.app;
+            serverOptions.workSpacePath = absolutePath;
+            serverOptions.verbose = program.verbose;
+            console.log('Workspace: [%s]\nRoot :%s',serverOptions.workSpacePath, JSON.stringify(fu.readDir(serverOptions.workSpacePath), 2));
             serve();
         } else {
             console.error("Cannot open directory [%s]",directory);
@@ -56,16 +57,15 @@ function serve(){
     let http = require('http');
     let reasoner = require('../server/reasoning');
 
-    let currentOptions = config.serverOptions;
 
-    reasoner.invokeEye(currentOptions.eyePath + " --version")
+    reasoner.invokeEye(defaultEyeOptions.eyePath + " --version")
         .then(function (result) {
             console.log(result.stderr);
 
             /**
              * Get port from environment and store in Express.
              */
-            let port = normalizePort(currentOptions.port);
+            let port = normalizePort(serverOptions.port);
             app.set('port', port);
 
             /**
@@ -138,7 +138,7 @@ function serve(){
 
         })
         .catch(function (error) {
-            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", config.eyePath);
+            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", defaultEyeOptions.eyePath);
             console.error(error)
         });
 

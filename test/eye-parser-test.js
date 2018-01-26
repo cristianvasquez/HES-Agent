@@ -1,4 +1,7 @@
-
+var expect    = require("chai").expect;
+var resolve = require("../server/resolve");
+var config = require("../config");
+const reasoning = require('../server/reasoning');
 
 /**
  * Examples in fluid
@@ -47,8 +50,14 @@
  'eye "$@" --n3 http://josd.github.io/fluid/utf8/utf8.n3 --pass > utf8_proof.n3'
 ];
 
-const reasoning = require('../server/reasoning');
 
-for (line of fluid_examples) {
-    reasoning.optionsFromCommand(line);
-}
+// describe("Eye parser", function() {
+//     describe("fluid spec parsing", function() {
+//         it("It does not fail to parse fluid examples", function() {
+//             for (let line of fluid_examples) {
+//                 reasoning.optionsFromCommand(line);
+//             }
+//             expect("something").to.deep.equal("something");
+//         });
+//     });
+// });

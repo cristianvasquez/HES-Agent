@@ -25,13 +25,17 @@ exports.getFiles = getFiles;
  * All the files and directories from a public directory
  */
 function readDir(dir) {
+
     if (!exists(dir)){
-        return [];
+        return {
+            exists:false
+        }
     }
 
     let result = {
         files:[],
-        directories:[]
+        directories:[],
+        exists:true
     };
 
     if (fs.statSync(dir).isDirectory()){
@@ -67,15 +71,15 @@ function readJson(filePath){
 };
 exports.readJson = readJson;
 
-function readRequired(filePath){
-    if (exists(filePath)){
-        var contents = fs.readFileSync(filePath);
-        return JSON.parse(contents);
-    } else {
-        throw new Error(filePath+" does not exist")
-    }
-};
-exports.readRequired = readRequired;
+// function readRequired(filePath){
+//     if (exists(filePath)){
+//         var contents = fs.readFileSync(filePath);
+//         return JSON.parse(contents);
+//     } else {
+//         throw new Error(filePath+" does not exist")
+//     }
+// };
+// exports.readRequired = readRequired;
 
 /**
  * Write a file to a local directory

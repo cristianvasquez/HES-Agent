@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "fluid": "http://josd.github.io/fluid#",
+    "hes": "http://cristianvasquez.github.io/hes#",
+    "this": "http://www.example.org#"
+  },
+  "@type": [
+    "this:Example"
+  ],
+  "this:name": [
+    {
+      "@value": "Example 2"
+    }
+  ],
+  "this:description": "Declaration of a sparql query example",
+  "hes:meta": [
+    {
+      "hes:name": "dbpedia",
+      "hes:query": {
+        "hes:endpoint": "http://dbpedia.restdesc.org/",
+        "hes:defaultGraph": "http://dbpedia.org",
+        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
+        "hes:output": "jsonld"
+      }
+    },
+    {
+      "hes:name": "next",
+      "hes:href": "file:///example_03"
+    }
+  ]
+}

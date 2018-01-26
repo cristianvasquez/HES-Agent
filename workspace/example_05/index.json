@@ -1,0 +1,26 @@
+{
+  "@context": {
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "fluid": "http://josd.github.io/fluid#",
+    "hes": "http://cristianvasquez.github.io/hes#",
+    "this": "http://www.example.org#"
+  },
+  "@type": [
+    "this:Example"
+  ],
+  "this:name": [
+    {
+      "@value": "Example 4"
+    }
+  ],
+  "this:description":"Inference example",
+  "hes:meta":[
+    {
+      "hes:name":"inherited",
+      "hes:inherit": {
+        "hes:href":"file:///lib/index.json",
+        "hes:name":"whoIsWhat"
+      }
+    }
+  ]
+}

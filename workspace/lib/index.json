@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "fluid": "http://josd.github.io/fluid#",
+    "hes": "http://cristianvasquez.github.io/hes#",
+    "this": "http://www.example.org#"
+  },
+  "@type": [
+    "this:Example"
+  ],
+  "this:name": [
+    {
+      "@value": "A library"
+    }
+  ],
+  "this:description":"Inference example",
+  "hes:meta":[
+    {
+      "hes:name": "whoIsWhat",
+      "hes:inference": {
+        "hes:data": [
+          {
+            "hes:href":"./data"
+          }
+        ],
+        "hes:query":{
+          "hes:href": "file:///lib/query/whoIsWhat.n3"
+        }
+      }
+    }
+  ]
+}

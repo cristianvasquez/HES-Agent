@@ -1,7 +1,7 @@
 const path = require('path');
 
 const workSpacePath = process.env.WORKSPACE_PATH || path.join(__dirname, './workspace');
-const eyePath = process.env.EYE_PATH || "eye";
+const eyePath = process.env.EYE_PATH || "/opt/eye/bin/eye.sh";
 const appEntrypoint = process.env.APP_ENTRY_POINT || "dataspaces";
 const resourcesEntryPoint = process.env.RESOURCES_ENTRY_POINT || "resource";
 const port = process.env.PORT || '3000';

@@ -1,9 +1,9 @@
-const resolve = require("../resolve");
+const Context = require("../Context");
 const express = require("express");
 const router = express.Router();
 
 router.get("/", function(req, res, next) {
-     res.redirect(resolve.apiPath(req));
+     res.redirect(new Context(req).getApiRoot());
 });
 
 module.exports = router;

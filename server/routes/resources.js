@@ -1,15 +1,22 @@
-const config = require("../../config");
-const resolve = require("../resolve");
-var fs = require('fs-extra')
+const Context = require("../Context");
+const serverOptions = require('../../config').serverOptions;
+
+const fs = require('fs-extra')
 const express = require("express");
 const router = express.Router();
-var path = require('path');
+const path = require('path');
 
-router.get("/*", function(request, response, next) {
+router.get("/*", function(req, res, next) {
 
-    var filePath = resolve.resourceToLocal(request);
-    var extname = path.extname(filePath);
-    var contentType = 'text/n3';
+    let context = new Context(req);
+    let filePath = context.getCurrentPath().replaceAll(context.getResourcesRoot(), serverOptions.workSpacePath);
+
+    if (!fs.existsSync(filePath)){
+        return res.sendStatus(404);
+    }
+
+    let extname = path.extname(filePath);
+    let contentType = 'text/n3';
     switch (extname) {
         case '.js':
             contentType = 'text/javascript';
@@ -41,19 +48,19 @@ router.get("/*", function(request, response, next) {
         if (error) {
             if(error.code === 'ENOENT'){
                 fs.readFile('./404.html', function(error, content) {
-                    response.writeHead(200, { 'Content-Type': contentType });
-                    response.end(content, 'utf-8');
+                    res.writeHead(200, { 'Content-Type': contentType });
+                    res.end(content, 'utf-8');
                 });
             }
             else {
-                response.writeHead(500);
-                response.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
-                response.end();
+                res.writeHead(500);
+                res.end(+error.code+' ..\n');
+                res.end();
             }
         }
         else {
-            response.writeHead(200, { 'Content-Type': contentType });
-            response.end(content, 'utf-8');
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(content, 'utf-8');
         }
     });
 

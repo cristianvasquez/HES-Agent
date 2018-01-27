@@ -4,12 +4,12 @@ const _ = require('lodash');
 const validUrl = require('valid-url');
 const path = require('path');
 
-function specToPublic(currentPath, specPath) {
+function specToPublic(localDir, specPath) {
 
     let targetDirectory,files;
 
     if (specPath.startsWith('.')){ // Relative path
-        targetDirectory = path.join(currentPath, specPath);
+        targetDirectory = path.join(localDir, specPath);
     } else if (specPath.startsWith('file:///')) { // absolute
         targetDirectory = path.resolve(specPath.replaceAll('file://', serverOptions.workSpacePath));
     } else if (validUrl.isUri(specPath)) { // other uri resources
@@ -46,8 +46,7 @@ function toJson(x){
    return JSON.stringify(x,null,2);
 }
 
-function getEyeOptions(inference, localDir) {
-
+function getEyeOptions(localDir, inference) {
 
     if (!inference['hes:query']) throw Error("Query needs to be defined in "+toJson(inference));
     if (inference['hes:query']['hes:raw']) throw Error("Raw not supported yet in "+toJson(inference));

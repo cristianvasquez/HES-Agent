@@ -3,5 +3,6 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix : <http://www.agfa.com/w3c/euler/socrates#>.
 
-:Bob a _:Man .
-_:Man rdfs:subClassOf :Mortal .
+:Bob a :Person .
+
+:Person rdfs:subClassOf :Man .

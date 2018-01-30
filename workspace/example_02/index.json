@@ -21,12 +21,12 @@
         "hes:endpoint": "http://dbpedia.restdesc.org",
         "hes:default-graph-uri": "http://dbpedia.org",
         "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-        "hes:Accept": "text/turtle"
+        "hes:Accept": "application/x-json+ld"
       }
     },
     {
       "hes:name": "next",
-      "hes:href": "file:///example_03"
+      "hes:href": "../example_03"
     }
   ]
 }

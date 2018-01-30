@@ -16,15 +16,15 @@
   "this:description":"Uses the definition of /lib, but uses /personal as data. ",
   "hes:meta":[
     {
-      "hes:name":"inherited",
-      "hes:inherit": {
+      "hes:name":"alice",
+      "hes:extends": {
         "hes:href":"file:///lib",
+        "hes:name":"whoIsWhat",
         "hes:data": [
           {
             "hes:href":"./personal"
           }
-        ],
-        "hes:name":"whoIsWhat"
+         ]
       }
     }
   ]

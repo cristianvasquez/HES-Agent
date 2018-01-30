@@ -30,7 +30,7 @@
     },
     {
       "hes:name":"next",
-      "hes:href":"file:///example_04"
+      "hes:href":"../example_04"
     }
   ]
 }

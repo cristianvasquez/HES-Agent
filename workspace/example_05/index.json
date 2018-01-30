@@ -17,14 +17,14 @@
   "hes:meta":[
     {
       "hes:name":"inherited",
-      "hes:inherit": {
+      "hes:extends": {
         "hes:href":"file:///lib",
         "hes:name":"whoIsWhat"
       }
     },
     {
       "hes:name":"next",
-      "hes:href":"file:///example_06"
+      "hes:href":"../example_06"
     }
   ]
 }

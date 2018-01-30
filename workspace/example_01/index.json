@@ -17,7 +17,7 @@
   "hes:meta":[
     {
       "hes:name":"next",
-      "hes:href":"file:///example_02"
+      "hes:href":"../example_02"
     }
   ]
 }

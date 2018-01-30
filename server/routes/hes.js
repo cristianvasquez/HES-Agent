@@ -299,8 +299,8 @@ function buildIndex(processorOptions, req, res) {
             let operationName = _.get(currentOperation, 'hes:name');
             let operationUri = context.getCurrentPath() + '/' + operationName;
             let link = buildLink(operationUri, 'Operation');
-            if (currentOperation.description) {
-                link['hes:description'] = currentOperation.description;
+            if (currentOperation['hes:description']) {
+                link['hes:description'] = currentOperation['hes:description'];
             }
             operations.push(link);
         }

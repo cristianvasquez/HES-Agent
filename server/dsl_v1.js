@@ -67,7 +67,8 @@ function getEyeOptions(localDir, inference) {
 
     return {
         data:data,
-        query:query
+        query:query,
+        flags:inference['eye:flags']
     };
 }
 

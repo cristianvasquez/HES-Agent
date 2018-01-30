@@ -7,6 +7,7 @@ const Context = require("../Context");
 const reasoner = require("../reasoning");
 const dsl_v1 = require("../dsl_v1");
 const rp = require('request-promise');
+let hash = require('string-hash');
 
 class HES extends express.Router {
 
@@ -104,7 +105,6 @@ function handleHref(context, value) {
     }
 }
 
-let hash = require('string-hash');
 
 function rawToUrl(context, rawValue) {
     let filename = hash(rawValue)+".ttl";
@@ -204,21 +204,17 @@ function doOperation(context, operation) {
         return handleInference(context, operation['hes:inference']);
     } else if (operation['hes:query']) {
         return handleQuery(context, operation['hes:query']);
-    } else if (operation['hes:inherit']) {
+    } else if (operation['hes:extends']) {
         /**
          * @TODO handle circular dependency.
          */
-        return doOperation(context, handleInherit(context, operation['hes:inherit']));
+        return doOperation(context, handleExtends(context, operation['hes:extends']));
     }
     throw new Error("Cannot handle " + toJson(operation));
 }
 
 
-// "hes:inherit": {
-//         "hes:href":"file:///lib",
-//         "hes:name":"whoIsWhat"
-// }
-function handleInherit(context, value) {
+function handleExtends(context, value) {
 
     let targetDir = dsl_v1.normalizeHref(context.getTail().getLocalDir(), value['hes:href']);
 
@@ -232,7 +228,7 @@ function handleInherit(context, value) {
         for (let operation of index['hes:meta']) {
             if (operation['hes:name'] === value['hes:name']) {
                 if (operation['hes:inference']) {
-                    // Overrides inherited data if specified
+                    // Overrides data if specified
                     if (value['hes:data']) {
                         operation['hes:inference']['hes:data'] = value['hes:data']
                     } else {
@@ -240,7 +236,7 @@ function handleInherit(context, value) {
                             return {'hes:href': dsl_v1.normalizeHref(targetDir, x['hes:href'])};
                         });
                     }
-                    // Overrides inherited query if specified
+                    // Overrides query if specified
                     if (value['hes:query']) {
                         operation['hes:inference']['hes:query'] = value['hes:query']
                     } else {

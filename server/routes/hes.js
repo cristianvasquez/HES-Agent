@@ -95,7 +95,7 @@ class HES extends express.Router {
 }
 
 function handleHref(context, value) {
-    let target = dsl_v1.normalizeHref(context.getTail().getLocalDir(),value);
+    let target = dsl_v1.normalizeHref(context.getTail().getLocalDir(), value);
     return {
         isVirtual: true,
         callback: function (res) {
@@ -104,11 +104,14 @@ function handleHref(context, value) {
     }
 }
 
-let uuid = require('uuid');
+let hash = require('string-hash');
+
 function rawToUrl(context, rawValue) {
-    let id = uuid.v4();
-    fu.writeFile(serverOptions.workSpacePath + "/tmp/" + id + ".ttl", rawValue);
-    return context.getResourcesRoot() + "/tmp/" + id + ".ttl";
+    let filename = hash(rawValue)+".ttl";
+    if (!fu.exists(filename)){
+        fu.writeFile(serverOptions.workSpacePath + "/" + serverOptions.tmpFolder + "/" + filename, rawValue);
+    }
+    return context.getResourcesRoot() + "/" + serverOptions.tmpFolder + "/"+filename;
 }
 
 function handleInference(context, inference) {
@@ -217,31 +220,31 @@ function doOperation(context, operation) {
 // }
 function handleInherit(context, value) {
 
-    let targetDir = dsl_v1.normalizeHref(context.getTail().getLocalDir(),value['hes:href']);
+    let targetDir = dsl_v1.normalizeHref(context.getTail().getLocalDir(), value['hes:href']);
 
     // Gets the template
     let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
-    if (!fu.exists(targetDir + '/' + serverOptions.indexFile)){
+    if (!fu.exists(targetDir + '/' + serverOptions.indexFile)) {
         throw new Error("Could not find index in " + targetDir + '/' + serverOptions.indexFile);
     }
 
     if (index['hes:meta']) {
         for (let operation of index['hes:meta']) {
             if (operation['hes:name'] === value['hes:name']) {
-                if (operation['hes:inference']){
+                if (operation['hes:inference']) {
                     // Overrides inherited data if specified
                     if (value['hes:data']) {
                         operation['hes:inference']['hes:data'] = value['hes:data']
                     } else {
-                        operation['hes:inference']['hes:data'] = operation['hes:inference']['hes:data'].map(x=> {
-                            return {'hes:href':dsl_v1.normalizeHref(targetDir,x['hes:href'])};
+                        operation['hes:inference']['hes:data'] = operation['hes:inference']['hes:data'].map(x => {
+                            return {'hes:href': dsl_v1.normalizeHref(targetDir, x['hes:href'])};
                         });
                     }
                     // Overrides inherited query if specified
                     if (value['hes:query']) {
                         operation['hes:inference']['hes:query'] = value['hes:query']
                     } else {
-                        operation['hes:inference']['hes:query'] = {'hes:href':dsl_v1.normalizeHref(targetDir,operation['hes:inference']['hes:query']['hes:href'])};
+                        operation['hes:inference']['hes:query'] = {'hes:href': dsl_v1.normalizeHref(targetDir, operation['hes:inference']['hes:query']['hes:href'])};
                     }
                 }
                 return operation;

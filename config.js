@@ -12,6 +12,7 @@ var config = {
         appEntrypoint: appEntrypoint,
         resourcesEntryPoint: resourcesEntryPoint,
         workSpacePath: workSpacePath,
+        tmpFolder: "tmp",
         verbose: false,
         indexFile: 'index.json'
     },

@@ -6,7 +6,7 @@
     "this": "http://www.example.org#"
   },
   "@type": [
-    "this:Example"
+    "this:Library"
   ],
   "this:name": [
     {

@@ -17,6 +17,7 @@
   "hes:meta": [
     {
       "hes:name": "dbpedia",
+      "hes:description":"Dbpedia query",
       "hes:query": {
         "hes:endpoint": "http://dbpedia.restdesc.org",
         "hes:default-graph-uri": "http://dbpedia.org",
@@ -26,6 +27,7 @@
     },
     {
       "hes:name": "next",
+      "hes:description":"go to example 3",
       "hes:href": "../example_03"
     }
   ]

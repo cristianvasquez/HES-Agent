@@ -17,6 +17,7 @@
   "hes:meta":[
     {
       "hes:name": "bob",
+      "hes:description":"Bob space",
       "hes:inference": {
         "hes:data": [
           {
@@ -33,6 +34,7 @@
     },
     {
       "hes:name":"next",
+      "hes:description":"go to example 5",
       "hes:href":"../example_05"
     }
   ]

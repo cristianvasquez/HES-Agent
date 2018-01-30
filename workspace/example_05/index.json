@@ -16,7 +16,8 @@
   "this:description":"Uses the definition of /lib",
   "hes:meta":[
     {
-      "hes:name":"inherited",
+      "hes:name":"extend",
+      "hes:description":"extend /lib",
       "hes:extends": {
         "hes:href":"file:///lib",
         "hes:name":"whoIsWhat"
@@ -24,6 +25,7 @@
     },
     {
       "hes:name":"next",
+      "hes:description":"go to example 6",
       "hes:href":"../example_06"
     }
   ]

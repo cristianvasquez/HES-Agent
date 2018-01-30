@@ -17,6 +17,7 @@
   "hes:meta":[
     {
       "hes:name":"alice",
+      "hes:description":"Alice's space",
       "hes:extends": {
         "hes:href":"file:///lib",
         "hes:name":"whoIsWhat",

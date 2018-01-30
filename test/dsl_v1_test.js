@@ -43,7 +43,7 @@ describe("Basic functions", function () {
         it("Fails with an invalid pointer", function () {
             expect(function () {
                 dsl_v1.specToPublic(__dirname, "exotic test")
-            }).to.throw('exotic test not recognized');
+            }).to.throw("I don't know how to handle href exotic test");
         });
 
         it("Fails with a file or directory that does not exist", function () {

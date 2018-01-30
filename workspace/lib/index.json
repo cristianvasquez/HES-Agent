@@ -13,7 +13,7 @@
       "@value": "A library"
     }
   ],
-  "this:description":"Inference example",
+  "this:description":"Library example",
   "hes:meta":[
     {
       "hes:name": "whoIsWhat",

@@ -6,8 +6,7 @@ const N3Parser = require('../lib/N3Parser/N3Parser');
 const Context = require("../Context");
 const reasoner = require("../reasoning");
 const dsl_v1 = require("../dsl_v1");
-const path = require('path');
-const validUrl = require('valid-url');
+const rp = require('request-promise');
 
 class HES extends express.Router {
 
@@ -82,7 +81,7 @@ class HES extends express.Router {
         this.get("*", function (req, res, next) {
             let context = new Context(req);
             let virtuals = handleVirtuals(context);
-            if (virtuals.isVirtual){
+            if (virtuals.isVirtual) {
                 // Handle the corresponding virtual
                 virtuals.callback(res)
             } else {
@@ -95,30 +94,36 @@ class HES extends express.Router {
     }
 }
 
-
-function handleHref(context,value){
-    let target;
-    if (value.startsWith('.')) { // Relative path
-        target = context.toResourcePath(path.join(context.getTail().getLocalDir(),value));
-    } else if (value.startsWith('file:///')) { // absolute
-        target = value.replaceAll('file://', context.getApiRoot());
-    } else if (validUrl.isUri(value)) { // other uri resources
-        target = value;
-    }
+function handleHref(context, value) {
+    let target = dsl_v1.normalizeHref(context.getTail().getLocalDir(),value);
     return {
-        isVirtual:true,
-        callback:function(res){
-            res.redirect(target);
+        isVirtual: true,
+        callback: function (res) {
+            res.redirect(context.toApiPath(target));
         }
     }
 }
 
-function handleInference(context,inference){
+let uuid = require('uuid');
+function rawToUrl(context, rawValue) {
+    let id = uuid.v4();
+    fu.writeFile(serverOptions.workSpacePath + "/tmp/" + id + ".ttl", rawValue);
+    return context.getResourcesRoot() + "/tmp/" + id + ".ttl";
+}
+
+function handleInference(context, inference) {
+
+    // Writes a temporary file to be read by Eye
+    if (inference['hes:query']['hes:raw']) {
+        inference['hes:query']['hes:href'] = rawToUrl(context, inference['hes:query']['hes:raw']);
+        delete inference['hes:query']['hes:raw'];
+    }
+
     // We found a inference operation, we invoke the eye reasoner
     let eyeOptions = dsl_v1.getEyeOptions(context.getTail().getLocalDir(), inference);
     return {
-        isVirtual:true,
-        callback:function(res){
+        isVirtual: true,
+        callback: function (res) {
             Promise.resolve(reasoner.eyePromise(eyeOptions))
                 .then(function (results) {
                     let result = body2JsonLD(results);
@@ -132,11 +137,43 @@ function handleInference(context,inference){
     };
 }
 
+// "hes:query": {
+//     "hes:endpoint": "http://dbpedia.restdesc.org/",
+//     "hes:defaultGraph": "http://dbpedia.org",
+//     "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
+//     "hes:output": "text/turtle"
+// }
+function handleQuery(context, query) {
+    let contentType = query['hes:Accept'];
+    var options = {
+        uri: query['hes:endpoint'],
+        qs: {
+            query: query['hes:raw'],
+            "default-graph-uri": query['hes:default-graph-uri']
+        },
+        headers: {
+            "Accept": contentType
+        }
+    };
+    console.log(toJson(options));
+    return {
+        isVirtual: true,
+        callback: function (res) {
+            rp(options)
+                .then(function (response) {
+                    res.writeHead(200, {'Content-Type': contentType});
+                    res.end(response, 'utf-8');
+                })
+                .catch(function (error) {
+                    res.json({error: error});
+                });
+        }
+    };
+}
 
 function handleVirtuals(context) {
     let localDir = context.getLocalDir();
     let exists = fu.exists(localDir);
-
     // Could be it is an inferred directory, or a link
     // We check the parent if there are defined operations
     if (!exists && context.getCurrentPath().length > context.getApiRoot().length) {
@@ -145,15 +182,9 @@ function handleVirtuals(context) {
         let index = fu.readJson(localDir + '/' + serverOptions.indexFile);
         if (index['hes:meta']) {
             for (let operation of index['hes:meta']) {
-                if (operation[['hes:name']] === operationId) {
+                if (operation['hes:name'] === operationId) {
                     // The operation exists, therefore needs to be handled.
-                    if (operation['hes:href']) {
-                        return handleHref(context,operation['hes:href'])
-                    } else if (operation['hes:inference']) {
-                        return handleInference(context,operation['hes:inference']);
-                    } else {
-                        throw new Error("Cannot handle " + toJson(operation));
-                    }
+                    return doOperation(context, operation);
                 }
             }
         }
@@ -163,6 +194,62 @@ function handleVirtuals(context) {
     };
 }
 
+function doOperation(context, operation) {
+    if (operation['hes:href']) {
+        return handleHref(context, operation['hes:href'])
+    } else if (operation['hes:inference']) {
+        return handleInference(context, operation['hes:inference']);
+    } else if (operation['hes:query']) {
+        return handleQuery(context, operation['hes:query']);
+    } else if (operation['hes:inherit']) {
+        /**
+         * @TODO handle circular dependency.
+         */
+        return doOperation(context, handleInherit(context, operation['hes:inherit']));
+    }
+    throw new Error("Cannot handle " + toJson(operation));
+}
+
+
+// "hes:inherit": {
+//         "hes:href":"file:///lib",
+//         "hes:name":"whoIsWhat"
+// }
+function handleInherit(context, value) {
+
+    let targetDir = dsl_v1.normalizeHref(context.getTail().getLocalDir(),value['hes:href']);
+
+    // Gets the template
+    let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
+    if (!fu.exists(targetDir + '/' + serverOptions.indexFile)){
+        throw new Error("Could not find index in " + targetDir + '/' + serverOptions.indexFile);
+    }
+
+    if (index['hes:meta']) {
+        for (let operation of index['hes:meta']) {
+            if (operation['hes:name'] === value['hes:name']) {
+                if (operation['hes:inference']){
+                    // Overrides inherited data if specified
+                    if (value['hes:data']) {
+                        operation['hes:inference']['hes:data'] = value['hes:data']
+                    } else {
+                        operation['hes:inference']['hes:data'] = operation['hes:inference']['hes:data'].map(x=> {
+                            return {'hes:href':dsl_v1.normalizeHref(targetDir,x['hes:href'])};
+                        });
+                    }
+                    // Overrides inherited query if specified
+                    if (value['hes:query']) {
+                        operation['hes:inference']['hes:query'] = value['hes:query']
+                    } else {
+                        operation['hes:inference']['hes:query'] = {'hes:href':dsl_v1.normalizeHref(targetDir,operation['hes:inference']['hes:query']['hes:href'])};
+                    }
+                }
+                return operation;
+            }
+        }
+    }
+    throw new Error("Could not find operation to inherit from " + toJson(value));
+}
 
 /**
  * Gets the index.json file and populates it with additional info such as files.

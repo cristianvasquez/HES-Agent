@@ -10,7 +10,7 @@
   ],
   "this:name": [
     {
-      "@value": "Example 5"
+      "@value": "Example 6"
     }
   ],
   "this:description":"Inference example",
@@ -19,12 +19,13 @@
       "hes:name":"inherited",
       "hes:inherit": {
         "hes:href":"file:///lib",
+        "hes:data": [
+          {
+            "hes:href":"./data"
+          }
+        ],
         "hes:name":"whoIsWhat"
       }
-    },
-    {
-      "hes:name":"next",
-      "hes:href":"file:///example_06"
     }
   ]
 }

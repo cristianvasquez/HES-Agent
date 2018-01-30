@@ -4,23 +4,28 @@ const _ = require('lodash');
 const validUrl = require('valid-url');
 const path = require('path');
 
-function specToPublic(localDir, specPath) {
 
-    let targetDirectory,files;
+function normalizeHref(dirRelativeTo,value){
 
-    if (specPath.startsWith('.')){ // Relative path
-        targetDirectory = path.join(localDir, specPath);
-    } else if (specPath.startsWith('file:///')) { // absolute
-        targetDirectory = path.resolve(specPath.replaceAll('file://', serverOptions.workSpacePath));
-    } else if (validUrl.isUri(specPath)) { // other uri resources
-        return [specPath]
-    } else {
-        let errorMessage = specPath+" not recognized";
-        console.error(errorMessage);
-        throw Error(errorMessage);
+    if (typeof value !== 'string'){
+        throw Error("I don't know how to handle href: "+value);
     }
+    if (value.startsWith(serverOptions.workSpacePath)) {
+        return value;
+    } else if (value.startsWith('.')) { // Relative path
+        return path.join(dirRelativeTo, value);
+    } else if (value.startsWith('file:///')) { // absolute
+        return path.resolve(value.replaceAll('file://', serverOptions.workSpacePath));
+    }
+    throw Error("I don't know how to handle href: "+value);
+}
 
-    files = fu.readDir(targetDirectory).files;
+function specToPublic(dirRelativeTo,specPath) {
+    if (validUrl.is_web_uri(specPath)) { // other uri resources
+        return [specPath]
+    }
+    let targetDirectory = normalizeHref(dirRelativeTo,specPath);
+    let files = fu.readDir(targetDirectory).files;
     if (!files){
         let errorMessage = "404 ["+targetDirectory+"]";
         console.error(errorMessage);
@@ -49,7 +54,7 @@ function toJson(x){
 function getEyeOptions(localDir, inference) {
 
     if (!inference['hes:query']) throw Error("Query needs to be defined in "+toJson(inference));
-    if (inference['hes:query']['hes:raw']) throw Error("Raw not supported yet in "+toJson(inference));
+    if (inference['hes:query']['hes:raw']) throw Error("Raw not yet supported yet in "+toJson(inference));
     if (!inference['hes:query']['hes:href']) throw Error("Query needs to be specified in "+toJson(inference));
     let query = specToPublic(localDir,inference['hes:query']['hes:href']);
     let data = _.flatMap(inference['hes:data'],x => {
@@ -68,5 +73,6 @@ function getEyeOptions(localDir, inference) {
 
 module.exports = {
     specToPublic:specToPublic,
+    normalizeHref:normalizeHref,
     getEyeOptions:getEyeOptions
 };

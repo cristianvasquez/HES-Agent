@@ -11,7 +11,6 @@ String.prototype.replaceAll = function (search, replacement) {
 };
 
 
-
 class _Context {
 
     constructor(host,originalUrl) {
@@ -47,14 +46,24 @@ class _Context {
         return new _Context(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')));
     }
 
+    // getContextForLocalDir(localDir){
+    //     return new _Context(this.host,localDir.replaceAll(serverOptions.workSpacePath,"/"+serverOptions.appEntrypoint));
+    // }
+
     isLocalUrl(someURI){
         return someURI.startsWith(this.getApiRoot());
     }
+
     toLocalDir(someURI){
         return someURI.replaceAll(this.getApiRoot(), serverOptions.workSpacePath);
     }
+
     toResourcePath(someLocalDir){
         return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.resourcesEntryPoint);
+    }
+
+    toApiPath(someLocalDir){
+        return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.appEntrypoint);
     }
 
 }
@@ -65,4 +74,4 @@ class Context extends _Context{
     }
 }
 
-module.exports= Context;
+module.exports = Context;

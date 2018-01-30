@@ -18,10 +18,10 @@
     {
       "hes:name": "dbpedia",
       "hes:query": {
-        "hes:endpoint": "http://dbpedia.restdesc.org/",
-        "hes:defaultGraph": "http://dbpedia.org",
+        "hes:endpoint": "http://dbpedia.restdesc.org",
+        "hes:default-graph-uri": "http://dbpedia.org",
         "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-        "hes:output": "jsonld"
+        "hes:Accept": "text/turtle"
       }
     },
     {

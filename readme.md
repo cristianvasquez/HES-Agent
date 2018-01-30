@@ -44,7 +44,7 @@ Then 'follow the links'
 
 ## Run with docker
 
-### Build hydra-eye server
+### Build H-Eye server
 
 ```
 docker build -t cvasquez/hydra-eye .
@@ -55,7 +55,7 @@ docker build -t cvasquez/hydra-eye .
 ### Start the docker image
 
 
-Start HydraEye on host port 3000:
+Start H-Eye on host port 3000:
 
 ```
 docker run --name=hydra-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cvasquez/hydra-eye

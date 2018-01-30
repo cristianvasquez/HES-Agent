@@ -10,10 +10,10 @@
   ],
   "this:name": [
     {
-      "@value": "Example 1"
+      "@value": "simple pointer"
     }
   ],
-  "this:description":"Declaration of pointers",
+  "this:description":"Declaration of redirect pointers",
   "hes:meta":[
     {
       "hes:name":"next",

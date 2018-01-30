@@ -10,10 +10,10 @@
   ],
   "this:name": [
     {
-      "@value": "Example 5"
+      "@value": "Using another service"
     }
   ],
-  "this:description":"Inference example",
+  "this:description":"Uses the definition of /lib",
   "hes:meta":[
     {
       "hes:name":"inherited",

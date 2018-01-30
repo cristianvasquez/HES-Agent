@@ -10,10 +10,10 @@
   ],
   "this:name": [
     {
-      "@value": "Example 4"
+      "@value": "Inference + personal data"
     }
   ],
-  "this:description":"Inference example",
+  "this:description":"Uses all the files of /lib/data as data and /lib/query/whoIsWhat.n3 as query, adding the contents of the ./personal folder",
   "hes:meta":[
     {
       "hes:name": "bob",

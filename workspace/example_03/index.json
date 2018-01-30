@@ -10,10 +10,10 @@
   ],
   "this:name": [
     {
-      "@value": "Example 3"
+      "@value": "inference"
     }
   ],
-  "this:description":"Inference example",
+  "this:description":"Uses all the files of /lib/data as data, and { ?who a ?what } => { ?who a ?what } as query",
   "hes:meta":[
     {
       "hes:name": "socrates",

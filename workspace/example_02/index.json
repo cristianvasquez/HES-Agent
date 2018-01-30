@@ -10,10 +10,10 @@
   ],
   "this:name": [
     {
-      "@value": "Example 2"
+      "@value": "Sparql"
     }
   ],
-  "this:description": "Declaration of a sparql query example",
+  "this:description": "Declaration of a sparql query",
   "hes:meta": [
     {
       "hes:name": "dbpedia",

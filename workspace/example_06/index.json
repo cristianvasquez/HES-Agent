@@ -10,10 +10,10 @@
   ],
   "this:name": [
     {
-      "@value": "Example 6"
+      "@value": "Extending another service"
     }
   ],
-  "this:description":"Inference example",
+  "this:description":"Uses the definition of /lib, but uses /personal as data. ",
   "hes:meta":[
     {
       "hes:name":"inherited",
@@ -21,7 +21,7 @@
         "hes:href":"file:///lib",
         "hes:data": [
           {
-            "hes:href":"./data"
+            "hes:href":"./personal"
           }
         ],
         "hes:name":"whoIsWhat"

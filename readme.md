@@ -24,13 +24,23 @@ More options with
 hes --help
 ```
 
-### To use
+### Examples
+
+The (workspace)[./workspace] folder contains examples on what kind of things can be declared.
+
+To see the results do:
 
 ```
-curl -i localhost:3000
+hes serve ./workspace
 ```
 
-And 'follow your nose'
+and point your browser to:
+
+```
+http://localhost:3000
+```
+
+Then 'follow the links'
 
 ## Run with docker
 

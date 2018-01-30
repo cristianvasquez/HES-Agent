@@ -26,7 +26,7 @@ hes --help
 
 ### Examples
 
-The (workspace)[./workspace] folder contains examples on what kind of things can be declared.
+The [workspace](./workspace) folder contains examples on what kind of things can be declared.
 
 To see the results do:
 

@@ -38,6 +38,7 @@ class _Context {
         return this.getCurrentPath().replaceAll(this.getApiRoot(), this.getResourcesRoot())
     }
 
+
     getHead(){
         return this.originalUrl.substr(this.originalUrl.lastIndexOf('/') + 1)
     }
@@ -46,9 +47,14 @@ class _Context {
         return new _Context(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')));
     }
 
-    // getContextForLocalDir(localDir){
-    //     return new _Context(this.host,localDir.replaceAll(serverOptions.workSpacePath,"/"+serverOptions.appEntrypoint));
-    // }
+    getContextForURL(someURI){
+        return new _Context(this.host,someURI.replaceAll( "http://" +this.host,''));
+    }
+
+    getLocalHref(){
+        return "file://"+this.originalUrl;
+    }
+
 
     isLocalUrl(someURI){
         return someURI.startsWith(this.getApiRoot());

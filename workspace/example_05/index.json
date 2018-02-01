@@ -19,7 +19,7 @@
       "hes:name":"extend",
       "hes:description":"extend /lib",
       "hes:extends": {
-        "hes:href":"file:///lib",
+        "hes:href":"/lib",
         "hes:name":"whoIsWhat"
       }
     },

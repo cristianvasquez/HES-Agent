@@ -65,6 +65,14 @@ describe("Basic functions", function () {
             expect(context.getTail()).to.deep.equal(new Context(request_tail));
         });
 
+
+        it("getContextForURL()", function () {
+            let context = new Context(request);
+            let context2 = context.getContextForURL('http://localhost:3333/gps4ic/serviceDefinitions/T0/step_3');
+            expect(context2.getHead()).to.equal('step_3');
+            expect(context2.getLocalHref()).to.equal('file:///gps4ic/serviceDefinitions/T0/step_3');
+        });
+
         it("getTail() from root", function () {
             let request_root = {
                 headers:{

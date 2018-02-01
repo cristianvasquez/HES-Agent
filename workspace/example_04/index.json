@@ -19,16 +19,11 @@
       "hes:name": "bob",
       "hes:description":"Bob space",
       "hes:inference": {
-        "hes:data": [
-          {
-            "hes:href":"file:///lib/data/knowledge.n3"
-          },
-          {
-            "hes:href":"./personal"
-          }
-        ],
+        "hes:data": {
+          "hes:href":["/lib/data/knowledge.n3","./personal"]
+        },
         "hes:query":{
-          "hes:href": "file:///lib/query/whoIsWhat.n3"
+          "hes:href": "/lib/query/whoIsWhat.n3"
         }
       }
     },

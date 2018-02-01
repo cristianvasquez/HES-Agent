@@ -13,18 +13,16 @@
       "@value": "A library"
     }
   ],
-  "this:description":"Library example",
-  "hes:meta":[
+  "this:description": "Library example",
+  "hes:meta": [
     {
       "hes:name": "whoIsWhat",
       "hes:inference": {
-        "hes:data": [
-          {
-            "hes:href":"./data"
-          }
-        ],
-        "hes:query":{
-          "hes:href": "file:///lib/query/whoIsWhat.n3"
+        "hes:data": {
+          "hes:href": "./data"
+        },
+        "hes:query": {
+          "hes:href": "/lib/query/whoIsWhat.n3"
         }
       }
     }

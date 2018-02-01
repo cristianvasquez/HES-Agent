@@ -8,12 +8,22 @@ const program = require('commander');
 const fu = require('../server/persistence');
 const debug = require('debug')('the-hydra-eye-js:server');
 const pjson = require('../package.json');
-resolve = require('path').resolve
+const fs = require('fs-extra')
+const path = require('path');
+const dsl = require('../server/dsl_v1');
 
 program
     .version(pjson.version, '-v, --version')
     .option('-e, --eye <eye_path>', 'Path to the eye reasoner', defaultEyeOptions.eyePath)
     .option('--verbose', 'verbose mode');
+
+function setOptions(options, absolutePath) {
+    defaultEyeOptions.eyePath = program.eye;
+    serverOptions.port = options.port;
+    serverOptions.appEntrypoint = options.app;
+    serverOptions.workSpacePath = absolutePath;
+    serverOptions.verbose = program.verbose;
+}
 
 program
     .command('serve <directory>')
@@ -21,22 +31,33 @@ program
     .option('-a, --app <app_entrypoint>', 'API entrypoint', serverOptions.appEntrypoint)
     .option('-p, --port <port>', 'server port', serverOptions.port)
     .action(function(directory, options){
-        let absolutePath = resolve(directory);
-
+        let absolutePath = path.resolve(directory);
         // Check directory
         if (fu.exists(absolutePath)){
             console.log('Starting Hydra eye server\n');
-            defaultEyeOptions.eyePath = program.eye;
-            serverOptions.port = options.port;
-            serverOptions.appEntrypoint = options.app;
-            serverOptions.workSpacePath = absolutePath;
-            serverOptions.verbose = program.verbose;
+            setOptions(options, absolutePath);
             console.log('Workspace: [%s]\nRoot :%s',serverOptions.workSpacePath, JSON.stringify(fu.readDir(serverOptions.workSpacePath), 2));
             serve();
         } else {
             console.error("Cannot open directory [%s]",directory);
         }
     });
+
+program
+    .command('list <directory>')
+    .description('describes the workspace')
+    .action(function(directory, options){
+        let absolutePath = path.resolve(directory);
+        // Check directory
+        if (fu.exists(absolutePath)){
+            console.log('Listing services\n');
+            setOptions(options, absolutePath);
+            validateWorkspace(absolutePath);
+        } else {
+            console.error("Cannot open directory [%s]",directory);
+        }
+    });
+
 
 program
     .command('*')
@@ -142,4 +163,32 @@ function serve(){
             console.error(error)
         });
 
+}
+
+function validateWorkspace(absolutePath){
+    /**
+     * Walk recursively through josd's fluid
+     */
+    const walkSync = (d) => {
+        if (fs.statSync(d).isDirectory()) {
+            return fs.readdirSync(d).map(f => walkSync(path.join(d, f)))
+        } else {
+            if (d.endsWith(serverOptions.indexFile)) {
+                validate(d);
+            }
+            return undefined
+        }
+    };
+    walkSync(absolutePath);
+
+    function validate(indexFile){
+        console.log(indexFile);
+        let index = fu.readJson(indexFile);
+        if (index['hes:meta']){
+            for (let operation of index['hes:meta']){
+                console.log('\t'+operation['hes:name']);
+                dsl.validateMeta(operation);
+            }
+        }
+    }
 }

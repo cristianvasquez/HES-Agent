@@ -13,19 +13,17 @@
       "@value": "Extending another service"
     }
   ],
-  "this:description":"Uses the definition of /lib, but uses /personal as data. ",
-  "hes:meta":[
+  "this:description": "Uses the definition of /lib, but uses /personal as data. ",
+  "hes:meta": [
     {
-      "hes:name":"alice",
-      "hes:description":"Alice's space",
+      "hes:name": "alice",
+      "hes:description": "Alice's space",
       "hes:extends": {
-        "hes:href":"file:///lib",
-        "hes:name":"whoIsWhat",
-        "hes:data": [
-          {
-            "hes:href":"./personal"
-          }
-         ]
+        "hes:href": "/lib",
+        "hes:name": "whoIsWhat",
+        "hes:data": {
+          "hes:href": "./personal"
+        }
       }
     }
   ]

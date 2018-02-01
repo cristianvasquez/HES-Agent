@@ -21,37 +21,46 @@ class HES extends express.Router {
         this.processorOptions = processorOptions;
 
         /**
-         * copy the contents of one path to another
+         * Some operations (I don't have a clear idea yet of which ones to support)
          */
         if (this.processorOptions.hydraOperations.indexOf('COPY')) {
-            this.post("/operations/copy", function (req, res, next) {
+            this.post("*", function (req, res, next) {
 
+                /**
+                 * hes:extends
+                 *
+                 * Extends the contents of one path
+                 *
+                 * Example body:
+                  {
+                    "hes:extends":{
+                        "@id": "http://localhost:3000/gps4ic/serviceDefinitions/T0/step_3"
+                        "hes:name":"newCall
+                    }
+                  }
+                 */
                 let context = new Context(req);
 
-                // The URL of the directory to copy from
-                let sourceUri = req.body['sourceUri'];
-                if (!sourceUri) return res.sendStatus(404);
-                if (!context.isLocalUrl(sourceUri)) return res.sendStatus(404);
+                let operation = req.body['hes:extends'];
+                if (!operation) {
+                    res.writeHead(400);
+                    res.json({error:"cannot recognize operation"});
+                }
 
-                // The URL of the directory to copy to
-                let targetUri = req.body['targetUri'];
-                if (!targetUri) return res.sendStatus(404);
-                if (!context.isLocalUrl(targetUri)) return res.sendStatus(404);
+                let localDir = context.getLocalDir();
+                let index = fu.readJson(localDir + '/' + serverOptions.indexFile);
+                let targetContext = context.getContextForURL(operation['@id']);
 
-                let sourceDir = context.toLocalDir(sourceUri);
-                if (!fu.exists(sourceDir)) return res.sendStatus(400);
-
-                let targetDir = context.toLocalDir(targetUri);
-                if (!fu.exists(targetDir)) return res.sendStatus(400);
-
-                let operationName = sourceDir.substr(sourceDir.lastIndexOf('/') + 1)
-                fu.copyDirectory(sourceDir, targetDir + "/" + operationName);
-
-                res.json(
-                    {
-                        "created": targetUri + "/" + operationName
+                let metaOperation = {
+                    "hes:name":operation['hes:name'],
+                    "hes:extends": {
+                        "hes:href": targetContext.tail().getLocalHref(),
+                        "hes:name": targetContext.head()
                     }
-                )
+                };
+                index['hes:meta'].push(metaOperation);
+                res.json(index);
+
             });
         }
 
@@ -105,6 +114,39 @@ function handleHref(context, value) {
     }
 }
 
+// "hes:query": {
+//     "hes:endpoint": "http://dbpedia.restdesc.org/",
+//     "hes:defaultGraph": "http://dbpedia.org",
+//     "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
+//     "hes:output": "text/turtle"
+// }
+function handleQuery(context, query) {
+    let contentType = query['hes:Accept'];
+    var options = {
+        uri: query['hes:endpoint'],
+        qs: {
+            query: query['hes:raw'],
+            "default-graph-uri": query['hes:default-graph-uri']
+        },
+        headers: {
+            "Accept": contentType
+        }
+    };
+    console.log(toJson(options));
+    return {
+        isVirtual: true,
+        callback: function (res) {
+            rp(options)
+                .then(function (response) {
+                    res.writeHead(200, {'Content-Type': contentType});
+                    res.end(response, 'utf-8');
+                })
+                .catch(function (error) {
+                    res.json({error: error});
+                });
+        }
+    };
+}
 
 function rawToUrl(context, rawValue) {
     let filename = hash(rawValue)+".ttl";
@@ -154,40 +196,6 @@ function handleInference(context, inference) {
     };
 }
 
-// "hes:query": {
-//     "hes:endpoint": "http://dbpedia.restdesc.org/",
-//     "hes:defaultGraph": "http://dbpedia.org",
-//     "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-//     "hes:output": "text/turtle"
-// }
-function handleQuery(context, query) {
-    let contentType = query['hes:Accept'];
-    var options = {
-        uri: query['hes:endpoint'],
-        qs: {
-            query: query['hes:raw'],
-            "default-graph-uri": query['hes:default-graph-uri']
-        },
-        headers: {
-            "Accept": contentType
-        }
-    };
-    console.log(toJson(options));
-    return {
-        isVirtual: true,
-        callback: function (res) {
-            rp(options)
-                .then(function (response) {
-                    res.writeHead(200, {'Content-Type': contentType});
-                    res.end(response, 'utf-8');
-                })
-                .catch(function (error) {
-                    res.json({error: error});
-                });
-        }
-    };
-}
-
 function handleVirtuals(context) {
     let localDir = context.getLocalDir();
     let exists = fu.exists(localDir);
@@ -212,57 +220,18 @@ function handleVirtuals(context) {
 }
 
 function doOperation(context, operation) {
-    if (operation['hes:href']) {
-        return handleHref(context, operation['hes:href'])
-    } else if (operation['hes:inference']) {
-        return handleInference(context, operation['hes:inference']);
-    } else if (operation['hes:query']) {
-        return handleQuery(context, operation['hes:query']);
-    } else if (operation['hes:extends']) {
-        /**
-         * @TODO handle circular dependency.
-         */
-        return doOperation(context, handleExtends(context, operation['hes:extends']));
+    // Expands operations and transform extends to regular operations
+    let _operation = dsl_v1.expandMeta(context.getTail().getLocalDir(),operation);
+    if (_operation['hes:href']) {
+        return handleHref(context, _operation['hes:href'])
+    } else if (_operation['hes:inference']) {
+        return handleInference(context, _operation['hes:inference']);
+    } else if (_operation['hes:query']) {
+        return handleQuery(context, _operation['hes:query']);
     }
-    throw new Error("Cannot handle " + toJson(operation));
+    throw new Error("Cannot handle " + toJson(_operation));
 }
 
-
-function handleExtends(context, value) {
-
-    let targetDir = dsl_v1.normalizeHref(context.getTail().getLocalDir(), value['hes:href']);
-
-    // Gets the template
-    let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
-    if (!fu.exists(targetDir + '/' + serverOptions.indexFile)) {
-        throw new Error("Could not find index in " + targetDir + '/' + serverOptions.indexFile);
-    }
-
-    if (index['hes:meta']) {
-        for (let operation of index['hes:meta']) {
-            if (operation['hes:name'] === value['hes:name']) {
-                if (operation['hes:inference']) {
-                    // Overrides data if specified
-                    if (value['hes:data']) {
-                        operation['hes:inference']['hes:data'] = value['hes:data']
-                    } else {
-                        operation['hes:inference']['hes:data'] = operation['hes:inference']['hes:data'].map(x => {
-                            return {'hes:href': dsl_v1.normalizeHref(targetDir, x['hes:href'])};
-                        });
-                    }
-                    // Overrides query if specified
-                    if (value['hes:query']) {
-                        operation['hes:inference']['hes:query'] = value['hes:query']
-                    } else {
-                        operation['hes:inference']['hes:query'] = {'hes:href': dsl_v1.normalizeHref(targetDir, operation['hes:inference']['hes:query']['hes:href'])};
-                    }
-                }
-                return operation;
-            }
-        }
-    }
-    throw new Error("Could not find operation to inherit from " + toJson(value));
-}
 
 /**
  * Gets the index.json file and populates it with additional info such as files.
@@ -347,39 +316,5 @@ function body2JsonLD(body) {
     let eyeResponse = JSON.stringify(jsonLd, null, 4);
     return JSON.parse(eyeResponse);
 }
-
-
-// /**
-//  * Aggregated inference operation
-//  */
-// let aggregatedOperation = _.find(operationIndex['hes:meta'], {
-//     '@type': ['this:EyeAggregatedOperation'],
-//     'operation': operationId
-// });
-
-// } else if (aggregatedOperation) {
-//
-//
-//     let promises = [];
-//     let children = fu.readDir(localDir);
-//     if (children.directories) {
-//         for (let directory of children.directories) {
-//             let childIndex = fu.readJson(localDir + "/" + directory + '/' + serverOptions.indexFile);
-//             let child = _.find(childIndex['meta:operation'], {'@type': ['this:EyeOperation']});
-//             if (child) {
-//                 promises.push(getEye(child, localDir + "/" + directory))
-//             }
-//         }
-//         Promise.all(promises)
-//             .then(function (results) {
-//                 let result = {};
-//                 result["@id"] = baseUri;
-//                 result["this:aggregated"] = results.map(x => body2JsonLD(x));
-//                 res.json(result);
-//             })
-//             .catch(function (error) {
-//                 res.json({error: error});
-//             });
-//     }
 
 module.exports = HES;

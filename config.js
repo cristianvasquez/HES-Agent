@@ -14,7 +14,8 @@ var config = {
         workSpacePath: workSpacePath,
         tmpFolder: "tmp",
         verbose: false,
-        indexFile: 'index.json'
+        indexFile: 'index.json',
+        allowServeOutsideWorkspace:true
     },
 
     defaultEyeOptions:{
@@ -24,7 +25,7 @@ var config = {
     defaultProcessorOptions:{
         showFiles:false,
         showDirectories:true,
-        hydraOperations:["GET","DELETE","COPY"]
+        hydraOperations:["GET","COPY"]
     },
     defaultContext: {
         "hydra": "http://www.w3.org/ns/hydra/core#",

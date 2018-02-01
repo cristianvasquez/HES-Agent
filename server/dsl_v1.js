@@ -6,7 +6,6 @@ const path = require('path');
 
 
 function normalizeHref(dirRelativeTo,value){
-
     if (typeof value !== 'string'){
         throw Error("I don't know how to handle href: "+value);
     }
@@ -16,6 +15,10 @@ function normalizeHref(dirRelativeTo,value){
         return path.join(dirRelativeTo, value);
     } else if (value.startsWith('file:///')) { // absolute
         return path.resolve(value.replaceAll('file://', serverOptions.workSpacePath));
+    } else if (value.startsWith(serverOptions.workSpacePath)){
+        return value;
+    } else if (serverOptions.allowServeOutsideWorkspace && value.startsWith('/')){ // HES is NOT a secure application right now :)
+        return value;
     }
     throw Error("I don't know how to handle href: "+value);
 }

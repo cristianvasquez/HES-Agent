@@ -124,14 +124,28 @@ function handleInference(context, inference) {
 
     // We found a inference operation, we invoke the eye reasoner
     let eyeOptions = dsl_v1.getEyeOptions(context.getTail().getLocalDir(), inference);
+
+    function defaultMediatype(body, res) {
+        let result = body2JsonLD(body);
+        result["@id"] = context.getCurrentPath();
+        res.json(result);
+    }
+
     return {
         isVirtual: true,
         callback: function (res) {
             Promise.resolve(reasoner.eyePromise(eyeOptions))
-                .then(function (results) {
-                    let result = body2JsonLD(results);
-                    result["@id"] = context.getCurrentPath();
-                    res.json(result);
+                .then(function (body) {
+                    let contentType='application/x-json+ld';
+                    if(inference["hes:Accept"]){
+                        contentType=inference["hes:Accept"];
+                    }
+                    if (contentType==='application/x-json+ld'){
+                        defaultMediatype(body,res);
+                    } else {
+                        res.writeHead(200, { 'Content-Type': contentType });
+                        res.end(body, 'utf-8');
+                    }
                 })
                 .catch(function (error) {
                     res.json({error: error});

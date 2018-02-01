@@ -14,10 +14,9 @@ function eyePromise(options) {
 
     let data = options.data.join(" ");
     let query = options.query;
-    // let flags;
-    // if (options.flags){
-    //     flags = options.flags.join(" ");
-    // }
+    if (options.flags){
+        return invokeEye(config.defaultEyeOptions.eyePath+" --nope "+data+" --query "+query+" "+options.flags.join(" "), false);
+    }
     return invokeEye(config.defaultEyeOptions.eyePath+" --nope "+data+" --query "+query, false);
 }
 

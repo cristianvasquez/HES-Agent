@@ -28,7 +28,6 @@ var config = {
         hydraOperations:["GET","COPY"]
     },
     defaultContext: {
-        "hydra": "http://www.w3.org/ns/hydra/core#",
         "fluid": "http://josd.github.io/fluid#",
         "hes": "http://cristianvasquez.github.io/hes#"
     },

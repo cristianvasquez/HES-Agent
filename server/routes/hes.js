@@ -292,7 +292,7 @@ function buildIndex(processorOptions, req, res) {
     }
 
     if (processorOptions.hydraOperations) {
-        result["hydra:operations"] = processorOptions.hydraOperations;
+        result["this:operations"] = processorOptions.hydraOperations;
     }
 
     return result

@@ -47,7 +47,7 @@ Then 'follow the links'
 ### Build H-Eye server
 
 ```
-docker build -t cvasquez/hydra-eye .
+docker build -t cvasquez/h-eye .
 ```
 
 (to build a clean image from scratch use the --no-cache option)
@@ -58,7 +58,7 @@ docker build -t cvasquez/hydra-eye .
 Start H-Eye on host port 3000:
 
 ```
-docker run --name=hydra-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cvasquez/hydra-eye
+docker run --name=h-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cvasquez/h-eye
 ```
 
 Running your image with -d runs the container in detached mode, leaving the container running in the background. 
@@ -69,13 +69,13 @@ If you need to go inside the container you can use the exec command:
 
 ```
 # Enter the container
-docker exec -it hydra-eye /bin/bash
+docker exec -it h-eye /bin/bash
 ```
 
 ### Stop the docker container
 
 ```
-docker rm -f hydra-eye
+docker rm -f h-eye
 ```
 
 ## Test if it's up

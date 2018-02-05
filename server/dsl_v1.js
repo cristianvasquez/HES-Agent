@@ -152,7 +152,12 @@ function normalizeHref(dirRelativeTo, value) {
     } else if (value.startsWith('.')) { // Relative path
         return path.join(dirRelativeTo, value);
     } else if (serverOptions.allowServeOutsideWorkspace && value.startsWith('/')) { // HES is NOT a secure application right now :)
-        return path.resolve(serverOptions.workSpacePath + "/" + value);
+        // sometimes, when handling extends, the href is already expanded.
+        if (fu.exists(value)){
+            return value;
+        } else {
+            return path.join(serverOptions.workSpacePath, value);
+        }
     }
     throw Error("I don't know how to handle href: " + value);
 }

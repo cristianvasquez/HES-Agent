@@ -44,10 +44,17 @@ router.get("/*", function (req, res, next) {
             data = data.split(',');
         }
         res.header('Access-Control-Allow-Origin', '*');
-        Promise.resolve(reasoning.eyePromise({
-            data: data,
-            query: query
-        })
+
+        let inference = {
+            "hes:data": {
+                "hes:href": data
+            },
+            "hes:query": {
+                "hes:href": query
+            }
+        };
+
+        Promise.resolve(reasoning.eyePromise(inference)
             .then(function (result) {
                 res.send(result);
             })

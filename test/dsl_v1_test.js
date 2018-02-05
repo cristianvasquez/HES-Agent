@@ -1,14 +1,14 @@
-var expect = require("chai").expect;
-var dsl_v1 = require("../server/dsl_v1");
-var config = require("../config");
-var path = require('path');
+const expect = require("chai").expect;
+const dsl_v1 = require("../server/dsl_v1");
+const config = require("../config");
+const path = require('path');
 
 /**
  * Chai: https://devhints.io/chai
  */
 // Globals
 String.prototype.replaceAll = function (search, replacement) {
-    var target = this;
+    let target = this;
     return target.split(search).join(replacement);
 };
 
@@ -48,8 +48,6 @@ describe("expandDirectories", function () {
 
     });
 });
-
-
 
 describe("pre-processing", function () {
 
@@ -219,6 +217,38 @@ describe("pre-processing", function () {
             expect(result).to.deep.equal(expanded);
         });
 
+        it("example_06_when_outside_directory", function () {
+            before();
+            let input = {
+                "hes:name": "alice",
+                "hes:description": "Alice's space",
+                "hes:extends": {
+                    "hes:href": "/lib",
+                    "hes:name": "whoIsWhat",
+                    "hes:data": {
+                        "hes:href": "../../test/example"
+                    }
+                }
+            };
+            let expanded = {
+                "hes:name": "alice",
+                "hes:description": "Alice's space",
+                "hes:inference": {
+                    "hes:data": {
+                        "hes:href": [
+                            __dirname+"/example/file_1.ttl",
+                            __dirname+"/example/file_2.ttl"
+                        ]
+                    },
+                    "hes:query": {
+                        "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                    }
+                }
+            };
+            let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_06'),input);
+            expect(result).to.deep.equal(expanded);
+        });
+
         it("example_07", function () {
             before();
             let input =      {
@@ -264,124 +294,160 @@ describe("pre-processing", function () {
 
     });
 
-    describe("validator", function () {
+});
 
-        function before() {
-            config.serverOptions.workSpacePath = path.resolve(__dirname + '/../workspace');
-        }
+describe("validator", function () {
 
-        describe("Validates the example operations", function () {
+    function before() {
+        config.serverOptions.workSpacePath = path.resolve(__dirname + '/../workspace');
+    }
 
-            it("example_1", function () {
-                before();
-                let input = {
-                    "hes:name": "next",
-                    "hes:description": "go to example 2",
-                    "hes:href": "../example_02"
-                };
-                let result = dsl_v1.validateMeta(input);
-                expect(result).to.equal(true);
-            });
+    describe("Validates the example operations", function () {
 
-            it("example_2", function () {
-                before();
-
-                let input = {
-                    "hes:name": "dbpedia",
-                    "hes:description": "Dbpedia query",
-                    "hes:query": {
-                        "hes:endpoint": "http://dbpedia.restdesc.org",
-                        "hes:default-graph-uri": "http://dbpedia.org",
-                        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-                        "hes:Accept": "application/x-json+ld"
-                    }
-                };
-
-                let result = dsl_v1.validateMeta(input);
-                expect(result).to.equal(true);
-            });
-
-            it("example_3", function () {
-                before();
-                let input = {
-                    "hes:name": "socrates",
-                    "hes:description": "Socrates example",
-                    "hes:inference": {
-                        "hes:data": [
-                            {
-                                "hes:href": "/lib/data"
-                            }
-                        ],
-                        "hes:query": {
-                            "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
-                        }
-                    }
-                };
-                let result = dsl_v1.validateMeta(input);
-                expect(result).to.equal(false);
-            });
-
-            it("example_4", function () {
-                before();
-
-                let input = {
-                    "hes:name": "bob",
-                    "hes:description": "Bob space",
-                    "hes:inference": {
-                        "hes:data": [
-                            {
-                                "hes:href": "/lib/data/knowledge.n3"
-                            },
-                            {
-                                "hes:href": "./personal"
-                            }
-                        ],
-                        "hes:query": {
-                            "hes:href": "/lib/query/whoIsWhat.n3"
-                        }
-                    }
-                };
-                let result = dsl_v1.validateMeta(input);
-                expect(result).to.equal(false);
-            });
-
-            it("example_5", function () {
-                before();
-
-                let input = {
-                    "hes:name": "extend",
-                    "hes:description": "extend /lib",
-                    "hes:extends": {
-                        "hes:href": "/lib",
-                        "hes:name": "whoIsWhat"
-                    }
-                };
-
-                let result = dsl_v1.validateMeta(input);
-                expect(result).to.equal(true);
-            });
-
-            it("example_6", function () {
-                before();
-
-                let input = {
-                    "hes:name": "alice",
-                    "hes:description": "Alice's space",
-                    "hes:extends": {
-                        "hes:href": "/lib",
-                        "hes:name": "whoIsWhat",
-                        "hes:data": [
-                            {
-                                "hes:href": "./personal"
-                            }
-                        ]
-                    }
-                };
-                let result = dsl_v1.validateMeta(input);
-                expect(result).to.equal(false);
-            });
-
+        it("example_1", function () {
+            before();
+            let input = {
+                "hes:name": "next",
+                "hes:description": "go to example 2",
+                "hes:href": "../example_02"
+            };
+            let result = dsl_v1.validateMeta(input);
+            expect(result).to.equal(true);
         });
+
+        it("example_2", function () {
+            before();
+
+            let input = {
+                "hes:name": "dbpedia",
+                "hes:description": "Dbpedia query",
+                "hes:query": {
+                    "hes:endpoint": "http://dbpedia.restdesc.org",
+                    "hes:default-graph-uri": "http://dbpedia.org",
+                    "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
+                    "hes:Accept": "application/x-json+ld"
+                }
+            };
+
+            let result = dsl_v1.validateMeta(input);
+            expect(result).to.equal(true);
+        });
+
+        it("example_3", function () {
+            before();
+            let input = {
+                "hes:name": "socrates",
+                "hes:description": "Socrates example",
+                "hes:inference": {
+                    "hes:data": [
+                        {
+                            "hes:href": "/lib/data"
+                        }
+                    ],
+                    "hes:query": {
+                        "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                    }
+                }
+            };
+            let result = dsl_v1.validateMeta(input);
+            expect(result).to.equal(false);
+        });
+
+        it("example_4", function () {
+            before();
+
+            let input = {
+                "hes:name": "bob",
+                "hes:description": "Bob space",
+                "hes:inference": {
+                    "hes:data": [
+                        {
+                            "hes:href": "/lib/data/knowledge.n3"
+                        },
+                        {
+                            "hes:href": "./personal"
+                        }
+                    ],
+                    "hes:query": {
+                        "hes:href": "/lib/query/whoIsWhat.n3"
+                    }
+                }
+            };
+            let result = dsl_v1.validateMeta(input);
+            expect(result).to.equal(false);
+        });
+
+        it("example_5", function () {
+            before();
+
+            let input = {
+                "hes:name": "extend",
+                "hes:description": "extend /lib",
+                "hes:extends": {
+                    "hes:href": "/lib",
+                    "hes:name": "whoIsWhat"
+                }
+            };
+
+            let result = dsl_v1.validateMeta(input);
+            expect(result).to.equal(true);
+        });
+
+        it("example_6", function () {
+            before();
+
+            let input = {
+                "hes:name": "alice",
+                "hes:description": "Alice's space",
+                "hes:extends": {
+                    "hes:href": "/lib",
+                    "hes:name": "whoIsWhat",
+                    "hes:data": [
+                        {
+                            "hes:href": "./personal"
+                        }
+                    ]
+                }
+            };
+            let result = dsl_v1.validateMeta(input);
+            expect(result).to.equal(false);
+        });
+
+    });
+
+});
+
+describe("normalizeHref", function () {
+
+    function before() {
+        config.serverOptions.workSpacePath = __dirname;
+    }
+
+    describe("Normalize Href, basic functionality", function () {
+
+        it("Handles absolute path inside the workspace", function () {
+            before();
+            config.serverOptions.allowServeOutsideWorkspace=true;
+            let result = dsl_v1.normalizeHref(config.serverOptions.workSpacePath+"/inside_1",config.serverOptions.workSpacePath+"/inside_2");
+            expect(result).to.equal(config.serverOptions.workSpacePath+"/inside_2");
+        });
+
+        it("Handles outside workspace when allowed", function () {
+            before();
+            config.serverOptions.allowServeOutsideWorkspace=true;
+            let result = dsl_v1.normalizeHref(config.serverOptions.workSpacePath+"/inside","../../workspace");
+            expect(result).to.equal(path.join(__dirname,"../workspace"));
+        });
+
+        it("Don't handle outside workspace when not allowed", function () {
+            before();
+            config.serverOptions.allowServeOutsideWorkspace=false;
+            expect(function () {
+                dsl_v1.normalizeHref(config.serverOptions.workSpacePath+"/inside","/outsideDirectory")
+            }).to.throw("I don't know how to handle href: /outsideDirectory");
+        });
+
+
 
     });
 });

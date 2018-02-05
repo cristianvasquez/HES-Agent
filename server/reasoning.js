@@ -108,7 +108,6 @@ function invokeEye(command, includeStderr = true) {
     });
 }
 
-
 // taken from https://github.com/RubenVerborgh/EyeServer
 const commentRegex = /^#.*$\n/mg,
     prefixDeclarationRegex = /^@prefix|PREFIX ([\w\-]*:) <([^>]+)>\.?\n/g,
@@ -154,7 +153,6 @@ function clean(n3) {
 function escapeForRegExp(text) {
     return text.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
 }
-
 
 function collect(val, memo) {
     memo.push(val);

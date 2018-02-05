@@ -1,12 +1,12 @@
-var config = require('../config');
-var fs = require('fs-extra')
-var path = require('path');
+const config = require('../config');
+const fs = require('fs-extra');
+const path = require('path');
 
-var exports = [];
+const exports = [];
 
 function exists(localDir) {
     return fs.existsSync(localDir);
-};
+}
 exports.exists = exists;
 
 /**
@@ -17,7 +17,7 @@ function getFiles(localDir) {
         return [];
     }
     return fs.readdirSync(localDir);
-};
+}
 exports.getFiles = getFiles;
 
 
@@ -39,7 +39,7 @@ function readDir(dir) {
     };
 
     if (fs.statSync(dir).isDirectory()){
-        var elements = fs.readdirSync(dir);
+        let elements = fs.readdirSync(dir);
         elements.forEach(function(file) {
             if (fs.statSync(dir + '/' + file).isDirectory()) {
                 result.directories.push(file);
@@ -53,7 +53,7 @@ function readDir(dir) {
     }
 
     return result;
-};
+}
 exports.readDir = readDir;
 
 /**
@@ -61,25 +61,15 @@ exports.readDir = readDir;
  */
 function readJson(filePath){
     if (exists(filePath)){
-        var contents = fs.readFileSync(filePath);
+        let contents = fs.readFileSync(filePath);
         return JSON.parse(contents);
     } else {
         return {
             "@context": config.defaultContext
         }
     }
-};
+}
 exports.readJson = readJson;
-
-// function readRequired(filePath){
-//     if (exists(filePath)){
-//         var contents = fs.readFileSync(filePath);
-//         return JSON.parse(contents);
-//     } else {
-//         throw new Error(filePath+" does not exist")
-//     }
-// };
-// exports.readRequired = readRequired;
 
 /**
  * Write a file to a local directory
@@ -102,4 +92,3 @@ exports.deleteDirectory = function(localDir){
 };
 
 module.exports = exports;
-

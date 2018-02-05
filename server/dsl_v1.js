@@ -62,27 +62,29 @@ function expandInference(dirRelativeTo, meta) {
 
 function expandExtends(dirRelativeTo, meta) {
     if (!meta["hes:extends"]['hes:href']) throw new Error('No href in extends ' + toJson(meta));
-    let operation = findOperation(dirRelativeTo, meta["hes:extends"]['hes:href'], meta["hes:extends"]['hes:name']);
+    let targetDir = normalizeHref(dirRelativeTo, meta["hes:extends"]['hes:href']);
+    let operation = findOperation(targetDir, meta["hes:extends"]['hes:name']);
     if (operation['hes:inference']) {
 
         /**
          * It's not clear yet how I will represent Set, Union, Intersection etc.
          */
         meta['hes:inference'] = {};
-
-        // If data is defined, maintains it
-        if (meta['hes:extends']['hes:data']) {
-            meta['hes:inference']['hes:data'] = meta['hes:extends']['hes:data'];
-        } else {
-            meta['hes:inference']['hes:data'] = operation['hes:inference']['hes:data'];
+        function overrideIfExisting(parameter){
+            // If parameter is defined, maintains it
+            if (meta['hes:extends'][parameter]) {
+                meta['hes:inference'][parameter] = meta['hes:extends'][parameter];
+            } else {
+                if (operation['hes:inference'][parameter]){
+                    meta['hes:inference'][parameter] = operation['hes:inference'][parameter];
+                }
+            }
         }
-
-        // If query is defined, maintains it.
-        if (meta['hes:extends']['hes:query']) {
-            meta['hes:inference']['hes:query'] = meta['hes:extends']['hes:query'];
-        } else {
-            meta['hes:inference']['hes:query'] = operation['hes:inference']['hes:query'];
-        }
+        overrideIfExisting('hes:data');
+        overrideIfExisting('hes:query');
+        overrideIfExisting('hes:options');
+        overrideIfExisting('hes:flags');
+        overrideIfExisting('hes:Accept');
 
         delete meta['hes:extends'];
 
@@ -92,8 +94,7 @@ function expandExtends(dirRelativeTo, meta) {
     return expandMeta(dirRelativeTo, meta);
 }
 
-function findOperation(dirRelativeTo, href, name) {
-    let targetDir = normalizeHref(dirRelativeTo, href);
+function findOperation(targetDir, name) {
     // Gets the template
     let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
     if (!fu.exists(targetDir + '/' + serverOptions.indexFile)) {
@@ -103,12 +104,12 @@ function findOperation(dirRelativeTo, href, name) {
         for (let operation of index['hes:meta']) {
             if (operation['hes:name'] === name) {
                 // returns the expanded operation
-                // @TODO handle circular. (stack overflow or something like that)
+                // Handle circular?
                 return expandMeta(targetDir, operation);
             }
         }
     }
-    throw new Error("Could not find operation name " + name + ' in ' + href);
+    throw new Error("Could not find operation name " + name + ' in ' + targetDir);
 }
 
 function validateMeta(meta) {
@@ -152,11 +153,12 @@ function normalizeHref(dirRelativeTo, value) {
     } else if (value.startsWith('.')) { // Relative path
         return path.join(dirRelativeTo, value);
     } else if (serverOptions.allowServeOutsideWorkspace && value.startsWith('/')) { // HES is NOT a secure application right now :)
+        let join =  path.join(serverOptions.workSpacePath, value);
         // sometimes, when handling extends, the href is already expanded.
-        if (fu.exists(value)){
-            return value;
+        if (fu.exists(join)){
+            return join;
         } else {
-            return path.join(serverOptions.workSpacePath, value);
+            return value;
         }
     }
     throw Error("I don't know how to handle href: " + value);

@@ -294,6 +294,29 @@ describe("pre-processing", function () {
 
     });
 
+
+    describe("Interprets border cases", function () {
+
+        it("circular", function () {
+            config.serverOptions.workSpacePath = path.resolve(__dirname);
+
+            let input = {
+                "hes:name": "exec",
+                "hes:extends": {
+                    "hes:href": "/circular_02",
+                    "hes:name": "exec"
+                }
+            };
+
+            expect(function () {
+                dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_01'),input)
+            }).to.throw("Maximum call stack size exceeded");
+
+        });
+
+
+    });
+
 });
 
 describe("validator", function () {

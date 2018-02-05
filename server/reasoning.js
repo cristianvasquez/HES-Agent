@@ -11,28 +11,63 @@ function eyePromise(inference) {
 function getEyeCommand(inference){
     let command = config.defaultEyeOptions.eyePath;
 
+    /**
+     * Handle flags
+     */
     let flags = config.defaultEyeOptions.defaultFlags.join(" ");
     if (inference['hes:options']){
         if (inference['hes:options']["hes:proof"]){
             flags = "";
         }
     } else if (inference['eye:flags']){
-        flags = flags+inference['eye:flags'].join(" ");
+        if (Array.isArray(inference['eye:flags'])){
+            flags = flags+" "+inference['eye:flags'].join(" ");
+        } else {
+            flags = flags+" "+inference['eye:flags'];
+        }
     }
     command=command+" "+flags;
 
+    /**
+     * Handle data
+     */
     if (inference['hes:data']){
         // command = command+" --data "+inference['hes:data']['hes:href'].join(" ");
-        command = command+" "+inference['hes:data']['hes:href'].join(" ");
+        if (Array.isArray(inference['hes:data']['hes:href'])){
+            command = command+" "+inference['hes:data']['hes:href'].join(" ");
+        } else {
+            command = command+" "+inference['hes:data']['hes:href'];
+        }
     }
 
+    /**
+     * Handle query
+     */
     if (inference['hes:query']){
-        command = command+" --query "+inference['hes:query']['hes:href'];
+        if (Array.isArray(inference['hes:query']['hes:href'])){
+            if (inference['hes:query']['hes:href'].length===1){
+                command = command+" --query "+inference['hes:query']['hes:href'][0];
+            }else {
+                throw new Error('cannot handle multiple queries');
+            }
+        } else {
+            command = command+" --query "+inference['hes:query']['hes:href'];
+        }
     }
 
+    /**
+     * Handle proof
+     */
     // proof only supports urls by the moment
     if (inference['hes:proof']){
-        command = command+" --proof "+inference['hes:proof']['hes:href'].join(" --proof ");
+        if (!inference['hes:proof']['hes:href']) {
+            throw new Error('hes:href for proof not specified');
+        }
+        if (Array.isArray(inference['hes:proof']['hes:href'])){
+            command = command+" --proof "+inference['hes:proof']['hes:href'].join(" --proof ");
+        } else {
+            command = command+" --proof "+inference['hes:proof']['hes:href'];
+        }
     }
 
     return command;

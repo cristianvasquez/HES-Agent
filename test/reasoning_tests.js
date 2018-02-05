@@ -61,29 +61,93 @@ describe("eyeOptions", function () {
 
         expect(command).to.contain("--nope");
     });
-    //
-    // it("example_06", function () {
-    //     before();
-    //
-    //     let inference = {
-    //         "hes:data": {
-    //             "hes:href": [
-    //                 config.serverOptions.workSpacePath+"/example_06/personal/Alice.n3",
-    //                 config.serverOptions.workSpacePath+"/example_06/personal/knowledge.n3"
-    //             ]
-    //         },
-    //         "hes:query": {
-    //             "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
-    //         }
-    //     };
-    //
-    //     let command = reasoning.getEyeCommand(inference);
-    //
-    //     expect(command).to.contain("--nope "+config.serverOptions.workSpacePath+"/example_06/personal/Alice.n3 "+config.serverOptions.workSpacePath+"/workspace/example_06/personal/knowledge.n3 --query "+config.serverOptions.workSpacePath+"/workspace/lib/query/whoIsWhat.n3");
-    // });
-    //
+
+    it("Does handle one data entry", function () {
+        before();
+
+        let inference = {
+            "hes:data": {
+                "hes:href": "data.n3"
+            },
+            "hes:query": {
+                "hes:href": "query.n3"
+            }
+        };
+
+        let command = reasoning.getEyeCommand(inference);
+        expect(command).to.contain("--nope data.n3 --query query.n3");
+    });
+
+    it("Does handle two data entries", function () {
+        before();
+
+        let inference = {
+            "hes:data": {
+                "hes:href": ["data_01.n3","data_02.n3"]
+            },
+            "hes:query": {
+                "hes:href": "query.n3"
+            }
+        };
+
+        let command = reasoning.getEyeCommand(inference);
+        expect(command).to.contain("--nope data_01.n3 data_02.n3 --query query.n3");
+    });
+
+    it("Does handle array with one query", function () {
+        before();
+
+        let inference = {
+            "hes:data": {
+                "hes:href": "data.n3"
+            },
+            "hes:query": {
+                "hes:href": ["query.n3"]
+            }
+        };
+
+        let command = reasoning.getEyeCommand(inference);
+        expect(command).to.contain("--nope data.n3 --query query.n3");
+    });
+
+    it("Fails with an array with two queries", function () {
+        before();
+
+        let inference = {
+            "hes:data": {
+                "hes:href": "data.n3"
+            },
+            "hes:query": {
+                "hes:href": ["query_01.n3","query_02.n3"]
+            }
+        };
+
+        expect(function () {
+            reasoning.getEyeCommand(inference)
+        }).to.throw("cannot handle multiple queries");
+
+    });
 
 
+    it("Does handle --strings", function () {
+        before();
+
+        let inference = {
+            "hes:data": {
+                "hes:href": "data.n3"
+            },
+            "hes:query": {
+                "hes:href": "query.csvq"
+            },
+            "eye:flags": [
+                "--strings"
+            ],
+            "hes:Accept": "application/CSV"
+        };
+
+        let command = reasoning.getEyeCommand(inference);
+        expect(command).to.contain("--nope --strings data.n3 --query query.csvq");
+    });
 
     it("Does include proof", function () {
         before();
@@ -102,6 +166,46 @@ describe("eyeOptions", function () {
         let command = reasoning.getEyeCommand(inference);
 
         expect(command).to.contain("--proof http://alice/alice_proof");
+    });
+
+    it("Does include two proofs", function () {
+        before();
+
+        let inference =    {
+            "hes:data": {
+                "hes:href":["./agent2-map.n3","../lib/gps-plugin.n3"]
+            },
+            "hes:proof": {
+                "hes:href":["http://alice/alice_proof","http://bob/bob_proof"]
+            },
+            "hes:query":{
+                "hes:href": "./agent2-query.n3"
+            }
+        };
+        let command = reasoning.getEyeCommand(inference);
+
+        expect(command).to.contain("--proof http://alice/alice_proof");
+        expect(command).to.contain("--proof http://bob/bob_proof");
+
+    });
+
+    it("Fails with proof without href", function () {
+        before();
+
+        let inference = {
+            "hes:data": {
+                "hes:href":["./agent2-map.n3","../lib/gps-plugin.n3"]
+            },
+            "hes:proof": {},
+            "hes:query":{
+                "hes:href": "./agent2-query.n3"
+            }
+        };
+
+        expect(function () {
+            reasoning.getEyeCommand(inference)
+        }).to.throw("hes:href for proof not specified");
+
     });
 
 });

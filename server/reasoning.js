@@ -9,24 +9,33 @@ function eyePromise(inference) {
  * Build up a command for eye, from an expanded inference description
  */
 function getEyeCommand(inference){
-
-    let data = inference['hes:data']['hes:href'].join(" ");
-    let query = inference['hes:query']['hes:href'];
+    let command = config.defaultEyeOptions.eyePath;
 
     let flags = config.defaultEyeOptions.defaultFlags.join(" ");
-
     if (inference['hes:options']){
         if (inference['hes:options']["hes:proof"]){
-            // flags.replaceAll("--nope","");
             flags = "";
         }
-    }
-
-    if (inference['eye:flags']){
+    } else if (inference['eye:flags']){
         flags = flags+inference['eye:flags'].join(" ");
     }
+    command=command+" "+flags;
 
-    return config.defaultEyeOptions.eyePath+" "+flags+" "+data+" --query "+query;
+    if (inference['hes:data']){
+        // command = command+" --data "+inference['hes:data']['hes:href'].join(" ");
+        command = command+" "+inference['hes:data']['hes:href'].join(" ");
+    }
+
+    if (inference['hes:query']){
+        command = command+" --query "+inference['hes:query']['hes:href'];
+    }
+
+    // proof only supports urls by the moment
+    if (inference['hes:proof']){
+        command = command+" --proof "+inference['hes:proof']['hes:href'].join(" --proof ");
+    }
+
+    return command;
 }
 
 function invokeEye(command, includeStderr = true) {

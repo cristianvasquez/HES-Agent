@@ -2,8 +2,6 @@ const config = require('../config');
 const fs = require('fs-extra');
 const path = require('path');
 
-const exports = [];
-
 function exists(localDir) {
     return fs.existsSync(localDir);
 }

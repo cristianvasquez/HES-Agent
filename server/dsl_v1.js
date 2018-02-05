@@ -140,30 +140,6 @@ function expandDirectories(href) {
 }
 
 /**
- * Second layer
- *
- * Expand eye options
- */
-
-function getEyeOptions(localDir, inference) {
-    // "hes:data": {
-    //     "hes:href": [
-    //         config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
-    //         config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
-    //     ]
-    // },
-    // "hes:query": {
-    //     "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
-    // }
-    return {
-        data: inference['hes:data']['hes:href'],
-        query: inference['hes:query']['hes:href'],
-        flags: inference['eye:flags']
-    };
-}
-
-
-/**
  * Handles a defined href, in case of having a corresponding local path, returns it.
  */
 
@@ -188,7 +164,6 @@ function toJson(x) {
 module.exports = {
     expandDirectories: expandDirectories,
     normalizeHref: normalizeHref,
-    getEyeOptions: getEyeOptions,
     expandMeta: expandMeta,
     validateMeta: validateMeta
 };

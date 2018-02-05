@@ -25,6 +25,11 @@
           "hes:href": "./personal"
         }
       }
+    },
+    {
+      "hes:name":"next",
+      "hes:description":"go to example 7",
+      "hes:href":"../example_07"
     }
   ]
 }

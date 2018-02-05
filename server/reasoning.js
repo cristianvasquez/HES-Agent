@@ -1,33 +1,42 @@
 const config = require('../config');
 const exec = require('child-process-promise').exec;
 
-/**
- * The eye options
- *
- * Usage: eye <options>* <data>* <query>*
-*/
-// {
-//     data
-//     query
-// }
-function eyePromise(options) {
-
-    let data = options.data.join(" ");
-    let query = options.query;
-    if (options.flags){
-        return invokeEye(config.defaultEyeOptions.eyePath+" --nope "+data+" --query "+query+" "+options.flags.join(" "), false);
-    }
-    return invokeEye(config.defaultEyeOptions.eyePath+" --nope "+data+" --query "+query, false);
+function eyePromise(inference) {
+    return invokeEye(getEyeCommand(inference), false);
 }
 
-function invokeEye(command, get_all = true) {
+/**
+ * Build up a command for eye, from an expanded inference description
+ */
+function getEyeCommand(inference){
+
+    let data = inference['hes:data']['hes:href'].join(" ");
+    let query = inference['hes:query']['hes:href'];
+
+    let flags = config.defaultEyeOptions.defaultFlags.join(" ");
+
+    if (inference['hes:options']){
+        if (inference['hes:options']["hes:proof"]){
+            // flags.replaceAll("--nope","");
+            flags = "";
+        }
+    }
+
+    if (inference['eye:flags']){
+        flags = flags+inference['eye:flags'].join(" ");
+    }
+
+    return config.defaultEyeOptions.eyePath+" "+flags+" "+data+" --query "+query;
+}
+
+function invokeEye(command, includeStderr = true) {
 
     return new Promise(function(resolve, reject) {
         // console.debug("[eye] "+command);
         exec(command)
             .then(function (result) {
 
-                if (get_all){
+                if (includeStderr){
                     resolve({
                         "stdout":result.stdout,
                         "stderr":result.stderr
@@ -109,7 +118,7 @@ function collect(val, memo) {
 }
 
 /**
- * Unused, in progress.
+ * Unused, in progress, the idea es to use this as model for the eye parameters and options.
  */
 function optionsFromCommand(src){
     let program = new require('commander');
@@ -198,6 +207,7 @@ function optionsFromCommand(src){
 }
 
 module.exports = {
+    getEyeCommand:getEyeCommand,
     eyePromise:eyePromise,
     invokeEye:invokeEye,
     optionsFromCommand:optionsFromCommand

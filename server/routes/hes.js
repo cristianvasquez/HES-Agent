@@ -165,8 +165,6 @@ function handleInference(context, inference) {
     }
 
     // We found a inference operation, we invoke the eye reasoner
-    let eyeOptions = dsl_v1.getEyeOptions(context.getTail().getLocalDir(), inference);
-
     function defaultMediatype(body, res) {
         let result = body2JsonLD(body);
         result["@id"] = context.getCurrentPath();
@@ -176,7 +174,7 @@ function handleInference(context, inference) {
     return {
         isVirtual: true,
         callback: function (res) {
-            Promise.resolve(reasoner.eyePromise(eyeOptions))
+            Promise.resolve(reasoner.eyePromise(inference))
                 .then(function (body) {
                     let contentType='application/x-json+ld';
                     if(inference["hes:Accept"]){

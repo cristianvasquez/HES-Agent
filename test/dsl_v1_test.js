@@ -50,6 +50,7 @@ describe("expandDirectories", function () {
 });
 
 
+
 describe("pre-processing", function () {
 
     function before() {
@@ -218,8 +219,50 @@ describe("pre-processing", function () {
             expect(result).to.deep.equal(expanded);
         });
 
-    });
+        it("example_07", function () {
+            before();
+            let input =      {
+                "hes:name": "socrates",
+                "hes:description": "Socrates proof",
+                "hes:inference": {
+                    "hes:data": {
+                        "hes:href": "/lib/data"
+                    },
+                    "hes:query": {
+                        "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                    },
+                    "hes:options":{
+                        "hes:proof":true
+                    }
+                }
+            };
 
+            let inference = {
+                "hes:data": {
+                    "hes:href": [
+                        config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
+                        config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
+                    ]
+                },
+                "hes:query": {
+                    "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                },
+                "hes:options":{
+                    "hes:proof":true
+                }
+            };
+
+            let expanded = {
+                "hes:name": "socrates",
+                "hes:description": "Socrates proof",
+                "hes:inference": inference
+            };
+
+            let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_07'),input);
+            expect(result).to.deep.equal(expanded);
+        });
+
+    });
 
     describe("validator", function () {
 

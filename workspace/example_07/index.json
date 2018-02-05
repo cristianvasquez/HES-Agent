@@ -1,0 +1,34 @@
+{
+  "@context": {
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "fluid": "http://josd.github.io/fluid#",
+    "hes": "http://cristianvasquez.github.io/hes#",
+    "this": "http://www.example.org#"
+  },
+  "@type": [
+    "this:Example"
+  ],
+  "this:name": [
+    {
+      "@value": "Inference Proof"
+    }
+  ],
+  "this:description": "Same as example 03, but returns proof instead of just the result. ",
+  "hes:meta": [
+    {
+      "hes:name": "proof",
+      "hes:description": "Socrates proof",
+      "hes:inference": {
+        "hes:data": {
+          "hes:href": "/lib/data"
+        },
+        "hes:query": {
+          "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+        },
+        "hes:options":{
+          "hes:proof":true
+        }
+      }
+    }
+  ]
+}

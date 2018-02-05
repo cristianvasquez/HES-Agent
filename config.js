@@ -19,7 +19,8 @@ var config = {
     },
 
     defaultEyeOptions:{
-        eyePath: eyePath
+        eyePath: eyePath,
+        defaultFlags:["--nope"]
     },
 
     defaultProcessorOptions:{

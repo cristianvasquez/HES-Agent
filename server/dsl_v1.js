@@ -96,37 +96,61 @@ class DSL_V1 {
 
         let _operation = this.findOperation(targetDir,meta["hes:extends"]['hes:name']);
         if (_operation.exists){
-            // returns the expanded operation
-            // Handle circular?
-            let operation = this.expandMeta(targetDir, _operation.operation);
 
-            if (operation['hes:inference']) {
+            if (_operation.operation['hes:inference']) {
+
+                // This expansion is to keep the absolute paths of the extended.
+                let operation = this.expandInference(targetDir,_operation.operation);
+
                 /**
                  * It's not clear yet how I will represent Set, Union, Intersection etc.
                  */
                 meta['hes:inference'] = {};
-                function overrideIfExisting(parameter){
-                    // If parameter is defined, maintains it
-                    if (meta['hes:extends'][parameter]) {
-                        meta['hes:inference'][parameter] = meta['hes:extends'][parameter];
+
+                function overrideIfExisting(current){
+                    // If parameter is defined in the extends clause, it overrides the one of the extended one.
+                    if (meta['hes:extends'][current]) {
+                        meta['hes:inference'][current] = meta['hes:extends'][current];
                     } else {
-                        if (operation['hes:inference'][parameter]){
-                            meta['hes:inference'][parameter] = operation['hes:inference'][parameter];
+                        if (operation['hes:inference'][current]){
+                            meta['hes:inference'][current] = operation['hes:inference'][current];
                         }
                     }
                 }
-                overrideIfExisting('hes:data');
                 overrideIfExisting('hes:query');
                 overrideIfExisting('hes:options');
                 overrideIfExisting('hes:flags');
                 overrideIfExisting('hes:Accept');
 
+                // Special case, hes:addData (adds data to the current extended)
+                if (meta['hes:extends']['hes:addData']) {
+                    let data = [];
+                    if (operation['hes:inference']['hes:data']){
+                        data = operation['hes:inference']['hes:data']['hes:href'];
+                    }
+                    let href = meta['hes:extends']['hes:addData']['hes:href'];
+                    // make sure is an array
+                    if (typeof href === 'string') {
+                        href = [href]
+                    }
+                    // Add them if they are not there
+                    for (let current of href){
+                        if (data.indexOf(current)<0){
+                            data.push(current);
+                        }
+                    }
+                    meta['hes:inference']['hes:data'] = {
+                        'hes:href':data
+                    };
+                } else {
+                    overrideIfExisting('hes:data');
+                }
+
                 delete meta['hes:extends'];
                 return this.expandInference(dirRelativeTo, meta);
             }
-            // its other kind of operation
-            // return this.expandMeta(dirRelativeTo, meta);
-            return operation;
+            // It was other kind of operation
+            return this.expandMeta(targetDir, _operation.operation);
         } else {
             throw new Error("Could not find operation name " + name + ' in ' + targetDir);
         }

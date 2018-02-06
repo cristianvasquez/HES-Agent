@@ -324,6 +324,43 @@ describe("dsl-interpreter", function () {
         expect(result).to.deep.equal(expanded);
     });
 
+    it("example_06_add", function () {
+        before();
+        let input = {
+            "hes:name": "alice_2",
+            "hes:description": "Adds alice's space",
+            "hes:extends": {
+                "hes:href": "/lib",
+                "hes:name": "whoIsWhat",
+                "hes:addData": {
+                    "hes:href": "./personal"
+                }
+            }
+        };
+        let expanded = {
+            "hes:name": "alice_2",
+            "hes:description": "Adds alice's space",
+            "hes:inference": {
+                "hes:data": {
+                    "hes:href": [
+                        config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
+                        config.serverOptions.workSpacePath+"/lib/data/socrates.n3",
+                        config.serverOptions.workSpacePath+"/example_06/personal/Alice.n3",
+                        config.serverOptions.workSpacePath+"/example_06/personal/knowledge.n3"
+                    ]
+                },
+                "hes:query": {
+                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                }
+            }
+        };
+        let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_06'),input);
+        expect(result).to.deep.equal(expanded);
+    });
+
+
+
+
     it("example_06_when_outside_directory", function () {
         before();
         let input = {

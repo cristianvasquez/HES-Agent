@@ -5,7 +5,7 @@ const _ = require('lodash');
 const N3Parser = require('../lib/N3Parser/N3Parser');
 const Context = require("../Context");
 const reasoner = require("../reasoning");
-const dsl_v1 = require("../dsl_v1");
+const DSL_V1 = require("../dsl_v1");
 const rp = require('request-promise');
 let hash = require('string-hash');
 
@@ -105,11 +105,22 @@ class HES extends express.Router {
 }
 
 function handleHref(context, value) {
-    let target = dsl_v1.normalizeHref(context.getTail().getLocalDir(), value);
+    let dsl_v1 = new DSL_V1(context);
+    let target = dsl_v1.toAbsolutePath(context.getTail().getLocalDir(), value);
     return {
         isVirtual: true,
         callback: function (res) {
             res.redirect(context.toApiPath(target));
+        }
+    }
+}
+
+function handleRaw(context, value) {
+    return {
+        isVirtual: true,
+        callback: function (res) {
+            res.writeHead(200, { 'Content-Type': "text/turtle" });
+            res.end(value, 'utf-8');
         }
     }
 }
@@ -197,6 +208,7 @@ function handleInference(context, inference) {
 function handleVirtuals(context) {
     let localDir = context.getLocalDir();
     let exists = fu.exists(localDir);
+
     // Could be it is an inferred directory, or a link
     // We check the parent if there are defined operations
     if (!exists && context.getCurrentPath().length > context.getApiRoot().length) {
@@ -219,9 +231,12 @@ function handleVirtuals(context) {
 
 function doOperation(context, operation) {
     // Expands operations and transform extends to regular operations
+    let dsl_v1 = new DSL_V1(context);
     let _operation = dsl_v1.expandMeta(context.getTail().getLocalDir(),operation);
     if (_operation['hes:href']) {
         return handleHref(context, _operation['hes:href'])
+    } else if (_operation['hes:raw']) {
+        return handleRaw(context, _operation['hes:raw'])
     } else if (_operation['hes:inference']) {
         return handleInference(context, _operation['hes:inference']);
     } else if (_operation['hes:query']) {

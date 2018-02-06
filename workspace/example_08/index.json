@@ -10,30 +10,29 @@
   ],
   "this:name": [
     {
-      "@value": "Inference Proof"
+      "@value": "Chain operations"
     }
   ],
-  "this:description": "Same as example 03, but returns proof instead of just the result. ",
+  "this:description": "Uses the result of the first operation into the second operation. ",
   "hes:meta": [
     {
-      "hes:name": "proof",
-      "hes:description": "Socrates proof",
+      "hes:name": "first_operation",
+      "hes:description": "Chained operation",
+      "hes:raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
+    },
+    {
+      "hes:name": "second_operation",
       "hes:inference": {
         "hes:data": {
-          "hes:href": "/lib/data"
+          "hes:href": [
+            "/lib/data/knowledge.n3",
+            "/example_08/first_operation"
+          ]
         },
         "hes:query": {
           "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
-        },
-        "hes:options":{
-          "hes:proof":true
         }
       }
-    },
-    {
-      "hes:name":"next",
-      "hes:description":"go to example 8",
-      "hes:href":"../example_08"
     }
   ]
 }

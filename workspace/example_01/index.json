@@ -13,12 +13,17 @@
       "@value": "simple pointer"
     }
   ],
-  "this:description":"Declaration of redirect pointers",
-  "hes:meta":[
+  "this:description": "Declaration of redirect pointers",
+  "hes:meta": [
     {
-      "hes:name":"next",
-      "hes:description":"go to example 2",
-      "hes:href":"../example_02"
+      "hes:name": "raw",
+      "hes:description": "raw data",
+      "hes:raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
+    },
+    {
+      "hes:name": "next",
+      "hes:description": "go to example 2",
+      "hes:href": "../example_02"
     }
   ]
 }

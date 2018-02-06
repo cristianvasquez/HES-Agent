@@ -38,7 +38,6 @@ class _Context {
         return this.getCurrentPath().replaceAll(this.getApiRoot(), this.getResourcesRoot())
     }
 
-
     getHead(){
         return this.originalUrl.substr(this.originalUrl.lastIndexOf('/') + 1)
     }
@@ -52,17 +51,16 @@ class _Context {
     }
 
     getLocalHref(){
-        return "file://"+this.originalUrl;
+        return this.originalUrl;
     }
 
+    // isLocalUrl(someURI){
+    //     return someURI.startsWith(this.getApiRoot());
+    // }
 
-    isLocalUrl(someURI){
-        return someURI.startsWith(this.getApiRoot());
-    }
-
-    toLocalDir(someURI){
-        return someURI.replaceAll(this.getApiRoot(), serverOptions.workSpacePath);
-    }
+    // toLocalDir(someURI){
+    //     return someURI.replaceAll(this.getApiRoot(), serverOptions.workSpacePath);
+    // }
 
     toResourcePath(someLocalDir){
         return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.resourcesEntryPoint);

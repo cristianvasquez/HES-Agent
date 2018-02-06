@@ -91,7 +91,6 @@ if (serverOptions.verbose){
         }
     }
 
-    console.log("\nConfig:\n%s",JSON.stringify(config,2));
     console.log('\nRoutes:');
     app._router.stack.forEach(print.bind(null, []))
 }

@@ -76,7 +76,11 @@ function getEyeCommand(inference){
 function invokeEye(command, includeStderr = true) {
 
     return new Promise(function(resolve, reject) {
-        // console.debug("[eye] "+command);
+
+        if (config.serverOptions.verbose){
+            console.log(command);
+        }
+
         exec(command)
             .then(function (result) {
 

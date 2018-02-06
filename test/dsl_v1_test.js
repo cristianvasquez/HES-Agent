@@ -358,9 +358,6 @@ describe("dsl-interpreter", function () {
         expect(result).to.deep.equal(expanded);
     });
 
-
-
-
     it("example_06_when_outside_directory", function () {
         before();
         let input = {
@@ -442,7 +439,6 @@ describe("dsl-interpreter", function () {
 
         });
 
-
     });
 
 });
@@ -463,7 +459,7 @@ describe("validator", function () {
             "hes:description": "go to example 2",
             "hes:href": "../example_02"
         };
-        let result = dsl_v1.validateMeta(input);
+        let result = DSL_V1.validateMeta(input);
         expect(result).to.equal(true);
     });
 
@@ -481,7 +477,7 @@ describe("validator", function () {
             }
         };
 
-        let result = dsl_v1.validateMeta(input);
+        let result = DSL_V1.validateMeta(input);
         expect(result).to.equal(true);
     });
 
@@ -501,7 +497,7 @@ describe("validator", function () {
                 }
             }
         };
-        let result = dsl_v1.validateMeta(input);
+        let result = DSL_V1.validateMeta(input);
         expect(result).to.equal(false);
     });
 
@@ -525,7 +521,7 @@ describe("validator", function () {
                 }
             }
         };
-        let result = dsl_v1.validateMeta(input);
+        let result = DSL_V1.validateMeta(input);
         expect(result).to.equal(false);
     });
 
@@ -541,7 +537,7 @@ describe("validator", function () {
             }
         };
 
-        let result = dsl_v1.validateMeta(input);
+        let result = DSL_V1.validateMeta(input);
         expect(result).to.equal(true);
     });
 
@@ -561,7 +557,7 @@ describe("validator", function () {
                 ]
             }
         };
-        let result = dsl_v1.validateMeta(input);
+        let result = DSL_V1.validateMeta(input);
         expect(result).to.equal(false);
     });
 
@@ -577,20 +573,20 @@ describe("toAbsolutePath", function () {
 
         it("Respects absolute path inside the workspace", function () {
             before();
-            let result = dsl_v1.toAbsolutePath(config.serverOptions.workSpacePath+"/inside_1","/inside_2");
+            let result = DSL_V1.toAbsolutePath(config.serverOptions.workSpacePath+"/inside_1","/inside_2");
             expect(result).to.equal(config.serverOptions.workSpacePath+"/inside_2");
         });
 
         it("Respects relative path inside the workspace", function () {
             before();
-            let result = dsl_v1.toAbsolutePath(config.serverOptions.workSpacePath+"/inside_1","../inside_2");
+            let result = DSL_V1.toAbsolutePath(config.serverOptions.workSpacePath+"/inside_1","../inside_2");
             expect(result).to.equal(config.serverOptions.workSpacePath+"/inside_2");
         });
 
         it("Don't handle relative outside workspace", function () {
             before();
             expect(function () {
-                dsl_v1.toAbsolutePath(config.serverOptions.workSpacePath+"/inside","../../inside_2")
+                DSL_V1.toAbsolutePath(config.serverOptions.workSpacePath+"/inside","../../inside_2")
             }).to.throw("403 ["+path.join(config.serverOptions.workSpacePath+"/inside","../../inside_2")+"]");
 
         });

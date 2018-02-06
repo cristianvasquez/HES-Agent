@@ -38,7 +38,7 @@ class DSL_V1 {
         throw Error("I don't know how to interpret:" + toJson(meta));
     }
 
-    validateMeta(meta) {
+    static validateMeta(meta) {
         if (meta['hes:inference']){
             if(Array.isArray(meta['hes:inference']['hes:data'])){
                 console.error('array not allowed in '+toJson(meta));
@@ -62,10 +62,17 @@ class DSL_V1 {
     expandInference(dirRelativeTo, meta) {
         let inference = meta["hes:inference"];
 
+
         // Expand query
+
+        if (!inference['hes:query']){ // This is getting ugly, this needs to be checked by some schema
+            throw Error("Query needs to be defined in " + toJson(inference));
+        }
+
         if (!inference['hes:query']['hes:raw'] && !inference['hes:query']['hes:href']) {
             throw Error("Query needs to be defined in " + toJson(inference));
         }
+
         if (inference['hes:query']['hes:href']) {
             inference['hes:query']['hes:href'] = this.toDereferenciable(dirRelativeTo, inference['hes:query']['hes:href']);
         }
@@ -92,9 +99,12 @@ class DSL_V1 {
 
     expandExtends(dirRelativeTo, meta) {
         if (!meta["hes:extends"]['hes:href']) throw new Error('No href in extends ' + toJson(meta));
-        let targetDir = this.toAbsolutePath(dirRelativeTo, meta["hes:extends"]['hes:href']);
+        if (!meta["hes:extends"]['hes:name']) throw new Error('No name in extends ' + toJson(meta));
 
-        let _operation = this.findOperation(targetDir,meta["hes:extends"]['hes:name']);
+        let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:extends"]['hes:href']);
+
+
+        let _operation = DSL_V1.findOperation(targetDir,meta["hes:extends"]['hes:name']);
         if (_operation.exists){
 
             if (_operation.operation['hes:inference']) {
@@ -152,11 +162,11 @@ class DSL_V1 {
             // It was other kind of operation
             return this.expandMeta(targetDir, _operation.operation);
         } else {
-            throw new Error("Could not find operation name " + name + ' in ' + targetDir);
+            throw new Error("Could not find operation  '" + meta["hes:extends"]['hes:name'] + "' in " + targetDir);
         }
     }
 
-    findOperation(targetDir, name){
+    static findOperation(targetDir, name){
         // Gets the template
         if (fu.exists(targetDir + '/' + serverOptions.indexFile)){
             let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
@@ -174,7 +184,7 @@ class DSL_V1 {
     /**
      * Transforms a relative path into an absolute path (for the current workspace)
      */
-    toAbsolutePath(dirRelativeTo, value) {
+    static toAbsolutePath(dirRelativeTo, value) {
         if (typeof value !== 'string') {
             throw Error("I don't know how to handle" + value);
         }
@@ -216,7 +226,7 @@ class DSL_V1 {
             return value;
         }
 
-        let target = this.toAbsolutePath(dirRelativeTo,value);
+        let target = DSL_V1.toAbsolutePath(dirRelativeTo,value);
 
         if (fu.exists(target)){
             // Absolute and relative files
@@ -228,7 +238,7 @@ class DSL_V1 {
          * (this is used when chaining operations.)
          */
         if (this.context) {
-            let operation = this.findOperation(
+            let operation = DSL_V1.findOperation(
                 target.substr(0, target.lastIndexOf('/')),
                 target.substr(target.lastIndexOf('/') + 1)
             );
@@ -259,7 +269,7 @@ class DSL_V1 {
         if (validUrl.is_web_uri(value)) { // other uri resources
             return [value]
         }
-        let target = this.toAbsolutePath(dirRelativeTo,value);
+        let target = DSL_V1.toAbsolutePath(dirRelativeTo,value);
 
         let files = fu.readDir(target).files;
 
@@ -269,7 +279,7 @@ class DSL_V1 {
              * (this is used when chaining operations.)
              */
             if (this.context) {
-                let operation = this.findOperation(
+                let operation = DSL_V1.findOperation(
                     target.substr(0, target.lastIndexOf('/')),
                     target.substr(target.lastIndexOf('/') + 1)
                 );

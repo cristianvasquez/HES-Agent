@@ -55,7 +55,7 @@ class DSL_V1 {
     }
 
     expandHref(dirRelativeTo, meta) {
-        meta["hes:href"] = this.toAbsolutePath(dirRelativeTo, meta["hes:href"]);
+        meta["hes:href"] = this.toDereferenciable(dirRelativeTo, meta["hes:href"]);
         return meta;
     }
 
@@ -67,7 +67,7 @@ class DSL_V1 {
             throw Error("Query needs to be defined in " + toJson(inference));
         }
         if (inference['hes:query']['hes:href']) {
-            inference['hes:query']['hes:href'] = this.toAbsolutePath(dirRelativeTo, inference['hes:query']['hes:href']);
+            inference['hes:query']['hes:href'] = this.toDereferenciable(dirRelativeTo, inference['hes:query']['hes:href']);
         }
         // Expand data
         if (!inference['hes:data']['hes:raw'] && !inference['hes:data']['hes:href']) {
@@ -77,11 +77,11 @@ class DSL_V1 {
             let href = inference['hes:data']['hes:href'];
             // One value
             if (typeof href === 'string') {
-                inference['hes:data']['hes:href'] = this.expandResources(this.toAbsolutePath(dirRelativeTo, href));
+                inference['hes:data']['hes:href'] = this.toDereferenciables(dirRelativeTo, href);
             } else {
                 // Array of values
                 inference['hes:data']['hes:href'] = _.flatMap(href, href => {
-                    return this.expandResources(this.toAbsolutePath(dirRelativeTo, href));
+                    return this.toDereferenciables(dirRelativeTo, href);
                 });
             }
 
@@ -148,54 +148,120 @@ class DSL_V1 {
     }
 
     /**
-     * Transforms relative paths into absolute paths
+     * Transforms a relative path into an absolute path (for the current workspace)
      */
     toAbsolutePath(dirRelativeTo, value) {
         if (typeof value !== 'string') {
-            throw Error("I don't know how to handle href: " + value);
+            throw Error("I don't know how to handle" + value);
         }
-        if (value.startsWith(serverOptions.workSpacePath)) {
-            return path.resolve(value);
-        } else if (value.startsWith('.')) { // Relative path
-            return path.join(dirRelativeTo, value);
-        } else if (serverOptions.allowServeOutsideWorkspace && value.startsWith('/')) { // H-Eye is NOT a secure application right now :)
-            let join =  path.join(serverOptions.workSpacePath, value);
-            // sometimes, when handling extends, the href is already expanded.
-            if (fu.exists(join)){
-                return join;
-            } else {
-                return value;
-            }
+
+        // Already expanded
+        if (value.startsWith(serverOptions.workSpacePath)){
+            return value;
         }
-        throw Error("I don't know how to handle href: " + value);
+
+        let result;
+        if (path.isAbsolute(value)){
+            result = path.join(serverOptions.workSpacePath, value);
+        } else {
+            result = path.join(dirRelativeTo, value);
+        }
+
+        if (!result.startsWith(serverOptions.workSpacePath)) {
+            throw Error("403 [" + result + "]");
+        }
+
+        return result;
+
     }
 
     /**
-     * Expands into dereferenciable resources, this can be
-     * (1) an external URL
-     * (2) a local file
-     * (3) local directories
-     * (4) a call to one of the meta-operations
+     * Expands an hes:href into a de-referenciable resource (by the reasoner)
+     *
+     * Valid hes:href values are:
+     *
+     *  - An external URL, which expands to URL.
+     *  - A file (relative), which expands to a file.
+     *  - A file (absolute), which expands to a file.
+     *  - A call to a meta-operation, which expands to URL.
      */
-    expandResources(href) {
-        if (validUrl.is_web_uri(href)) { // other uri resources
-            return [href]
+    toDereferenciable(dirRelativeTo,value) {
+
+        // External URL
+        if (validUrl.is_web_uri(value)) { // other uri resources
+            return value;
         }
-        let files = fu.readDir(href).files;
+
+        let target = this.toAbsolutePath(dirRelativeTo,value);
+
+        if (fu.exists(target)){
+            // Absolute and relative files
+            return target;
+        }
+
+        /**
+         * If there is a context defined, then we can search for possible virtual operations,
+         * (this is used when chaining operations.)
+         */
+        if (this.context) {
+            let operation = this.findOperation(
+                target.substr(0, target.lastIndexOf('/')),
+                target.substr(target.lastIndexOf('/') + 1)
+            );
+            if (operation.exists){
+                return this.context.toApiPath(target);
+            }
+        }
+
+        // Nothing was found
+        throw Error("404 [" + value + "]");
+    }
+
+    /**
+     * Expands an hes:href into a list of de-referenciable resources (by the reasoner)
+     *
+     * Valid hes:href values are:
+     *
+     *  - An external URL, which expands to [URL].
+     *  - A directory (relative), which expands to an array of files.
+     *  - A directory (absolute), which expands to an array of files.
+     *  - A file (relative), which expands to a [file].
+     *  - A file (absolute), which expands to a [file].
+     *  - A call to a meta-operation, which expands to an URL
+     */
+    toDereferenciables(dirRelativeTo,value) {
+
+        // External URL
+        if (validUrl.is_web_uri(value)) { // other uri resources
+            return [value]
+        }
+        let target = this.toAbsolutePath(dirRelativeTo,value);
+
+        let files = fu.readDir(target).files;
 
         if (!files) {
             /**
              * If there is a context defined, then we can search for possible virtual operations,
-             * this is used when chaining operations.
+             * (this is used when chaining operations.)
              */
             if (this.context) {
+                let operation = this.findOperation(
+                    target.substr(0, target.lastIndexOf('/')),
+                    target.substr(target.lastIndexOf('/') + 1)
+                );
+                if (operation.exists){
+                    return [this.context.toApiPath(target)];
+                }
+            }        // Sometimes already expanded (extends case)
 
+            if (fu.exists(target)){
+                return [target];
             }
 
             // Nothing was found
-            let errorMessage = "404 [" + href + "]";
-            throw Error(errorMessage);
+            throw Error("404 [" + target + "]");
         }
+
         return files.filter(x => !x.endsWith(serverOptions.indexFile));
     }
 }

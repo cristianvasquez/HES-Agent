@@ -14,8 +14,7 @@ var config = {
         workSpacePath: workSpacePath,
         tmpFolder: "tmp",
         verbose: false,
-        indexFile: 'index.json',
-        allowServeOutsideWorkspace:true
+        indexFile: 'index.json'
     },
 
     defaultEyeOptions:{

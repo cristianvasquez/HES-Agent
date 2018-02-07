@@ -1,5 +1,7 @@
 # H-Eye agent
 
+![](hes-client.png?raw=true)
+
 ## Running it as command line
 
 First of all, you need to **install the EYE reasoner** ([Windows](http://eulersharp.sourceforge.net/README.Windows) – [OS X](http://eulersharp.sourceforge.net/README.MacOSX) – [Linux](http://eulersharp.sourceforge.net/README.Linux)).

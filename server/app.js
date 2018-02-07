@@ -26,7 +26,7 @@ let defaultProcessorOptions = require("../config").defaultProcessorOptions;
 
 let index = require('./routes/index');
 let resources = require('./routes/resources');
-var HES = require('./routes/hes');
+const HES = require('./routes/hes');
 
 app.use('/', index);
 app.use('/'+ serverOptions.resourcesEntryPoint, resources);

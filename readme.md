@@ -1,6 +1,6 @@
 # H-Eye agent
 
-Note: (To try the application without installing EYE server, you can try the Docker version below)
+Note: (To try the application without installing EYE reasoner, you can try the Docker version below)
 
 ![](hes-client.png?raw=true)
 

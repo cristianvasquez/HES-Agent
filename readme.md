@@ -1,8 +1,11 @@
 # H-Eye agent
 
-Note: (To try the application without installing EYE reasoner, you can try the Docker version below)
+Note: (To try the application without installing EYE reasoner, you can use the Docker version below)
 
 ![](hes-client.png?raw=true)
+
+* TODO: Introduction
+* In the meantime: [examples](./workspace)
 
 ## Running it as command line
 
@@ -30,7 +33,7 @@ hes --help
 
 ### Examples
 
-The [workspace](./workspace) folder contains examples on what kind of things can be declared.
+The [workspace](./workspace) folder contains [examples](./workspace) on what kind of things can be declared.
 
 To see the results do:
 

@@ -1,12 +1,14 @@
 # H-Eye agent
 
+Note: (To try the application without installing EYE server, you can try the Docker version below)
+
 ![](hes-client.png?raw=true)
 
 ## Running it as command line
 
 First of all, you need to **install the EYE reasoner** ([Windows](http://eulersharp.sourceforge.net/README.Windows) – [OS X](http://eulersharp.sourceforge.net/README.MacOSX) – [Linux](http://eulersharp.sourceforge.net/README.Linux)).
 
-(make sure that you can run this using '/bin/sh eye', or set the EYE_PATH environment variable)
+(make sure that you can run this using '/bin/sh eye', or set the EYE_PATH environment variable) 
 
 Then, install the server package as follows:
 

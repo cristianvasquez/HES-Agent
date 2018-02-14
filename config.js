@@ -23,7 +23,7 @@ var config = {
     },
 
     defaultProcessorOptions:{
-        showFiles:false,
+        showFiles:true,
         showDirectories:true,
         hydraOperations:["GET","COPY"]
     },

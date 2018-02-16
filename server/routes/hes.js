@@ -26,41 +26,20 @@ class HES extends express.Router {
         if (this.processorOptions.hydraOperations.indexOf('COPY')) {
             this.post("*", function (req, res, next) {
 
-                /**
-                 * hes:extends
-                 *
-                 * Extends the contents of one path
-                 *
-                 * Example body:
-                  {
-                    "hes:extends":{
-                        "@id": "http://localhost:3000/gps4ic/serviceDefinitions/T0/step_3"
-                        "hes:name":"newCall
-                    }
-                  }
-                 */
                 let context = new Context(req);
-
-                let operation = req.body['hes:extends'];
-                if (!operation) {
-                    res.writeHead(400);
-                    res.json({error:"cannot recognize operation"});
-                }
-
+                let newOperation = req.body;
                 let localDir = context.getLocalDir();
                 let index = fu.readJson(localDir + '/' + serverOptions.indexFile);
-                let targetContext = context.getContextForURL(operation['@id']);
+                let currentMeta = index['hes:meta'];
 
-                let metaOperation = {
-                    "hes:name":operation['hes:name'],
-                    "hes:extends": {
-                        "hes:href": targetContext.tail().getLocalHref(),
-                        "hes:name": targetContext.head()
-                    }
-                };
-                index['hes:meta'].push(metaOperation);
+                let dsl_v1 = new DSL_V1(context);
+                try {
+                    index['hes:meta'] = dsl_v1.addOperation(currentMeta, newOperation);
+                } catch(err) {
+                    console.error(err);
+                }
+                // I don't know where to persist yet
                 res.json(index);
-
             });
         }
 

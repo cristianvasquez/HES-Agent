@@ -47,7 +47,7 @@ class _Context {
     }
 
     getContextForURL(someURI){
-        return new _Context(this.host,someURI.replaceAll( "http://" +this.host,''));
+        return new _Context(this.host, '/'+serverOptions.appEntrypoint+someURI.replaceAll( this.getApiRoot(),''));
     }
 
     getLocalHref(){

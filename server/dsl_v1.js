@@ -39,15 +39,15 @@ class DSL_V1 {
     }
 
     static validateMeta(meta) {
-        if (meta['hes:inference']){
-            if(Array.isArray(meta['hes:inference']['hes:data'])){
-                console.error('array not allowed in '+toJson(meta));
+        if (meta['hes:inference']) {
+            if (Array.isArray(meta['hes:inference']['hes:data'])) {
+                console.error('array not allowed in ' + toJson(meta));
                 return false;
             }
         }
-        if (meta['hes:extends']){
-            if(Array.isArray(meta['hes:extends']['hes:data'])){
-                console.error('array not allowed in '+toJson(meta));
+        if (meta['hes:extends']) {
+            if (Array.isArray(meta['hes:extends']['hes:data'])) {
+                console.error('array not allowed in ' + toJson(meta));
                 return false;
             }
         }
@@ -65,7 +65,7 @@ class DSL_V1 {
 
         // Expand query
 
-        if (!inference['hes:query']){ // This is getting ugly, this needs to be checked by some schema
+        if (!inference['hes:query']) { // This is getting ugly, this needs to be checked by some schema
             throw Error("Query needs to be defined in " + toJson(inference));
         }
 
@@ -104,29 +104,30 @@ class DSL_V1 {
         let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:extends"]['hes:href']);
 
 
-        let _operation = DSL_V1.findOperation(targetDir,meta["hes:extends"]['hes:name']);
-        if (_operation.exists){
+        let _operation = DSL_V1.findOperation(targetDir, meta["hes:extends"]['hes:name']);
+        if (_operation.exists) {
 
             if (_operation.operation['hes:inference']) {
 
                 // This expansion is to keep the absolute paths of the extended.
-                let operation = this.expandInference(targetDir,_operation.operation);
+                let operation = this.expandInference(targetDir, _operation.operation);
 
                 /**
                  * It's not clear yet how I will represent Set, Union, Intersection etc.
                  */
                 meta['hes:inference'] = {};
 
-                function overrideIfExisting(current){
+                function overrideIfExisting(current) {
                     // If parameter is defined in the extends clause, it overrides the one of the extended one.
                     if (meta['hes:extends'][current]) {
                         meta['hes:inference'][current] = meta['hes:extends'][current];
                     } else {
-                        if (operation['hes:inference'][current]){
+                        if (operation['hes:inference'][current]) {
                             meta['hes:inference'][current] = operation['hes:inference'][current];
                         }
                     }
                 }
+
                 overrideIfExisting('hes:query');
                 overrideIfExisting('hes:options');
                 overrideIfExisting('hes:flags');
@@ -135,7 +136,7 @@ class DSL_V1 {
                 // Special case, hes:addData (adds data to the current extended)
                 if (meta['hes:extends']['hes:addData']) {
                     let data = [];
-                    if (operation['hes:inference']['hes:data']){
+                    if (operation['hes:inference']['hes:data']) {
                         data = operation['hes:inference']['hes:data']['hes:href'];
                     }
                     let href = meta['hes:extends']['hes:addData']['hes:href'];
@@ -144,13 +145,13 @@ class DSL_V1 {
                         href = [href]
                     }
                     // Add them if they are not there
-                    for (let current of href){
-                        if (data.indexOf(current)<0){
+                    for (let current of href) {
+                        if (data.indexOf(current) < 0) {
                             data.push(current);
                         }
                     }
                     meta['hes:inference']['hes:data'] = {
-                        'hes:href':data
+                        'hes:href': data
                     };
                 } else {
                     overrideIfExisting('hes:data');
@@ -166,19 +167,19 @@ class DSL_V1 {
         }
     }
 
-    static findOperation(targetDir, name){
+    static findOperation(targetDir, name) {
         // Gets the template
-        if (fu.exists(targetDir + '/' + serverOptions.indexFile)){
+        if (fu.exists(targetDir + '/' + serverOptions.indexFile)) {
             let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
             if (index['hes:meta']) {
                 for (let operation of index['hes:meta']) {
                     if (operation['hes:name'] === name) {
-                        return  { exists:true, operation };
+                        return {exists: true, operation};
                     }
                 }
             }
         }
-        return { exists:false }
+        return {exists: false}
     }
 
     /**
@@ -190,12 +191,12 @@ class DSL_V1 {
         }
 
         // Already expanded
-        if (value.startsWith(serverOptions.workSpacePath)){
+        if (value.startsWith(serverOptions.workSpacePath)) {
             return value;
         }
 
         let result;
-        if (path.isAbsolute(value)){
+        if (path.isAbsolute(value)) {
             result = path.join(serverOptions.workSpacePath, value);
         } else {
             result = path.join(dirRelativeTo, value);
@@ -219,16 +220,16 @@ class DSL_V1 {
      *  - A file (absolute), which expands to a file.
      *  - A call to a meta-operation, which expands to URL.
      */
-    toDereferenciable(dirRelativeTo,value) {
+    toDereferenciable(dirRelativeTo, value) {
 
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return value;
         }
 
-        let target = DSL_V1.toAbsolutePath(dirRelativeTo,value);
+        let target = DSL_V1.toAbsolutePath(dirRelativeTo, value);
 
-        if (fu.exists(target)){
+        if (fu.exists(target)) {
             // Absolute and relative files
             return target;
         }
@@ -242,7 +243,7 @@ class DSL_V1 {
                 target.substr(0, target.lastIndexOf('/')),
                 target.substr(target.lastIndexOf('/') + 1)
             );
-            if (operation.exists){
+            if (operation.exists) {
                 return this.context.toApiPath(target);
             }
         }
@@ -263,13 +264,13 @@ class DSL_V1 {
      *  - A file (absolute), which expands to a [file].
      *  - A call to a meta-operation, which expands to an URL
      */
-    toDereferenciables(dirRelativeTo,value) {
+    toDereferenciables(dirRelativeTo, value) {
 
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return [value]
         }
-        let target = DSL_V1.toAbsolutePath(dirRelativeTo,value);
+        let target = DSL_V1.toAbsolutePath(dirRelativeTo, value);
 
         let files = fu.readDir(target).files;
 
@@ -283,12 +284,12 @@ class DSL_V1 {
                     target.substr(0, target.lastIndexOf('/')),
                     target.substr(target.lastIndexOf('/') + 1)
                 );
-                if (operation.exists){
+                if (operation.exists) {
                     return [this.context.toApiPath(target)];
                 }
             }        // Sometimes already expanded (extends case)
 
-            if (fu.exists(target)){
+            if (fu.exists(target)) {
                 return [target];
             }
 
@@ -298,6 +299,51 @@ class DSL_V1 {
 
         return files.filter(x => !x.endsWith(serverOptions.indexFile));
     }
+
+    addOperation(currentMeta, newOperation) {
+
+        // First time a meta is defined
+        if (!currentMeta){
+            currentMeta = [];
+        }
+
+        // Check for name (again, this should use some sort of schema, and not be in the code)
+        let newName = newOperation['hes:name'];
+        if (!newName){
+            throw Error("Need to define name");
+        }
+
+        if (!newOperation['hes:extends']) {
+            throw Error("Only hes:extends supported at the moment");
+        }
+
+        if (!newOperation['hes:extends']['@id']) {
+            throw Error("Needs URI of the new operation");
+        }
+
+        // Check if this resource already has an operation with this name.
+        for (let current of currentMeta) {
+            if (current['hes:name']===newName){
+                throw Error(newName+" already defined");
+            }
+        }
+
+        let targetContext = this.context.getContextForURL(newOperation['hes:extends']['@id']);
+        let _operation = DSL_V1.findOperation(targetContext.getTail().getLocalDir(), targetContext.getHead());
+        if (!_operation.exists){
+            throw Error("cannot find operation at: "+ newOperation['hes:extends']['@id']);
+        }
+
+        newOperation['hes:extends']['hes:name'] = targetContext.getHead();
+        newOperation['hes:extends']['hes:href'] = targetContext.getTail().getLocalHref();
+        delete newOperation['@id'];
+
+        currentMeta.push(newOperation);
+        return currentMeta;
+    }
+
+
 }
+
 
 module.exports = DSL_V1;

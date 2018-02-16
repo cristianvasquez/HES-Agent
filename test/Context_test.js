@@ -22,6 +22,12 @@ let request = {
 
 describe("specToPublic: converts an href specific to a set of uris to feed the reasoner", function () {
 
+    it("constructor", function () {
+        let context = new Context(request);
+        expect(context.host).to.equal('localhost:3333');
+        expect(context.originalUrl).to.equal('/dataspaces/some/url/there');
+    });
+
     it("getApiRoot()", function () {
         let context = new Context(request);
         expect(context.getApiRoot()).to.equal("http://localhost:3333/"+serverOptions.appEntrypoint);
@@ -63,12 +69,15 @@ describe("specToPublic: converts an href specific to a set of uris to feed the r
         expect(context.getTail()).to.deep.equal(new Context(request_tail));
     });
 
-
     it("getContextForURL()", function () {
         let context = new Context(request);
-        let context2 = context.getContextForURL('http://localhost:3333/gps4ic/serviceDefinitions/T0/step_3');
+        let context2 = context.getContextForURL('http://localhost:3333/dataspaces/serviceDefinitions/T0/step_3');
         expect(context2.getHead()).to.equal('step_3');
-        expect(context2.getLocalHref()).to.equal('file:///gps4ic/serviceDefinitions/T0/step_3');
+        expect(context2.host).to.equal('localhost:3333');
+        expect(context2.originalUrl).to.equal('/dataspaces/serviceDefinitions/T0/step_3');
+
+        expect(context2.getLocalHref()).to.equal('/dataspaces/serviceDefinitions/T0/step_3');
+        expect(context2.getLocalDir()).to.equal(serverOptions.workSpacePath+'/serviceDefinitions/T0/step_3');
     });
 
     it("getTail() from root", function () {

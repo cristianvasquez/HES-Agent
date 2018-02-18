@@ -7,6 +7,12 @@ const resourcesEntryPoint = process.env.RESOURCES_ENTRY_POINT || "resource";
 const port = process.env.PORT || '3000';
 
 var config = {
+
+    schemas:{
+        hEyeSchema:path.join(__dirname, './schemas/dsl_v1.schema.json'),
+        metaOperationSchema:path.join(__dirname, './schemas/dsl_v1_meta.schema.json')
+    },
+
     serverOptions:{
         port:port,
         appEntrypoint: appEntrypoint,
@@ -27,6 +33,7 @@ var config = {
         showDirectories:true,
         hydraOperations:["GET","COPY"]
     },
+
     defaultContext: {
         "fluid": "http://josd.github.io/fluid#",
         "hes": "http://cristianvasquez.github.io/hes#"

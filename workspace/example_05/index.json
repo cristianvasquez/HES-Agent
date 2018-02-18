@@ -16,9 +16,9 @@
   "this:description":"Uses the definition of /lib",
   "hes:meta":[
     {
-      "hes:name":"extend",
-      "hes:description":"extend /lib",
-      "hes:extends": {
+      "hes:name":"import",
+      "hes:description":"import /lib",
+      "hes:imports": {
         "hes:href":"/lib",
         "hes:name":"whoIsWhat"
       }

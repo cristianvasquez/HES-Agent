@@ -1,0 +1,232 @@
+{
+  "id": "https://github.com/cristianvasquez/H-Eye/operations#",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "description": "schema for a meta operation entry",
+  "type": "object",
+  "properties": {
+    "hes:name": {
+      "type": "string",
+      "examples": [
+        "first_operation"
+      ]
+    },
+    "hes:description": {
+      "type": "string"
+    },
+    "hes:Content-Type:": {
+      "enum": [
+        "text/turtle",
+        "application/x-json+ld"
+      ]
+    }
+  },
+  "required": [
+    "hes:name"
+  ],
+  "oneOf": [
+    {
+      "$ref": "#/definitions/raw"
+    },
+    {
+      "$ref": "#/definitions/href"
+    },
+    {
+      "$ref": "#/definitions/query"
+    },
+    {
+      "$ref": "#/definitions/inference"
+    },
+    {
+      "$ref": "#/definitions/imports"
+    }
+  ],
+  "definitions": {
+    "resources": {
+      "type": "object",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/raw-resource"
+        },
+        {
+          "$ref": "#/definitions/href-resource"
+        },
+        {
+          "$ref": "#/definitions/raw-array-resource"
+        },
+        {
+          "$ref": "#/definitions/href-array-resource"
+        }
+      ]
+    },
+    "raw-resource": {
+      "type": "object",
+      "properties": {
+        "hes:raw": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hes:raw"
+      ]
+    },
+    "href-resource": {
+      "type": "object",
+      "properties": {
+        "hes:href": {
+          "type": "string",
+          "format": "uri-template"
+        }
+      },
+      "required": [
+        "hes:href"
+      ]
+    },
+    "raw-array-resource": {
+      "type": "object",
+      "properties": {
+        "hes:raw": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "hes:raw"
+      ]
+    },
+    "href-array-resource": {
+      "type": "object",
+      "properties": {
+        "hes:href": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri-template"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "hes:href"
+      ]
+    },
+    "raw": {
+      "type": "object",
+      "properties": {
+        "hes:raw": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hes:raw"
+      ]
+    },
+    "href": {
+      "type": "object",
+      "properties": {
+        "hes:href": {
+          "type": "string",
+          "format": "uri-template"
+        }
+      },
+      "required": [
+        "hes:href"
+      ]
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "hes:query": {
+          "type": "object",
+          "properties": {
+            "hes:endpoint": {
+              "type": "string",
+              "format": "uri-template"
+            },
+            "default-graph-uri": {
+              "type": "string"
+            },
+            "hes:raw": {
+              "type": "string"
+            },
+            "hes:Accept": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "hes:endpoint",
+            "hes:raw"
+          ]
+        }
+      },
+      "required": [
+        "hes:query"
+      ]
+    },
+    "inference": {
+      "type": "object",
+      "properties": {
+        "hes:inference": {
+          "type": "object",
+          "properties": {
+            "hes:data": {
+              "$ref": "#/definitions/resources"
+            },
+            "hes:query": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/raw-resource"
+                },
+                {
+                  "$ref": "#/definitions/href-resource"
+                }
+              ]
+            }
+          },
+          "required": [
+            "hes:data",
+            "hes:query"
+          ]
+        }
+      },
+      "required": [
+        "hes:inference"
+      ]
+    },
+    "imports": {
+      "type": "object",
+      "properties": {
+        "hes:imports": {
+          "type": "object",
+          "properties": {
+            "hes:href": {
+              "type": "string",
+              "format": "uri-template"
+            },
+            "hes:name": {
+              "type": "string"
+            },
+            "hes:data": {
+              "$ref": "#/definitions/resources"
+            },
+            "hes:add": {
+              "$ref": "#/definitions/resources"
+            },
+            "hes:remove": {
+              "$ref": "#/definitions/resources"
+            }
+          },
+          "required": [
+            "hes:href",
+            "hes:name"
+          ]
+        }
+      },
+      "required": [
+        "hes:imports"
+      ]
+    }
+  }
+}

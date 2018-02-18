@@ -3,6 +3,7 @@ const DSL_V1 = require("../server/dsl_v1");
 const config = require("../config");
 const path = require('path');
 const Context = require("../server/Context");
+const fs = require('fs-extra')
 
 let dsl_v1 = new DSL_V1();
 /**
@@ -267,7 +268,7 @@ describe("dsl-interpreter", function () {
         let input = {
             "hes:name": "extend",
             "hes:description": "extend /lib",
-            "hes:extends": {
+            "hes:imports": {
                 "hes:href": "/lib",
                 "hes:name": "whoIsWhat"
             }
@@ -297,7 +298,7 @@ describe("dsl-interpreter", function () {
         let input = {
             "hes:name": "alice",
             "hes:description": "Alice's space",
-            "hes:extends": {
+            "hes:imports": {
                 "hes:href": "/lib",
                 "hes:name": "whoIsWhat",
                 "hes:data": {
@@ -329,7 +330,7 @@ describe("dsl-interpreter", function () {
         let input = {
             "hes:name": "alice_2",
             "hes:description": "Adds alice's space",
-            "hes:extends": {
+            "hes:imports": {
                 "hes:href": "/lib",
                 "hes:name": "whoIsWhat",
                 "hes:addData": {
@@ -363,7 +364,7 @@ describe("dsl-interpreter", function () {
         let input = {
             "hes:name": "alice",
             "hes:description": "Alice's space",
-            "hes:extends": {
+            "hes:imports": {
                 "hes:href": "/lib",
                 "hes:name": "whoIsWhat",
                 "hes:data": {
@@ -427,7 +428,7 @@ describe("dsl-interpreter", function () {
 
             let input = {
                 "hes:name": "exec",
-                "hes:extends": {
+                "hes:imports": {
                     "hes:href": "/circular_02",
                     "hes:name": "exec"
                 }
@@ -452,6 +453,35 @@ describe("validator", function () {
         config.serverOptions.workSpacePath = path.resolve(__dirname + '/../workspace');
     }
 
+    it("all_examples", function () {
+
+        /**
+         * Walk recursively through josd's fluid
+         */
+        const walkSync = (d) => {
+            if (fs.statSync(d).isDirectory()) {
+                return fs.readdirSync(d).map(f => walkSync(path.join(d, f)))
+            } else {
+                if (d.endsWith(config.serverOptions.indexFile)) {
+                    validate(d);
+                }
+                return undefined
+            }
+        };
+        function validate(indexFile){
+            console.log(indexFile);
+            let contents = fs.readFileSync(indexFile);
+            let index = JSON.parse(contents);
+            if (index['hes:meta']){
+                for (let operation of index['hes:meta']){
+                    console.log('\t'+operation['hes:name']);
+                    expect(DSL_V1.validateOperation(operation)).to.equal(true);
+                }
+            }
+        }
+        walkSync(config.serverOptions.workSpacePath);
+    });
+
     it("example_1", function () {
         before();
         let input = {
@@ -459,7 +489,7 @@ describe("validator", function () {
             "hes:description": "go to example 2",
             "hes:href": "../example_02"
         };
-        let result = DSL_V1.validateMeta(input);
+        let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(true);
     });
 
@@ -477,7 +507,7 @@ describe("validator", function () {
             }
         };
 
-        let result = DSL_V1.validateMeta(input);
+        let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(true);
     });
 
@@ -497,7 +527,7 @@ describe("validator", function () {
                 }
             }
         };
-        let result = DSL_V1.validateMeta(input);
+        let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(false);
     });
 
@@ -521,7 +551,7 @@ describe("validator", function () {
                 }
             }
         };
-        let result = DSL_V1.validateMeta(input);
+        let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(false);
     });
 
@@ -531,13 +561,13 @@ describe("validator", function () {
         let input = {
             "hes:name": "extend",
             "hes:description": "extend /lib",
-            "hes:extends": {
+            "hes:imports": {
                 "hes:href": "/lib",
                 "hes:name": "whoIsWhat"
             }
         };
 
-        let result = DSL_V1.validateMeta(input);
+        let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(true);
     });
 
@@ -547,7 +577,7 @@ describe("validator", function () {
         let input = {
             "hes:name": "alice",
             "hes:description": "Alice's space",
-            "hes:extends": {
+            "hes:imports": {
                 "hes:href": "/lib",
                 "hes:name": "whoIsWhat",
                 "hes:data": [
@@ -557,7 +587,7 @@ describe("validator", function () {
                 ]
             }
         };
-        let result = DSL_V1.validateMeta(input);
+        let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(false);
     });
 

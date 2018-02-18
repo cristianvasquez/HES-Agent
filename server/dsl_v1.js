@@ -1,18 +1,39 @@
 const serverOptions = require("../config").serverOptions;
+const schemas = require("../config").schemas
 const fu = require("./persistence");
 const _ = require('lodash');
 const validUrl = require('valid-url');
 const path = require('path');
+const Ajv = require('ajv');
 
 function toJson(x) {
     return JSON.stringify(x, null, 2);
 }
+
+let ajv = new Ajv(); // options can be passed, e.g. {allErrors: true}
+let metaOperationSchema = fu.readJson(schemas.metaOperationSchema);
+let hEyeSchema = fu.readJson(schemas.hEyeSchema);
+
+let validateOperation = ajv.compile(metaOperationSchema);
+let validateDeclaration = ajv.compile(hEyeSchema);
 
 /**
  * Handles a defined href, in case of having a corresponding local path, returns it.
  */
 
 class DSL_V1 {
+
+    static validateOperation(meta) {
+        let valid = validateOperation(meta);
+        if (!valid) console.error(validateOperation.errors);
+        return valid;
+    }
+
+    static validateDeclaration(meta) {
+        let valid = validateDeclaration(meta);
+        if (!valid) console.error(validateDeclaration.errors);
+        return valid;
+    }
 
     constructor(context) {
         this.context = context;
@@ -32,26 +53,10 @@ class DSL_V1 {
             return this.expandHref(dirRelativeTo, meta);
         } else if (meta["hes:inference"]) {
             return this.expandInference(dirRelativeTo, meta);
-        } else if (meta["hes:extends"]) {
+        } else if (meta["hes:imports"]) {
             return this.expandExtends(dirRelativeTo, meta);
         }
         throw Error("I don't know how to interpret:" + toJson(meta));
-    }
-
-    static validateMeta(meta) {
-        if (meta['hes:inference']) {
-            if (Array.isArray(meta['hes:inference']['hes:data'])) {
-                console.error('array not allowed in ' + toJson(meta));
-                return false;
-            }
-        }
-        if (meta['hes:extends']) {
-            if (Array.isArray(meta['hes:extends']['hes:data'])) {
-                console.error('array not allowed in ' + toJson(meta));
-                return false;
-            }
-        }
-        return true;
     }
 
     expandHref(dirRelativeTo, meta) {
@@ -98,13 +103,13 @@ class DSL_V1 {
     }
 
     expandExtends(dirRelativeTo, meta) {
-        if (!meta["hes:extends"]['hes:href']) throw new Error('No href in extends ' + toJson(meta));
-        if (!meta["hes:extends"]['hes:name']) throw new Error('No name in extends ' + toJson(meta));
+        if (!meta["hes:imports"]['hes:href']) throw new Error('No href in extends ' + toJson(meta));
+        if (!meta["hes:imports"]['hes:name']) throw new Error('No name in extends ' + toJson(meta));
 
-        let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:extends"]['hes:href']);
+        let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:imports"]['hes:href']);
 
 
-        let _operation = DSL_V1.findOperation(targetDir, meta["hes:extends"]['hes:name']);
+        let _operation = DSL_V1.findOperation(targetDir, meta["hes:imports"]['hes:name']);
         if (_operation.exists) {
 
             if (_operation.operation['hes:inference']) {
@@ -119,8 +124,8 @@ class DSL_V1 {
 
                 function overrideIfExisting(current) {
                     // If parameter is defined in the extends clause, it overrides the one of the extended one.
-                    if (meta['hes:extends'][current]) {
-                        meta['hes:inference'][current] = meta['hes:extends'][current];
+                    if (meta['hes:imports'][current]) {
+                        meta['hes:inference'][current] = meta['hes:imports'][current];
                     } else {
                         if (operation['hes:inference'][current]) {
                             meta['hes:inference'][current] = operation['hes:inference'][current];
@@ -134,12 +139,12 @@ class DSL_V1 {
                 overrideIfExisting('hes:Accept');
 
                 // Special case, hes:addData (adds data to the current extended)
-                if (meta['hes:extends']['hes:addData']) {
+                if (meta['hes:imports']['hes:addData']) {
                     let data = [];
                     if (operation['hes:inference']['hes:data']) {
                         data = operation['hes:inference']['hes:data']['hes:href'];
                     }
-                    let href = meta['hes:extends']['hes:addData']['hes:href'];
+                    let href = meta['hes:imports']['hes:addData']['hes:href'];
                     // make sure is an array
                     if (typeof href === 'string') {
                         href = [href]
@@ -157,13 +162,13 @@ class DSL_V1 {
                     overrideIfExisting('hes:data');
                 }
 
-                delete meta['hes:extends'];
+                delete meta['hes:imports'];
                 return this.expandInference(dirRelativeTo, meta);
             }
             // It was other kind of operation
             return this.expandMeta(targetDir, _operation.operation);
         } else {
-            throw new Error("Could not find operation  '" + meta["hes:extends"]['hes:name'] + "' in " + targetDir);
+            throw new Error("Could not find operation  '" + meta["hes:imports"]['hes:name'] + "' in " + targetDir);
         }
     }
 
@@ -313,11 +318,11 @@ class DSL_V1 {
             throw Error("Need to define name");
         }
 
-        if (!newOperation['hes:extends']) {
-            throw Error("Only hes:extends supported at the moment");
+        if (!newOperation['hes:imports']) {
+            throw Error("Only hes:imports supported at the moment");
         }
 
-        if (!newOperation['hes:extends']['@id']) {
+        if (!newOperation['hes:imports']['@id']) {
             throw Error("Needs URI of the new operation");
         }
 
@@ -328,14 +333,14 @@ class DSL_V1 {
             }
         }
 
-        let targetContext = this.context.getContextForURL(newOperation['hes:extends']['@id']);
+        let targetContext = this.context.getContextForURL(newOperation['hes:imports']['@id']);
         let _operation = DSL_V1.findOperation(targetContext.getTail().getLocalDir(), targetContext.getHead());
         if (!_operation.exists){
-            throw Error("cannot find operation at: "+ newOperation['hes:extends']['@id']);
+            throw Error("cannot find operation at: "+ newOperation['hes:imports']['@id']);
         }
 
-        newOperation['hes:extends']['hes:name'] = targetContext.getHead();
-        newOperation['hes:extends']['hes:href'] = targetContext.getTail().getLocalHref();
+        newOperation['hes:imports']['hes:name'] = targetContext.getHead();
+        newOperation['hes:imports']['hes:href'] = targetContext.getTail().getLocalHref();
         delete newOperation['@id'];
 
         currentMeta.push(newOperation);

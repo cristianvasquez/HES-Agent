@@ -8,7 +8,7 @@
   "hes:meta": [
     {
       "hes:name": "exec",
-      "hes:extends": {
+      "hes:imports": {
         "hes:href": "/circular_02",
         "hes:name": "exec"
       }

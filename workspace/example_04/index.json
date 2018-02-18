@@ -37,7 +37,7 @@
         "hes:query":{
           "hes:href": "/lib/query/whoIsWhat.n3"
         },
-        "hes:Accept":"text/turtle"
+        "hes:Content-Type":"text/turtle"
       }
     },
     {

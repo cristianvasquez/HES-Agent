@@ -12,9 +12,11 @@ function toJson(x) {
 
 let ajv = new Ajv(); // options can be passed, e.g. {allErrors: true}
 let metaOperationSchema = fu.readJson(schemas.metaOperationSchema);
+let crudOperationsSchema = fu.readJson(schemas.crudOperationsSchema);
 let hEyeSchema = fu.readJson(schemas.hEyeSchema);
 
 let validateOperation = ajv.compile(metaOperationSchema);
+let validateCrudOperation = ajv.compile(crudOperationsSchema);
 let validateDeclaration = ajv.compile(hEyeSchema);
 
 /**
@@ -26,6 +28,12 @@ class DSL_V1 {
     static validateOperation(meta) {
         let valid = validateOperation(meta);
         if (!valid) console.error(validateOperation.errors);
+        return valid;
+    }
+
+    static validateCrudOperation(meta) {
+        let valid = validateCrudOperation(meta);
+        if (!valid) console.error(validateCrudOperation.errors);
         return valid;
     }
 
@@ -47,6 +55,11 @@ class DSL_V1 {
      */
 
     expandMeta(dirRelativeTo, meta) {
+        let valid = validateDeclaration(meta);
+        if (!valid) {
+            throw Error(JSON.stringify(validateDeclaration.errors,null,2));
+        }
+
         if (meta['hes:query'] || meta['hes:raw']) {
             return meta;
         } else if (meta["hes:href"]) {
@@ -54,7 +67,7 @@ class DSL_V1 {
         } else if (meta["hes:inference"]) {
             return this.expandInference(dirRelativeTo, meta);
         } else if (meta["hes:imports"]) {
-            return this.expandExtends(dirRelativeTo, meta);
+            return this.expandImports(dirRelativeTo, meta);
         }
         throw Error("I don't know how to interpret:" + toJson(meta));
     }
@@ -67,24 +80,11 @@ class DSL_V1 {
     expandInference(dirRelativeTo, meta) {
         let inference = meta["hes:inference"];
 
-
         // Expand query
-
-        if (!inference['hes:query']) { // This is getting ugly, this needs to be checked by some schema
-            throw Error("Query needs to be defined in " + toJson(inference));
-        }
-
-        if (!inference['hes:query']['hes:raw'] && !inference['hes:query']['hes:href']) {
-            throw Error("Query needs to be defined in " + toJson(inference));
-        }
-
         if (inference['hes:query']['hes:href']) {
             inference['hes:query']['hes:href'] = this.toDereferenciable(dirRelativeTo, inference['hes:query']['hes:href']);
         }
-        // Expand data
-        if (!inference['hes:data']['hes:raw'] && !inference['hes:data']['hes:href']) {
-            throw Error("Data needs to be defined in " + toJson(inference));
-        }
+
         if (inference['hes:data']['hes:href']) {
             let href = inference['hes:data']['hes:href'];
             // One value
@@ -102,13 +102,8 @@ class DSL_V1 {
         return meta;
     }
 
-    expandExtends(dirRelativeTo, meta) {
-        if (!meta["hes:imports"]['hes:href']) throw new Error('No href in extends ' + toJson(meta));
-        if (!meta["hes:imports"]['hes:name']) throw new Error('No name in extends ' + toJson(meta));
-
+    expandImports(dirRelativeTo, meta) {
         let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:imports"]['hes:href']);
-
-
         let _operation = DSL_V1.findOperation(targetDir, meta["hes:imports"]['hes:name']);
         if (_operation.exists) {
 
@@ -305,31 +300,29 @@ class DSL_V1 {
         return files.filter(x => !x.endsWith(serverOptions.indexFile));
     }
 
-    addOperation(currentMeta, newOperation) {
+
+    crudOperation(currentMeta, newOperation) {
+
+        let valid = validateCrudOperation(newOperation);
+        if (!valid) {
+            throw Error(JSON.stringify(validateCrudOperation.errors,null,2));
+        }
 
         // First time a meta is defined
         if (!currentMeta){
             currentMeta = [];
         }
 
-        // Check for name (again, this should use some sort of schema, and not be in the code)
+        // Only hes:imports implemented at the moment
         let newName = newOperation['hes:name'];
-        if (!newName){
-            throw Error("Need to define name");
-        }
-
-        if (!newOperation['hes:imports']) {
-            throw Error("Only hes:imports supported at the moment");
-        }
-
-        if (!newOperation['hes:imports']['@id']) {
-            throw Error("Needs URI of the new operation");
-        }
 
         // Check if this resource already has an operation with this name.
         for (let current of currentMeta) {
-            if (current['hes:name']===newName){
+            if (current['hes:name']===newName && current['hes:crud']==='create'){
                 throw Error(newName+" already defined");
+            }
+            if (current['hes:name']===newName && current['hes:crud']==='update'){
+                // @TODO delete operation
             }
         }
 
@@ -347,8 +340,6 @@ class DSL_V1 {
         return currentMeta;
     }
 
-
 }
-
 
 module.exports = DSL_V1;

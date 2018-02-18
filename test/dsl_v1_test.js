@@ -593,6 +593,49 @@ describe("validator", function () {
 
 });
 
+
+describe("validatorCrud", function () {
+
+    function before() {
+        config.serverOptions.workSpacePath = path.resolve(__dirname + '/../workspace');
+    }
+
+    it("create import", function () {
+        before();
+        let input = {
+            "hes:crud":"create",
+            "hes:name":"propose-paths-new",
+            "hes:imports": {
+                "@id":"http://localhost:3000/gps4ic/serviceDefinitions/constipation/propose-paths",
+                "hes:Content-Type":"application/x-json+ld",
+                "hes:addData": {
+                    "hes:href": ["../patient_profile","../selected_paths","../time"]
+                }
+            }
+        };
+        let result = DSL_V1.validateCrudOperation(input);
+        expect(result).to.equal(true);
+    });
+
+    it("??? import", function () {
+        before();
+        let input = {
+            "hes:crud":"???",
+            "hes:name":"propose-paths-new",
+            "hes:imports": {
+                "@id":"http://localhost:3000/gps4ic/serviceDefinitions/constipation/propose-paths",
+                "hes:Content-Type":"application/x-json+ld",
+                "hes:addData": {
+                    "hes:href": ["../patient_profile","../selected_paths","../time"]
+                }
+            }
+        };
+        let result = DSL_V1.validateCrudOperation(input);
+        expect(result).to.equal(false);
+    });
+
+});
+
 describe("toAbsolutePath", function () {
 
     function before() {

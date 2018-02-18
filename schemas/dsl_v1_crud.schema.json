@@ -1,5 +1,5 @@
 {
-  "id": "https://github.com/cristianvasquez/H-Eye/crud-operations#",
+  "id": "https://github.com/cristianvasquez/H-Eye/operations#",
   "$schema": "http://json-schema.org/draft-06/schema#",
   "description": "schema for a meta operation entry",
   "type": "object",
@@ -22,18 +22,6 @@
     "hes:name"
   ],
   "oneOf": [
-    {
-      "$ref": "#/definitions/raw"
-    },
-    {
-      "$ref": "#/definitions/href"
-    },
-    {
-      "$ref": "#/definitions/query"
-    },
-    {
-      "$ref": "#/definitions/inference"
-    },
     {
       "$ref": "#/definitions/imports"
     }
@@ -110,101 +98,16 @@
         "hes:href"
       ]
     },
-    "raw": {
-      "type": "object",
-      "properties": {
-        "hes:raw": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hes:raw"
-      ]
-    },
-    "href": {
-      "type": "object",
-      "properties": {
-        "hes:href": {
-          "type": "string",
-          "format": "uri-template"
-        }
-      },
-      "required": [
-        "hes:href"
-      ]
-    },
-    "query": {
-      "type": "object",
-      "properties": {
-        "hes:query": {
-          "type": "object",
-          "properties": {
-            "hes:endpoint": {
-              "type": "string",
-              "format": "uri-template"
-            },
-            "default-graph-uri": {
-              "type": "string"
-            },
-            "hes:raw": {
-              "type": "string"
-            },
-            "hes:Accept": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "hes:endpoint",
-            "hes:raw"
-          ]
-        }
-      },
-      "required": [
-        "hes:query"
-      ]
-    },
-    "inference": {
-      "type": "object",
-      "properties": {
-        "hes:inference": {
-          "type": "object",
-          "properties": {
-            "hes:data": {
-              "$ref": "#/definitions/resources"
-            },
-            "hes:query": {
-              "oneOf": [
-                {
-                  "$ref": "#/definitions/raw-resource"
-                },
-                {
-                  "$ref": "#/definitions/href-resource"
-                }
-              ]
-            }
-          },
-          "required": [
-            "hes:data",
-            "hes:query"
-          ]
-        }
-      },
-      "required": [
-        "hes:inference"
-      ]
-    },
     "imports": {
       "type": "object",
       "properties": {
+        "hes:crud": { "enum": [ "create","update" ] },
         "hes:imports": {
           "type": "object",
           "properties": {
-            "hes:href": {
+            "@id": {
               "type": "string",
               "format": "uri-template"
-            },
-            "hes:name": {
-              "type": "string"
             },
             "hes:data": {
               "$ref": "#/definitions/resources"
@@ -217,13 +120,12 @@
             }
           },
           "required": [
-            "hes:href",
-            "hes:name"
+            "@id"
           ]
         }
       },
       "required": [
-        "hes:imports"
+        "hes:crud","hes:imports"
       ]
     }
   }

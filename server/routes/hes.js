@@ -34,7 +34,7 @@ class HES extends express.Router {
 
                 let dsl_v1 = new DSL_V1(context);
                 try {
-                    index['hes:meta'] = dsl_v1.addOperation(currentMeta, newOperation);
+                    index['hes:meta'] = dsl_v1.crudOperation(currentMeta, newOperation);
                 } catch(err) {
                     console.error(err);
                 }
@@ -84,8 +84,7 @@ class HES extends express.Router {
 }
 
 function handleHref(context, value) {
-    let dsl_v1 = new DSL_V1(context);
-    let target = dsl_v1.toAbsolutePath(context.getTail().getLocalDir(), value);
+    let target = DSL_V1.toAbsolutePath(context.getTail().getLocalDir(), value);
     return {
         isVirtual: true,
         callback: function (res) {
@@ -167,8 +166,8 @@ function handleInference(context, inference) {
             Promise.resolve(reasoner.eyePromise(inference))
                 .then(function (body) {
                     let contentType='application/x-json+ld';
-                    if(inference["hes:Accept"]){
-                        contentType=inference["hes:Accept"];
+                    if(inference["hes:Content-Type"]){
+                        contentType=inference["hes:Content-Type"];
                     }
                     if (contentType==='application/x-json+ld'){
                         defaultMediatype(body,res);

@@ -206,7 +206,7 @@ function handleQuery(context, query, contentType) {
             "default-graph-uri": query['hes:default-graph-uri']
         },
         headers: {
-            "Accept": contentType
+            "Accept": "text/turtle"
         }
     };
     console.log(toJson(options));
@@ -223,7 +223,7 @@ function handleQuery(context, query, contentType) {
                     }
                 })
                 .catch(function (error) {
-                    res.status(500).json({error: error});
+                    renderError(res,error);
                 });
         }
     };
@@ -269,17 +269,22 @@ function handleInference(context, inference, contentType) {
                     }
                 })
                 .catch(function (error) {
-                    let jsonError = {
-                        "error": error.message,
-                        "error.status" : error.status,
-                        "error.stack" : error.stack
-                    };
-                    res.status(500).json(jsonError);
-                    console.error(JSON.stringify(jsonError,null,2));
+                    renderError(res,error);
                 });
         }
     };
 }
+
+function renderError(res,error){
+    let jsonError = {
+        "error": error.message,
+        "error.status" : error.status,
+        "error.stack" : error.stack
+    };
+    res.status(500).json(jsonError);
+    console.error(JSON.stringify(jsonError,null,2));
+}
+
 
 function handleVirtuals(context) {
     let localDir = context.getLocalDir();

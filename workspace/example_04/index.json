@@ -30,14 +30,14 @@
     {
       "hes:name": "bob-turtle",
       "hes:description":"The same as Bob space but returning turtle as default",
+      "hes:Content-Type":"text/turtle",
       "hes:inference": {
         "hes:data": {
           "hes:href":["/lib/data/knowledge.n3","./personal"]
         },
         "hes:query":{
           "hes:href": "/lib/query/whoIsWhat.n3"
-        },
-        "hes:Content-Type":"text/turtle"
+        }
       }
     },
     {

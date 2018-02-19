@@ -18,11 +18,21 @@
     {
       "hes:name": "dbpedia",
       "hes:description":"Dbpedia query",
+      "hes:Content-Type": "application/x-json+ld",
       "hes:query": {
         "hes:endpoint": "http://dbpedia.restdesc.org",
         "hes:default-graph-uri": "http://dbpedia.org",
-        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-        "hes:Accept": "application/x-json+ld"
+        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
+      }
+    },
+    {
+      "hes:name": "dbpedia_turtle",
+      "hes:description":"Dbpedia query",
+      "hes:Content-Type": "text/turtle",
+      "hes:query": {
+        "hes:endpoint": "http://dbpedia.restdesc.org",
+        "hes:default-graph-uri": "http://dbpedia.org",
+        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
       }
     },
     {

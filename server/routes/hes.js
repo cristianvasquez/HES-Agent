@@ -3,6 +3,8 @@ const express = require("express");
 const fu = require("../persistence");
 const _ = require('lodash');
 const N3Parser = require('../lib/N3Parser/N3Parser');
+const JSONLDParser = require('../lib/N3Parser/JSONLDParser');
+
 const Context = require("../Context");
 const reasoner = require("../reasoning");
 const DSL_V1 = require("../dsl_v1");
@@ -23,43 +25,123 @@ class HES extends express.Router {
         /**
          * Some operations (I don't have a clear idea yet of which ones to support)
          */
-        if (this.processorOptions.hydraOperations.indexOf('COPY')) {
+        if (this.processorOptions.hydraOperations.indexOf('POST')!==-1) {
             this.post("*", function (req, res, next) {
-
-                let context = new Context(req);
-                let newOperation = req.body;
-                let localDir = context.getLocalDir();
-                let index = fu.readJson(localDir + '/' + serverOptions.indexFile);
-                let currentMeta = index['hes:meta'];
-
-                let dsl_v1 = new DSL_V1(context);
-                try {
-                    index['hes:meta'] = dsl_v1.crudOperation(currentMeta, newOperation);
-                } catch(err) {
-                    console.error(err);
-                }
-                // I don't know where to persist yet
-                res.json(index);
+                addOrReplace(req,res,next);
             });
         }
 
+        if (this.processorOptions.hydraOperations.indexOf('PUT')!==-1) {
+            this.put("*", function (req, res, next) {
+                addOrReplace(req,res,next);
+            });
+        }
+
+        function addOrReplace(req, res, next) {
+            if (_.endsWith(req.originalUrl, '.ttl')){
+                addOrReplaceFile(req,res,next);
+            } else {
+                addOrReplaceOperation(req,res,next)
+            }
+        }
+
+        function addOrReplaceFile(req,res,next){
+            let context = new Context(req);
+            let targetFile = context.getLocalDir();
+            fu.writeFile(targetFile,req.body);
+            res.json({'@id':context.getCurrentPath()});
+        }
+
+        function addOrReplaceOperation(req, res, next) {
+
+            let context = new Context(req);
+            let targetDir = context.getTail().getLocalDir();
+            let targetName = context.getHead();
+
+            // check if there is a descriptor file
+            let indexPath = targetDir + '/' + serverOptions.indexFile;
+            if (!fu.exists(indexPath)){
+                res.status(400).json({error: context.getCurrentPath()+' has no descriptor file'});
+            }
+
+            // check if payload is valid
+            let newOperation = req.body;
+            let valid = DSL_V1.validateCrudOperation(newOperation);
+            if (!valid) {
+                res.status(400).json({error: JSON.stringify(DSL_V1.validateCrudOperation.errors,null,2)});
+            }
+
+            // get the meta descriptions
+            let index = fu.readJson(indexPath);
+            let meta = index['hes:meta'];
+
+            // First time a meta is defined
+            if (!meta){
+                meta = [];
+            }
+            // Remove existing operation with this name.
+            meta = meta.filter(x=>x['hes:name']!==targetName);
+
+            if (!newOperation['hes:imports']['@id']) {
+                res.status(400).json({error: "cannot find ['hes:imports']['@id']"});
+            }
+
+            // Only hes:imports implemented at the moment
+            let targetContext = context.getContextForURL(newOperation['hes:imports']['@id']);
+            let _operation = DSL_V1.findOperation(targetContext.getTail().getLocalDir(), targetContext.getHead());
+            if (!_operation.exists){
+                res.status(400).json({error: "cannot find operation at: "+ newOperation['hes:imports']['@id']});
+            }
+
+            // Add the name of the operation, and the name of imported operation
+            newOperation['hes:imports']['hes:name'] = targetContext.getHead();
+            newOperation['hes:imports']['hes:href'] = targetContext.getTail().getLocalHref();
+            delete newOperation['hes:imports']['@id'];
+            newOperation['hes:name'] = targetName;
+
+            // Add the operation
+            meta.push(newOperation);
+            index['hes:meta']=meta;
+
+            fu.writeFile(indexPath,JSON.stringify(index,null,2));
+            res.json({'@id':context.getCurrentPath()});
+        }
+
         /**
-         * Delete
+         * Delete (at he moment, it only deletes operations inside a descriptor file)
          */
-        if (this.processorOptions.hydraOperations.indexOf('DELETE')) {
+        if (this.processorOptions.hydraOperations.indexOf('DELETE')!==-1) {
             this.delete("*", function (req, res, next) {
-                if (this.processorOptions.hydraOperations) {
-                    let context = new Context(req);
-                    let localDir = context.getLocalDir();
-                    if (!fu.exists(localDir)) return res.sendStatus(400);
-                    fu.deleteDirectory(localDir);
-                    res.json(
-                        {
-                            "status": {
-                                "deleted": context.getCurrentPath()
-                            }
-                        }
-                    )
+                let context = new Context(req);
+                if (_.endsWith(req.originalUrl, '.ttl')){
+
+                    // Delete a turtle file
+                    let targetFile = context.getLocalDir();
+                    fu.deleteFileOrDirectory(targetFile);
+                    res.json({ deleted: {'@id':context.getCurrentPath()}});
+
+                } else {
+
+                    // Delete an operation
+                    let targetDir = context.getTail().getLocalDir();
+                    let targetName = context.getHead();
+
+                    // check if there is a descriptor file
+                    let indexPath = targetDir + '/' + serverOptions.indexFile;
+                    if (!fu.exists(indexPath)){
+                        res.status(400).json({error: context.getCurrentPath()+' has no descriptor file'});
+                    }
+
+                    // Remove existing operation with this name.
+                    let index = fu.readJson(indexPath);
+
+                    if (!index['hes:meta']){
+                        res.status(400).json({error: context.getCurrentPath()+' has no meta-operations defined'});
+                    }
+                    index['hes:meta'] = index['hes:meta'].filter(x=>x['hes:name']!==targetName);
+
+                    fu.writeFile(indexPath,JSON.stringify(index,null,2));
+                    res.json({ deleted: {'@id':context.getCurrentPath()}});
                 }
             });
         }
@@ -93,12 +175,19 @@ function handleHref(context, value) {
     }
 }
 
-function handleRaw(context, value) {
+function handleRaw(context, value, contentType) {
+    if (!contentType){
+        contentType="text/turtle";
+    }
     return {
         isVirtual: true,
         callback: function (res) {
-            res.writeHead(200, { 'Content-Type': "text/turtle" });
-            res.end(value, 'utf-8');
+            if (contentType==='application/x-json+ld'){
+                jsonMediaType(context,value,res);
+            } else {
+                res.writeHead(200, { 'Content-Type': contentType });
+                res.end(value, 'utf-8');
+            }
         }
     }
 }
@@ -109,8 +198,7 @@ function handleRaw(context, value) {
 //     "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
 //     "hes:output": "text/turtle"
 // }
-function handleQuery(context, query) {
-    let contentType = query['hes:Accept'];
+function handleQuery(context, query, contentType) {
     var options = {
         uri: query['hes:endpoint'],
         qs: {
@@ -126,12 +214,16 @@ function handleQuery(context, query) {
         isVirtual: true,
         callback: function (res) {
             rp(options)
-                .then(function (response) {
-                    res.writeHead(200, {'Content-Type': contentType});
-                    res.end(response, 'utf-8');
+                .then(function (body) {
+                    if (contentType==='application/x-json+ld'){
+                        jsonMediaType(context,body,res);
+                    } else {
+                        res.writeHead(200, { 'Content-Type': contentType });
+                        res.end(body, 'utf-8');
+                    }
                 })
                 .catch(function (error) {
-                    res.json({error: error});
+                    res.status(500).json({error: error});
                 });
         }
     };
@@ -145,7 +237,13 @@ function rawToUrl(context, rawValue) {
     return context.getResourcesRoot() + "/" + serverOptions.tmpFolder + "/"+filename;
 }
 
-function handleInference(context, inference) {
+function jsonMediaType(context, body, res) {
+    let result = turtle2JsonLD(body);
+    result["@id"] = context.getCurrentPath();
+    res.json(result);
+}
+
+function handleInference(context, inference, contentType) {
 
     // Writes a temporary file to be read by Eye
     if (inference['hes:query']['hes:raw']) {
@@ -154,10 +252,8 @@ function handleInference(context, inference) {
     }
 
     // We found a inference operation, we invoke the eye reasoner
-    function defaultMediatype(body, res) {
-        let result = body2JsonLD(body);
-        result["@id"] = context.getCurrentPath();
-        res.json(result);
+    if (!contentType){
+        contentType='application/x-json+ld';
     }
 
     return {
@@ -165,19 +261,21 @@ function handleInference(context, inference) {
         callback: function (res) {
             Promise.resolve(reasoner.eyePromise(inference))
                 .then(function (body) {
-                    let contentType='application/x-json+ld';
-                    if(inference["hes:Content-Type"]){
-                        contentType=inference["hes:Content-Type"];
-                    }
                     if (contentType==='application/x-json+ld'){
-                        defaultMediatype(body,res);
+                        jsonMediaType(context,body,res);
                     } else {
                         res.writeHead(200, { 'Content-Type': contentType });
                         res.end(body, 'utf-8');
                     }
                 })
                 .catch(function (error) {
-                    res.json({error: error});
+                    let jsonError = {
+                        "error": error.message,
+                        "error.status" : error.status,
+                        "error.stack" : error.stack
+                    };
+                    res.status(500).json(jsonError);
+                    console.error(JSON.stringify(jsonError,null,2));
                 });
         }
     };
@@ -211,14 +309,16 @@ function doOperation(context, operation) {
     // Expands operations and transform extends to regular operations
     let dsl_v1 = new DSL_V1(context);
     let _operation = dsl_v1.expandMeta(context.getTail().getLocalDir(),operation);
+    let contentType =  _operation['hes:Content-Type'];
+
     if (_operation['hes:href']) {
         return handleHref(context, _operation['hes:href'])
     } else if (_operation['hes:raw']) {
-        return handleRaw(context, _operation['hes:raw'])
+        return handleRaw(context, _operation['hes:raw'],contentType)
     } else if (_operation['hes:inference']) {
-        return handleInference(context, _operation['hes:inference']);
+        return handleInference(context, _operation['hes:inference'],contentType);
     } else if (_operation['hes:query']) {
-        return handleQuery(context, _operation['hes:query']);
+        return handleQuery(context, _operation['hes:query'],contentType);
     }
     throw new Error("Cannot handle " + toJson(_operation));
 }
@@ -301,11 +401,16 @@ function toJson(x) {
     return JSON.stringify(x, null, 2);
 }
 
-function body2JsonLD(body) {
+function turtle2JsonLD(body) {
     let n3Parser = new N3Parser();
     let jsonLd = n3Parser.toJSONLD(body);
     let eyeResponse = JSON.stringify(jsonLd, null, 4);
     return JSON.parse(eyeResponse);
+}
+
+function jsonld2Turtle(body) {
+    let jsonLdParser = new JSONLDParser();
+    return jsonLdParser.toN3(body);
 }
 
 module.exports = HES;

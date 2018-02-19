@@ -131,7 +131,6 @@ class DSL_V1 {
                 overrideIfExisting('hes:query');
                 overrideIfExisting('hes:options');
                 overrideIfExisting('hes:flags');
-                overrideIfExisting('hes:Accept');
 
                 // Special case, hes:addData (adds data to the current extended)
                 if (meta['hes:imports']['hes:addData']) {
@@ -298,46 +297,6 @@ class DSL_V1 {
         }
 
         return files.filter(x => !x.endsWith(serverOptions.indexFile));
-    }
-
-
-    crudOperation(currentMeta, newOperation) {
-
-        let valid = validateCrudOperation(newOperation);
-        if (!valid) {
-            throw Error(JSON.stringify(validateCrudOperation.errors,null,2));
-        }
-
-        // First time a meta is defined
-        if (!currentMeta){
-            currentMeta = [];
-        }
-
-        // Only hes:imports implemented at the moment
-        let newName = newOperation['hes:name'];
-
-        // Check if this resource already has an operation with this name.
-        for (let current of currentMeta) {
-            if (current['hes:name']===newName && current['hes:crud']==='create'){
-                throw Error(newName+" already defined");
-            }
-            if (current['hes:name']===newName && current['hes:crud']==='update'){
-                // @TODO delete operation
-            }
-        }
-
-        let targetContext = this.context.getContextForURL(newOperation['hes:imports']['@id']);
-        let _operation = DSL_V1.findOperation(targetContext.getTail().getLocalDir(), targetContext.getHead());
-        if (!_operation.exists){
-            throw Error("cannot find operation at: "+ newOperation['hes:imports']['@id']);
-        }
-
-        newOperation['hes:imports']['hes:name'] = targetContext.getHead();
-        newOperation['hes:imports']['hes:href'] = targetContext.getTail().getLocalHref();
-        delete newOperation['@id'];
-
-        currentMeta.push(newOperation);
-        return currentMeta;
     }
 
 }

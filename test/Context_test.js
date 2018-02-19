@@ -76,7 +76,7 @@ describe("specToPublic: converts an href specific to a set of uris to feed the r
         expect(context2.host).to.equal('localhost:3333');
         expect(context2.originalUrl).to.equal('/dataspaces/serviceDefinitions/T0/step_3');
 
-        expect(context2.getLocalHref()).to.equal('/dataspaces/serviceDefinitions/T0/step_3');
+        expect(context2.getLocalHref()).to.equal('/serviceDefinitions/T0/step_3');
         expect(context2.getLocalDir()).to.equal(serverOptions.workSpacePath+'/serviceDefinitions/T0/step_3');
     });
 

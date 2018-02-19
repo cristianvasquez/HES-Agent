@@ -4,12 +4,6 @@
   "description": "schema for a meta operation entry",
   "type": "object",
   "properties": {
-    "hes:name": {
-      "type": "string",
-      "examples": [
-        "first_operation"
-      ]
-    },
     "hes:Content-Type:": {
       "description": "Defaults: application/x-json+ld",
       "enum": [
@@ -18,9 +12,6 @@
       ]
     }
   },
-  "required": [
-    "hes:name"
-  ],
   "oneOf": [
     {
       "$ref": "#/definitions/imports"
@@ -101,7 +92,6 @@
     "imports": {
       "type": "object",
       "properties": {
-        "hes:crud": { "enum": [ "create","update" ] },
         "hes:imports": {
           "type": "object",
           "properties": {
@@ -125,7 +115,7 @@
         }
       },
       "required": [
-        "hes:crud","hes:imports"
+        "hes:imports"
       ]
     }
   }

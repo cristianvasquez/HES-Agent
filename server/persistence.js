@@ -2,8 +2,8 @@ const config = require('../config');
 const fs = require('fs-extra');
 const path = require('path');
 
-function exists(localDir) {
-    return fs.existsSync(localDir);
+function exists(fileOrDir) {
+    return fs.existsSync(fileOrDir);
 }
 exports.exists = exists;
 
@@ -85,7 +85,7 @@ exports.copyDirectory = function(sourceDir,targetDir){
     return targetDir;
 };
 
-exports.deleteDirectory = function(localDir){
+exports.deleteFileOrDirectory = function(localDir){
     fs.removeSync(localDir);
 };
 

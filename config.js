@@ -32,7 +32,7 @@ var config = {
     defaultProcessorOptions:{
         showFiles:true,
         showDirectories:true,
-        hydraOperations:["GET","COPY"]
+        hydraOperations:["POST","PUT","DELETE"]
     },
 
     defaultContext: {

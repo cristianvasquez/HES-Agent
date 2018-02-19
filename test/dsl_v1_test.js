@@ -293,6 +293,38 @@ describe("dsl-interpreter", function () {
         expect(result).to.deep.equal(expanded);
     });
 
+    it("example_05_maintains_content_type", function () {
+        before();
+        let input = {
+            "hes:name": "extend",
+            "hes:Content-Type": "text/turtle",
+            "hes:description": "extend /lib",
+            "hes:imports": {
+                "hes:href": "/lib",
+                "hes:name": "whoIsWhat"
+            }
+        };
+
+        let expanded = {
+            "hes:name": "extend",
+            "hes:Content-Type": "text/turtle",
+            "hes:description": "extend /lib",
+            "hes:inference": {
+                "hes:data": {
+                    "hes:href": [
+                        config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
+                        config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
+                    ]
+                },
+                "hes:query": {
+                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                }
+            }
+        };
+        let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_05'),input);
+        expect(result).to.deep.equal(expanded);
+    });
+
     it("example_06", function () {
         before();
         let input = {
@@ -603,35 +635,16 @@ describe("validatorCrud", function () {
     it("create import", function () {
         before();
         let input = {
-            "hes:crud":"create",
-            "hes:name":"propose-paths-new",
             "hes:imports": {
-                "@id":"http://localhost:3000/gps4ic/serviceDefinitions/constipation/propose-paths",
+                "@id":"http://localhost:3000/some_path/agent/operation_name",
                 "hes:Content-Type":"application/x-json+ld",
                 "hes:addData": {
-                    "hes:href": ["../patient_profile","../selected_paths","../time"]
+                    "hes:href": ["../user_profile","../environment","../other_rule"]
                 }
             }
         };
         let result = DSL_V1.validateCrudOperation(input);
         expect(result).to.equal(true);
-    });
-
-    it("??? import", function () {
-        before();
-        let input = {
-            "hes:crud":"???",
-            "hes:name":"propose-paths-new",
-            "hes:imports": {
-                "@id":"http://localhost:3000/gps4ic/serviceDefinitions/constipation/propose-paths",
-                "hes:Content-Type":"application/x-json+ld",
-                "hes:addData": {
-                    "hes:href": ["../patient_profile","../selected_paths","../time"]
-                }
-            }
-        };
-        let result = DSL_V1.validateCrudOperation(input);
-        expect(result).to.equal(false);
     });
 
 });

@@ -6,7 +6,7 @@ const serverOptions = require("../config").serverOptions;
 
 // Globals
 String.prototype.replaceAll = function (search, replacement) {
-    var target = this;
+    let target = this;
     return target.split(search).join(replacement);
 };
 
@@ -30,6 +30,10 @@ class _Context {
         return "http://" +this.host + this.originalUrl.replace(/\/$/, "");
     }
 
+    getLocalHref(){
+        return this.getCurrentPath().replaceAll(this.getApiRoot(), '');
+    }
+
     getLocalDir(){
         return this.getCurrentPath().replaceAll(this.getApiRoot(), serverOptions.workSpacePath);
     }
@@ -47,20 +51,8 @@ class _Context {
     }
 
     getContextForURL(someURI){
-        return new _Context(this.host, '/'+serverOptions.appEntrypoint+someURI.replaceAll( this.getApiRoot(),''));
+        return new _Context(this.host, '/' +serverOptions.appEntrypoint+ someURI.replaceAll( this.getApiRoot(),''));
     }
-
-    getLocalHref(){
-        return this.originalUrl;
-    }
-
-    // isLocalUrl(someURI){
-    //     return someURI.startsWith(this.getApiRoot());
-    // }
-
-    // toLocalDir(someURI){
-    //     return someURI.replaceAll(this.getApiRoot(), serverOptions.workSpacePath);
-    // }
 
     toResourcePath(someLocalDir){
         return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.resourcesEntryPoint);

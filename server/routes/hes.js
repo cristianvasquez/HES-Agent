@@ -165,12 +165,43 @@ class HES extends express.Router {
     }
 }
 
-function handleHref(context, value) {
-    let target = DSL_V1.toAbsolutePath(context.getTail().getLocalDir(), value);
-    return {
-        isVirtual: true,
-        callback: function (res) {
-            res.redirect(context.toApiPath(target));
+const validUrl = require('valid-url');
+function handleHref(context, value, contentType) {
+    if (!contentType){
+        contentType="text/turtle";
+    }
+    if (validUrl.is_web_uri(value)) { // external API
+        let options = {
+            uri: value,
+            headers: {
+                "Accept": contentType
+            }
+        };
+        return {
+            isVirtual: true,
+            callback: function (res) {
+                rp(options)
+                    .then(function (body) {
+                        if (contentType==='application/x-json+ld'){
+                            jsonMediaType(context,body,res);
+                        } else {
+                            res.writeHead(200, { 'Content-Type': contentType });
+                            res.end(body, 'utf-8');
+                        }
+                    })
+                    .catch(function (error) {
+                        renderError(res,error);
+                    });
+            }
+        };
+
+    } else { // Internal Href
+        let target = DSL_V1.toAbsolutePath(context.getTail().getLocalDir(), value);
+        return {
+            isVirtual: true,
+            callback: function (res) {
+                res.redirect(context.toApiPath(target));
+            }
         }
     }
 }
@@ -199,7 +230,7 @@ function handleRaw(context, value, contentType) {
 //     "hes:output": "text/turtle"
 // }
 function handleQuery(context, query, contentType) {
-    var options = {
+    let options = {
         uri: query['hes:endpoint'],
         qs: {
             query: query['hes:raw'],
@@ -209,7 +240,6 @@ function handleQuery(context, query, contentType) {
             "Accept": "text/turtle"
         }
     };
-    console.log(toJson(options));
     return {
         isVirtual: true,
         callback: function (res) {
@@ -317,7 +347,7 @@ function doOperation(context, operation) {
     let contentType =  _operation['hes:Content-Type'];
 
     if (_operation['hes:href']) {
-        return handleHref(context, _operation['hes:href'])
+        return handleHref(context, _operation['hes:href'], contentType)
     } else if (_operation['hes:raw']) {
         return handleRaw(context, _operation['hes:raw'],contentType)
     } else if (_operation['hes:inference']) {

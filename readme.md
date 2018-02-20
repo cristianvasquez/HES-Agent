@@ -51,24 +51,14 @@ Then 'follow the links'
 
 ## Run with docker
 
-### Build H-Eye server
 
-```
-docker build -t cristianvasquez/h-eye .
-```
-
-(to build a clean image from scratch use the --no-cache option)
-
-### Start the docker image
-
-
-Start H-Eye on host port 3000:
+### Start H-Eye on host port 3000:
 
 ```
 docker run --name=h-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cristianvasquez/h-eye
 ```
 
-Running your image with -d runs the container in detached mode, leaving the container running in the background. 
+Running your image with -d runs the container in detached mode, leaving the container running in the background.
 The -p flag redirects a public port to a private port inside the container.
 The -v flag mounts a directory to a directory inside the container.
 
@@ -78,6 +68,7 @@ If you need to go inside the container you can use the exec command:
 # Enter the container
 docker exec -it h-eye /bin/bash
 ```
+
 
 ### Stop the docker container
 
@@ -90,3 +81,11 @@ docker rm -f h-eye
 ```
 curl -i localhost:3000
 ```
+
+### Build your own image
+
+```
+docker build -t YOUR_USERNAME/h-eye .
+```
+
+(to build a clean image from scratch use the --no-cache option)

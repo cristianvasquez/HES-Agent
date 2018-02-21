@@ -25,6 +25,7 @@ var config = {
     },
 
     defaultEyeOptions:{
+        command_arguments: {maxBuffer: 1024 * 500},
         eyePath: eyePath,
         defaultFlags:["--nope"]
     },

@@ -81,7 +81,7 @@ function invokeEye(command, fullOutput = true) {
             console.log(command);
         }
 
-        exec(command)
+        exec(command, config.defaultEyeOptions.command_arguments)
             .then(function (result) {
                 let stdout = result.stdout;
                 let stderr = result.stderr;
@@ -115,6 +115,7 @@ function invokeEye(command, fullOutput = true) {
                 }
             })
             .catch(function (err) {
+                console.error("Command line exception :"+err);
                 reject({
                     "error":err
                 });

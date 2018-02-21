@@ -33,7 +33,7 @@ app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+  let err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
@@ -80,7 +80,7 @@ if (serverOptions.verbose){
         } else if (thing.fast_slash) {
             return ''
         } else {
-            var match = thing.toString()
+            let match = thing.toString()
                 .replace('\\/?', '')
                 .replace('(?=\\/|$)', '$')
                 .match(/^\/\^((?:\\[.*+?^${}()|[\]\\\/]|[^.*+?^${}()|[\]\\\/])*)\$\//)

@@ -78,7 +78,6 @@ function serve(){
     let http = require('http');
     let reasoner = require('../server/reasoning');
 
-
     reasoner.invokeEye(defaultEyeOptions.eyePath + " --version")
         .then(function (result) {
             console.log(result.stderr);
@@ -175,6 +174,14 @@ function validateWorkspace(absolutePath){
         } else {
             if (d.endsWith(serverOptions.indexFile)) {
                 validate(d);
+            } else {
+                // remove-utf8-bom
+                let contents = fs.readFileSync(d,{ encoding: 'utf8' });
+                if (contents.charCodeAt(0) === 0xFEFF) {
+                    contents = contents.substr(1);
+                    console.log('utf8-bom detected at ' + d + ', being removed');
+                    fs.outputFile(d, contents);
+                }
             }
             return undefined
         }

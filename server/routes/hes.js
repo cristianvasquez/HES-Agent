@@ -306,13 +306,9 @@ function handleInference(context, inference, contentType) {
 }
 
 function renderError(res,error){
-    let jsonError = {
-        "error": error.message,
-        "error.status" : error.status,
-        "error.stack" : error.stack
-    };
-    res.status(500).json(jsonError);
+    let jsonError = _.isString(error)?{"error":error}:error;
     console.error(JSON.stringify(jsonError,null,2));
+    res.status(500).json(jsonError);
 }
 
 

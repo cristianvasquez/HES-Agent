@@ -73,7 +73,7 @@ function getEyeCommand(inference){
     return command;
 }
 
-function invokeEye(command, includeStderr = true) {
+function invokeEye(command, fullOutput = true) {
 
     return new Promise(function(resolve, reject) {
 
@@ -83,31 +83,41 @@ function invokeEye(command, includeStderr = true) {
 
         exec(command)
             .then(function (result) {
+                let stdout = result.stdout;
+                let stderr = result.stderr;
 
-                if (includeStderr){
+                // EYE do not show signature as usual.
+                if (!stderr.match(eyeSignatureRegex)){
+                    reject({
+                        "stdout":result.stdout,
+                        "stderr":result.stderr,
+                        "error": 'No match for EYE signature'
+                    });
+                }
+
+                // An error detected
+                let errorMatch = stderr.match(errorRegex);
+                if (errorMatch){
+                    reject({
+                        "stdout":result.stdout,
+                        "stderr":result.stderr,
+                        "error":errorMatch
+                    });
+                }
+
+                if (fullOutput){
                     resolve({
                         "stdout":result.stdout,
                         "stderr":result.stderr
                     })
+                } else {
+                    resolve(clean(stdout));
                 }
-
-                let stdout = result.stdout;
-                let stderr = result.stderr;
-
-                if (!stderr.match(eyeSignatureRegex)){
-                    reject(stderr);
-                }
-
-                let errorMatch = stderr.match(errorRegex);
-                if (errorMatch){
-                    reject(errorMatch[1]);
-                }
-
-                resolve(clean(stdout));
-
             })
             .catch(function (err) {
-                reject(err.message);
+                reject({
+                    "error":err
+                });
             });
     });
 }

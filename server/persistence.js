@@ -7,6 +7,11 @@ function exists(fileOrDir) {
 }
 exports.exists = exists;
 
+function isFile(fileOrDir){
+    return !fs.statSync(fileOrDir).isDirectory();
+}
+exports.isFile = isFile;
+
 /**
  * All the files from a public directory
  */

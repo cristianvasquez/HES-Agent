@@ -220,22 +220,45 @@ class HES extends express.Router {
 }
 
 function handleHref(context, value, contentType) {
-    let target = value;
+    let dsl_v1 = new DSL_V1(context);
+    let target = dsl_v1.toDereferenciable(context.getLocalDir(), value);
 
-    if (!validUrl.is_web_uri(value)) { //Internal Href
-        target = DSL_V1.toAbsolutePath(context.getTail().getLocalDir(), value);
-    }
-
-    return {
-        isVirtual: true,
-        callback: function (res) {
-            res.set({
+    if (fu.isFile(target)) { // its a local resource
+        target = context.toResourcePath(target);
+        let options = {
+            uri: target,
+            headers: {
                 "Accept": contentType
-            });
-            res.redirect(context.toApiPath(target));
+            }
+        };
+        return {
+            isVirtual: true,
+            callback: function (res) {
+                rp(options)
+                    .then(function (body) {
+                        renderSupportedContentypes(context, contentType, body, res);
+                    })
+                    .catch(function (error) {
+                        renderError(res, error);
+                    });
+            }
+        };
+    } else { // Its either external or virtual operation, we redirect
+
+        if (context.insideWorkspace(target)){
+            target = context.toApiPath(target);
+        }
+
+        return {
+            isVirtual: true,
+            callback: function (res) {
+                res.set({
+                    "Accept": contentType
+                });
+                res.redirect(target);
+            }
         }
     }
-
 }
 
 function handleRaw(context, value, contentType) {
@@ -264,8 +287,8 @@ function handleQuery(context, query, contentType) {
             rp(options)
                 .then(function (body) {
                     renderSupportedContentypes(context, contentType, body, res);
-                })
-                .catch(function (error) {
+                }).catch(function (error) {
+                    console.error(error);
                     renderError(res, error);
                 });
         }
@@ -273,7 +296,16 @@ function handleQuery(context, query, contentType) {
 }
 
 function handleInference(context, inference, contentType) {
-    // Writes a temporary file to be read by Eye
+
+    function rawToUrl(context, rawValue) {
+        let filename = hash(rawValue) + ".ttl";
+        if (!fu.exists(filename)) {
+            fu.writeFile(serverOptions.workSpacePath + "/" + serverOptions.tmpFolder + "/" + filename, rawValue);
+        }
+        return context.getResourcesRoot() + "/" + serverOptions.tmpFolder + "/" + filename;
+    }
+
+    // Writes a temporary file to be read by Eye, I don't know yet how to handle content types in EYE
     if (inference['hes:query']['hes:raw']) {
         inference['hes:query']['hes:href'] = rawToUrl(context, inference['hes:query']['hes:raw']);
         delete inference['hes:query']['hes:raw'];
@@ -291,14 +323,6 @@ function handleInference(context, inference, contentType) {
                 });
         }
     };
-}
-
-function rawToUrl(context, rawValue) {
-    let filename = hash(rawValue) + ".ttl";
-    if (!fu.exists(filename)) {
-        fu.writeFile(serverOptions.workSpacePath + "/" + serverOptions.tmpFolder + "/" + filename, rawValue);
-    }
-    return context.getResourcesRoot() + "/" + serverOptions.tmpFolder + "/" + filename;
 }
 
 
@@ -379,48 +403,37 @@ function buildLink(uri, type) {
  * ContentType utils
  */
 
-function renderSupportedContentypes(context, contentType, body, res) {
-    if (contentType === 'application/x-json+ld') {
-        allToJson(context, body, res);
-    }
-    if (contentType === 'text/turtle') {
-        allToTurtle(context, body, res);
-    } else {
-        res.writeHead(200, {'Content-Type': contentType});
-        res.end(body, 'utf-8');
-    }
-}
-
 function renderError(res, error) {
     let jsonError = _.isString(error) ? {"error": error} : error;
     res.status(500).json(jsonError);
 }
 
+// This is too ugly something is wrong with this design.
+function renderSupportedContentypes(context, contentType, body, res) {
+    if (contentType === 'application/x-json+ld') {
+        try {
+            body = JSON.parse(body); // It's already Json
+            body["@id"] = context.getCurrentPath();
+        } catch (e) {
+            body = turtle2JsonLD(body); // tries turtle to Json
+            body["@id"] = context.getCurrentPath();
+        }
+        res.json(body);
+    } else if (contentType === 'text/turtle') {
+        try {   // If this succeeds, it was Json that needs to be turtle
+            body = jsonld2Turtle(JSON.parse(body));
+        } catch (e) {}
+        res.header("Content-Type", contentType);
+        res.end(body, 'utf-8');
+    } else {
+        res.header("Content-Type", contentType);
+        res.end(body, 'utf-8');
+    }
+
+}
+
 function toJson(x) {
     return JSON.stringify(x, null, 2);
-}
-
-function allToJson(context, body, res) {
-    let result;
-    try {
-        result = JSON.parse(body); // It's already Json
-    } catch (e) {
-        result = turtle2JsonLD(body); // Turtle to Json
-    }
-    result["@id"] = context.getCurrentPath();
-    // res.writeHead(200, { 'Content-Type': 'application/x-json+ld' });
-    res.json(result);
-}
-
-function allToTurtle(context, body, res) {
-    let result;
-    try {   // If this succeeds, it was Json that needs to be turtle
-        result = jsonld2Turtle(JSON.parse(body));
-    } catch (e) { // I assume it was Turtle
-        result = body;
-    }
-    res.writeHead(200, {'Content-Type': 'text/turtle'});
-    res.end(result, 'utf-8');
 }
 
 function turtle2JsonLD(body) {

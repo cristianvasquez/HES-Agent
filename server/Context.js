@@ -62,6 +62,9 @@ class _Context {
         return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.appEntrypoint);
     }
 
+    insideWorkspace(someLocalDir){
+        return someLocalDir.startsWith(serverOptions.workSpacePath)
+    }
 }
 
 class Context extends _Context{

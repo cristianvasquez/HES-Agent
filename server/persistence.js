@@ -65,7 +65,11 @@ exports.readDir = readDir;
 function readJson(filePath){
     if (exists(filePath)){
         let contents = fs.readFileSync(filePath);
-        return JSON.parse(contents);
+        try {
+            return JSON.parse(contents);
+        } catch (e) {
+            throw new Error(e+' ['+filePath+']');
+        }
     } else {
         return {
             "@context": config.defaultContext

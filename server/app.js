@@ -24,11 +24,10 @@ let serverOptions = require("../config").serverOptions;
 let defaultProcessorOptions = require("../config").defaultProcessorOptions;
 
 let index = require('./routes/index');
-let resources = require('./routes/resources');
 const HES = require('./routes/hes');
 
 app.use('/', index);
-app.use('/'+ serverOptions.resourcesEntryPoint, resources);
+app.use('/'+ serverOptions.resourcesEntryPoint, express.static(serverOptions.workSpacePath));
 app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions));
 
 // catch 404 and forward to error handler

@@ -325,6 +325,27 @@ describe("dsl-interpreter", function () {
         expect(result).to.deep.equal(expanded);
     });
 
+    it("example_05_maintains_content_type_for_href", function () {
+        before();
+        let input = {
+            "hes:name": "next",
+            "hes:Content-Type": "text/turtle",
+            "hes:imports": {
+                "hes:href": "/example_01",
+                "hes:name": "next"
+            }
+        };
+
+        let expanded = {
+            "hes:name": "next",
+            "hes:Content-Type": "text/turtle",
+            "hes:description": "go to example 2",
+            "hes:href": config.serverOptions.workSpacePath+"/example_02"
+        };
+        let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_05'),input);
+        expect(result).to.deep.equal(expanded);
+    });
+
     it("example_06", function () {
         before();
         let input = {

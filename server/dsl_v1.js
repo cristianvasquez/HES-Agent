@@ -107,6 +107,11 @@ class DSL_V1 {
         let _operation = DSL_V1.findOperation(targetDir, meta["hes:imports"]['hes:name']);
         if (_operation.exists) {
 
+            // Override meta if present
+            if (meta['hes:Content-Type']){
+                _operation.operation['hes:Content-Type']=meta['hes:Content-Type'];
+            }
+
             if (_operation.operation['hes:inference']) {
 
                 // This expansion is to keep the absolute paths of the extended.
@@ -159,6 +164,7 @@ class DSL_V1 {
                 delete meta['hes:imports'];
                 return this.expandInference(dirRelativeTo, meta);
             }
+
             // It was other kind of operation
             return this.expandMeta(targetDir, _operation.operation);
         } else {
@@ -185,8 +191,9 @@ class DSL_V1 {
      * Transforms a relative path into an absolute path (for the current workspace)
      */
     static toAbsolutePath(dirRelativeTo, value) {
+
         if (typeof value !== 'string') {
-            throw Error("I don't know how to handle" + value);
+            throw Error("I don't know how to handle " + toJson(value));
         }
 
         // Already expanded

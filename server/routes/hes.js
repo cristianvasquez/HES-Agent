@@ -10,7 +10,6 @@ const reasoner = require("../reasoning");
 const DSL_V1 = require("../dsl_v1");
 const rp = require('request-promise');
 let hash = require('string-hash');
-const validUrl = require('valid-url');
 
 class HES extends express.Router {
 
@@ -298,7 +297,7 @@ function handleQuery(context, query, contentType) {
 function handleInference(context, inference, contentType) {
 
     function rawToUrl(context, rawValue) {
-        let filename = hash(rawValue) + ".ttl";
+        let filename = hash(rawValue) + ".n3";
         if (!fu.exists(filename)) {
             fu.writeFile(serverOptions.workSpacePath + "/" + serverOptions.tmpFolder + "/" + filename, rawValue);
         }

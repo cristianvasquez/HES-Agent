@@ -29,6 +29,7 @@ const HES = require('./routes/hes');
 app.use('/', index);
 app.use('/'+ serverOptions.resourcesEntryPoint, express.static(serverOptions.workSpacePath));
 app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions));
+app.set('trust proxy', '127.0.0.1');
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -55,7 +55,7 @@ Then 'follow the links'
 ### Start H-Eye on host port 3000:
 
 ```
-docker run --name=h-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cristianvasquez/h-eye
+docker run --name=h-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cristianvasquez/h-eye -t
 ```
 
 Running your image with -d runs the container in detached mode, leaving the container running in the background.
@@ -64,8 +64,9 @@ The -v flag mounts a directory to a directory inside the container.
 
 If you need to go inside the container you can use the exec command:
 
+## Enter the container
+
 ```
-# Enter the container
 docker exec -it h-eye /bin/bash
 ```
 

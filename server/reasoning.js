@@ -9,6 +9,9 @@ function eyePromise(inference) {
  * Build up a command for eye, from an expanded inference description
  */
 function getEyeCommand(inference){
+    if (config.serverOptions.verbose){
+        console.log(JSON.stringify(inference,null,2));
+    }
     let command = config.defaultEyeOptions.eyePath;
 
     /**

@@ -646,6 +646,19 @@ describe("validator", function () {
 
 });
 
+describe("dependency graphs", function () {
+
+    function before() {
+        config.serverOptions.workSpacePath = path.resolve(__dirname + '/../workspace');
+    }
+
+    it("all examples", function () {
+        let dependencyGraph =   dsl_v1.buildLocalDependencyGraph(config.serverOptions.workSpacePath);
+        console.log(dependencyGraph);
+    });
+
+});
+
 
 describe("validatorCrud", function () {
 

@@ -244,7 +244,7 @@ function handleHref(context, value, contentType) {
         };
     } else { // Its either external or virtual operation, we redirect
 
-        if (context.insideWorkspace(target)){
+        if (insideWorkspace(target)){
             target = context.toApiPath(target);
         }
 
@@ -258,6 +258,10 @@ function handleHref(context, value, contentType) {
             }
         }
     }
+}
+
+function insideWorkspace(someLocalDir){
+    return someLocalDir.startsWith(serverOptions.workSpacePath)
 }
 
 function handleRaw(context, value, contentType) {

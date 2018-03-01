@@ -1,10 +1,14 @@
 const serverOptions = require("../config").serverOptions;
-const schemas = require("../config").schemas
+const schemas = require("../config").schemas;
 const fu = require("./persistence");
 const _ = require('lodash');
 const validUrl = require('valid-url');
 const path = require('path');
 const Ajv = require('ajv');
+const fs = require('fs-extra');
+
+// https://github.com/jriecken/dependency-graph
+const DepGraph = require('dependency-graph').DepGraph;
 
 function toJson(x) {
     return JSON.stringify(x, null, 2);
@@ -19,11 +23,11 @@ let validateOperation = ajv.compile(metaOperationSchema);
 let validateCrudOperation = ajv.compile(crudOperationsSchema);
 let validateDeclaration = ajv.compile(hEyeSchema);
 
-/**
- * Handles a defined href, in case of having a corresponding local path, returns it.
- */
-
 class DSL_V1 {
+
+    constructor(context) {
+        this.context = context;
+    }
 
     static validateOperation(meta) {
         let valid = validateOperation(meta);
@@ -43,8 +47,108 @@ class DSL_V1 {
         return valid;
     }
 
-    constructor(context) {
-        this.context = context;
+    /**
+     * Goes from relative path to absolute path
+     * Fails if not in the current workspace
+     */
+    static toAbsolutePath(dirRelativeTo, value) {
+
+        if (typeof value !== 'string') {
+            throw Error("I don't know how to handle " + toJson(value));
+        }
+
+        // Already expanded
+        if (value.startsWith(serverOptions.workSpacePath)) {
+            return value;
+        }
+
+        let result;
+        if (path.isAbsolute(value)) {
+            result = path.join(serverOptions.workSpacePath, value);
+        } else {
+            result = path.join(dirRelativeTo, value);
+        }
+
+        if (!result.startsWith(serverOptions.workSpacePath)) {
+            throw Error("403 [" + result + "]");
+        }
+
+        return result;
+
+    }
+
+    buildLocalDependencyGraph(absolutePath){
+        let graph = new DepGraph();
+
+        const walkSync = (currentDir, apply) => {
+            if (fs.statSync(currentDir).isDirectory()) {
+                return fs.readdirSync(currentDir).map(f => walkSync(path.join(currentDir, f),apply))
+            } else {
+                if (currentDir.endsWith(serverOptions.indexFile)) {
+                    let index = fu.readJson(currentDir);
+                    if (index['hes:meta']){
+                        for (let meta of index['hes:meta']) {
+                            apply(currentDir, meta)
+                        }
+                    }
+                }
+                return undefined
+            }
+        };
+
+        function addNodes(dirRelativeTo, meta){
+            let parent = dirRelativeTo.substr(0, dirRelativeTo.lastIndexOf('/'));
+            let id = (parent.replaceAll(serverOptions.workSpacePath,'')+'/'+meta['hes:name']);
+            graph.addNode(id, meta);
+        }
+
+        function addHref(dirRelativeTo,from,to){
+            if (!validUrl.is_web_uri(to)) {
+                let dependency = DSL_V1.toAbsolutePath(dirRelativeTo,to);
+                let operation = DSL_V1.findOperationByAbsolutePath(dependency);
+                if (operation.exists) {
+                    graph.addDependency(from, dependency.replaceAll(serverOptions.workSpacePath,''));
+                }
+            }
+        }
+
+        function addDependencies(dirRelativeTo,meta){
+            let parent = dirRelativeTo.substr(0, dirRelativeTo.lastIndexOf('/'));
+            let from = (parent.replaceAll(serverOptions.workSpacePath,'')+'/'+meta['hes:name']);
+
+            if (meta['hes:query'] || meta['hes:raw']) {
+                // No dependencies
+            } else if (meta["hes:href"]) {
+                addHref(dirRelativeTo,from,meta["hes:href"]);
+            } else if (meta["hes:inference"]) {
+                let inference = meta["hes:inference"];
+                // Query dependencies
+                if (inference['hes:query']['hes:href']) {
+                    addHref(dirRelativeTo,from,inference['hes:query']['hes:href']);
+                }
+                // Data dependencies
+                if (inference['hes:data']['hes:href']) {
+                    let href = inference['hes:data']['hes:href'];
+                    // One value
+                    if (typeof href === 'string') {
+                        addHref(dirRelativeTo,from,href);
+                    } else {
+                        // Array of values
+                        inference['hes:data']['hes:href'] = _.flatMap(href, href => {
+                            addHref(dirRelativeTo,from,href);
+                        });
+                    }
+                }
+            } else if (meta["hes:imports"]) {
+                //  TODO
+            }
+        }
+
+
+        walkSync(absolutePath, addNodes);
+        walkSync(absolutePath, addDependencies);
+
+        return graph;
     }
 
     /**
@@ -172,6 +276,13 @@ class DSL_V1 {
         }
     }
 
+
+    static findOperationByAbsolutePath(target) {
+        let targetDir = target.substr(0, target.lastIndexOf('/'))
+        let name = target.substr(target.lastIndexOf('/') + 1)
+        return DSL_V1.findOperation(targetDir, name)
+    }
+
     static findOperation(targetDir, name) {
         // Gets the template
         if (fu.exists(targetDir + '/' + serverOptions.indexFile)) {
@@ -185,35 +296,6 @@ class DSL_V1 {
             }
         }
         return {exists: false}
-    }
-
-    /**
-     * Transforms a relative path into an absolute path (for the current workspace)
-     */
-    static toAbsolutePath(dirRelativeTo, value) {
-
-        if (typeof value !== 'string') {
-            throw Error("I don't know how to handle " + toJson(value));
-        }
-
-        // Already expanded
-        if (value.startsWith(serverOptions.workSpacePath)) {
-            return value;
-        }
-
-        let result;
-        if (path.isAbsolute(value)) {
-            result = path.join(serverOptions.workSpacePath, value);
-        } else {
-            result = path.join(dirRelativeTo, value);
-        }
-
-        if (!result.startsWith(serverOptions.workSpacePath)) {
-            throw Error("403 [" + result + "]");
-        }
-
-        return result;
-
     }
 
     /**
@@ -245,10 +327,8 @@ class DSL_V1 {
          * (this is used when chaining operations.)
          */
         if (this.context) {
-            let operation = DSL_V1.findOperation(
-                target.substr(0, target.lastIndexOf('/')),
-                target.substr(target.lastIndexOf('/') + 1)
-            );
+            // Splits the URI to find the current local operation.
+            let operation = DSL_V1.findOperationByAbsolutePath(target);
             if (operation.exists) {
                 return this.context.toApiPath(target);
             }
@@ -286,14 +366,11 @@ class DSL_V1 {
              * (this is used when chaining operations.)
              */
             if (this.context) {
-                let operation = DSL_V1.findOperation(
-                    target.substr(0, target.lastIndexOf('/')),
-                    target.substr(target.lastIndexOf('/') + 1)
-                );
+                let operation = DSL_V1.findOperationByAbsolutePath(target);
                 if (operation.exists) {
                     return [this.context.toApiPath(target)];
                 }
-            }        // Sometimes already expanded (extends case)
+            }
 
             if (fu.exists(target)) {
                 return [target];

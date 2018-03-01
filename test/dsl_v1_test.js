@@ -269,8 +269,7 @@ describe("dsl-interpreter", function () {
             "hes:name": "extend",
             "hes:description": "extend /lib",
             "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat"
+                "hes:href": "/lib/whoIsWhat"
             }
         };
 
@@ -300,8 +299,7 @@ describe("dsl-interpreter", function () {
             "hes:Content-Type": "text/turtle",
             "hes:description": "extend /lib",
             "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat"
+                "hes:href": "/lib/whoIsWhat"
             }
         };
 
@@ -331,8 +329,7 @@ describe("dsl-interpreter", function () {
             "hes:name": "next",
             "hes:Content-Type": "text/turtle",
             "hes:imports": {
-                "hes:href": "/example_01",
-                "hes:name": "next"
+                "hes:href": "/example_01/next"
             }
         };
 
@@ -352,8 +349,7 @@ describe("dsl-interpreter", function () {
             "hes:name": "alice",
             "hes:description": "Alice's space",
             "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat",
+                "hes:href": "/lib/whoIsWhat",
                 "hes:data": {
                     "hes:href": "./personal"
                 }
@@ -384,8 +380,7 @@ describe("dsl-interpreter", function () {
             "hes:name": "alice_2",
             "hes:description": "Adds alice's space",
             "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat",
+                "hes:href": "/lib/whoIsWhat",
                 "hes:addData": {
                     "hes:href": "./personal"
                 }
@@ -418,8 +413,7 @@ describe("dsl-interpreter", function () {
             "hes:name": "alice",
             "hes:description": "Alice's space",
             "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat",
+                "hes:href": "/lib/whoIsWhat",
                 "hes:data": {
                     "hes:href": "../../test/example"
                 }
@@ -482,8 +476,7 @@ describe("dsl-interpreter", function () {
             let input = {
                 "hes:name": "exec",
                 "hes:imports": {
-                    "hes:href": "/circular_02",
-                    "hes:name": "exec"
+                    "hes:href": "/circular_02/exec"
                 }
             };
 

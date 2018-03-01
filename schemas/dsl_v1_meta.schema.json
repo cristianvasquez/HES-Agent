@@ -203,9 +203,6 @@
               "type": "string",
               "format": "uri-template"
             },
-            "hes:name": {
-              "type": "string"
-            },
             "hes:data": {
               "$ref": "#/definitions/resources"
             },

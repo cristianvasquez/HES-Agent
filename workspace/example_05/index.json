@@ -19,8 +19,7 @@
       "hes:name":"import",
       "hes:description":"import /lib",
       "hes:imports": {
-        "hes:href":"/lib",
-        "hes:name":"whoIsWhat"
+        "hes:href":"/lib/whoIsWhat"
       }
     },
     {

@@ -19,8 +19,7 @@
       "hes:name": "alice",
       "hes:description": "Uses only alice's space",
       "hes:imports": {
-        "hes:href": "/lib",
-        "hes:name": "whoIsWhat",
+        "hes:href": "/lib/whoIsWhat",
         "hes:data": {
           "hes:href": "./personal"
         }
@@ -30,8 +29,7 @@
       "hes:name": "alice_and_socrates",
       "hes:description": "Adds alice's space",
       "hes:imports": {
-        "hes:href": "/lib",
-        "hes:name": "whoIsWhat",
+        "hes:href": "/lib/whoIsWhat",
         "hes:addData": {
           "hes:href": "./personal"
         }

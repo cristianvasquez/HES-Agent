@@ -207,13 +207,16 @@ class DSL_V1 {
     }
 
     expandImports(dirRelativeTo, meta) {
+
         let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:imports"]['hes:href']);
-        let _operation = DSL_V1.findOperation(targetDir, meta["hes:imports"]['hes:name']);
+        let _operation = DSL_V1.findOperationByAbsolutePath(targetDir);
+
         if (_operation.exists) {
+            targetDir = targetDir.substr(0, targetDir.lastIndexOf('/'));
 
             // Override meta if present
             if (meta['hes:Content-Type']){
-                _operation.operation['hes:Content-Type']=meta['hes:Content-Type'];
+                _operation.operation['hes:Content-Type'] = meta['hes:Content-Type'];
             }
 
             if (_operation.operation['hes:inference']) {
@@ -272,7 +275,7 @@ class DSL_V1 {
             // It was other kind of operation
             return this.expandMeta(targetDir, _operation.operation);
         } else {
-            throw new Error("Could not find operation  '" + meta["hes:imports"]['hes:name'] + "' in " + targetDir);
+            throw new Error("Could not find operation  '" + meta["hes:imports"]['hes:href'] + "' in " + targetDir);
         }
     }
 

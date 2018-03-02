@@ -109,7 +109,7 @@ describe("toDereferenciables", function () {
 
     it("A file (absolute) expands to a file.", function () {
         before();
-        let result = dsl_v1.toDereferenciables(config.serverOptions.workSpacePath,"/example/file_1.ttl");
+        let result = dsl_v1.toDereferenciables(config.serverOptions.workSpacePath,"example/file_1.ttl");
         expect(result).to.deep.equal([config.serverOptions.workSpacePath+"/example/file_1.ttl"]);
     });
 
@@ -129,16 +129,17 @@ describe("toDereferenciables", function () {
 
     it("A directory (absolute) expands to files.", function () {
         before();
-        let result = dsl_v1.toDereferenciables(config.serverOptions.workSpacePath,"/example");
+        let result = dsl_v1.toDereferenciables(config.serverOptions.workSpacePath,"/example/*");
         expect(result).to.deep.equal([
             config.serverOptions.workSpacePath+"/example/file_1.ttl",
             config.serverOptions.workSpacePath+"/example/file_2.ttl"
         ]);
     });
 
+
     it("A directory (relative) expands to files.", function () {
         before();
-        let result = dsl_v1.toDereferenciables(config.serverOptions.workSpacePath,"./example");
+        let result = dsl_v1.toDereferenciables(config.serverOptions.workSpacePath,"./example/*");
         expect(result).to.deep.equal([
             config.serverOptions.workSpacePath+"/example/file_1.ttl",
             config.serverOptions.workSpacePath+"/example/file_2.ttl"
@@ -204,7 +205,7 @@ describe("dsl-interpreter", function () {
             "hes:description": "Socrates example",
             "hes:inference": {
                 "hes:data": {
-                    "hes:href": "/lib/data"
+                    "hes:href": "/lib/data/*"
                 },
                 "hes:query": {
                     "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
@@ -237,7 +238,7 @@ describe("dsl-interpreter", function () {
             "hes:description": "Bob space",
             "hes:inference": {
                 "hes:data": {
-                    "hes:href": ["/lib/data/knowledge.n3", "./personal"]
+                    "hes:href": ["/lib/data/knowledge.n3", "./personal/*"]
                 },
                 "hes:query": {
                     "hes:href": "/lib/query/whoIsWhat.n3"
@@ -351,7 +352,7 @@ describe("dsl-interpreter", function () {
             "hes:imports": {
                 "hes:href": "/lib/whoIsWhat",
                 "hes:data": {
-                    "hes:href": "./personal"
+                    "hes:href": "./personal/*"
                 }
             }
         };
@@ -382,7 +383,7 @@ describe("dsl-interpreter", function () {
             "hes:imports": {
                 "hes:href": "/lib/whoIsWhat",
                 "hes:addData": {
-                    "hes:href": "./personal"
+                    "hes:href": "./personal/*"
                 }
             }
         };
@@ -432,7 +433,7 @@ describe("dsl-interpreter", function () {
             "hes:description": "Socrates proof",
             "hes:inference": {
                 "hes:data": {
-                    "hes:href": "/lib/data"
+                    "hes:href": "/lib/data/*"
                 },
                 "hes:query": {
                     "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
@@ -641,17 +642,21 @@ describe("validator", function () {
 
 describe("dependency graphs", function () {
 
-    function before() {
-        config.serverOptions.workSpacePath = path.resolve(__dirname + '/../workspace');
-    }
-
     it("all examples", function () {
         let dependencyGraph =   dsl_v1.buildLocalDependencyGraph(config.serverOptions.workSpacePath);
+        expect(dependencyGraph.dependenciesOf('/example_08/second_operation')).to.deep.equal(['/example_08/first_operation']);
+
         console.log(dependencyGraph);
     });
 
-});
+    it("detects circular dependencies", function () {
+        config.serverOptions.workSpacePath = __dirname;
+        expect(function () {
+            dsl_v1.buildLocalDependencyGraph(__dirname);
+        }).to.throw("Dependency Cycle Found: /circular_01/exec -> /circular_02/exec -> /circular_01/exec");
+    });
 
+});
 
 describe("validatorCrud", function () {
 

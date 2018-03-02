@@ -20,7 +20,7 @@
       "hes:description":"Bob space",
       "hes:inference": {
         "hes:data": {
-          "hes:href":["/lib/data/knowledge.n3","./personal"]
+          "hes:href":["/lib/data/knowledge.n3","./personal/*"]
         },
         "hes:query":{
           "hes:href": "/lib/query/whoIsWhat.n3"
@@ -33,7 +33,7 @@
       "hes:Content-Type":"text/turtle",
       "hes:inference": {
         "hes:data": {
-          "hes:href":["/lib/data/knowledge.n3","./personal"]
+          "hes:href":["/lib/data/knowledge.n3","./personal/*"]
         },
         "hes:query":{
           "hes:href": "/lib/query/whoIsWhat.n3"

@@ -88,7 +88,7 @@ class HES extends express.Router {
 
             // Only hes:imports implemented at the moment
             let targetContext = context.getContextForURL(newOperation['hes:imports']['@id']);
-            let _operation = DSL_V1.findOperation(targetContext.getTail().getLocalDir(), targetContext.getHead());
+            let _operation = DSL_V1.findOperation(targetContext.getLocalDir());
             if (!_operation.exists) {
                 res.status(400).json({error: "cannot find operation at: " + newOperation['hes:imports']['@id']});
             }
@@ -145,6 +145,12 @@ class HES extends express.Router {
                 }
             });
         }
+
+        this.get("/operations", function (req, res, next) {
+            let context = new Context(req);
+            let dsl_v1 = new DSL_V1(context);
+            res.json(dsl_v1.buildLocalDependencyGraph( serverOptions.workSpacePath));
+        });
 
         /**
          * Fallback

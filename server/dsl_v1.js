@@ -6,6 +6,7 @@ const validUrl = require('valid-url');
 const path = require('path');
 const Ajv = require('ajv');
 const fs = require('fs-extra');
+var Glob = require("glob").Glob
 
 // https://github.com/jriecken/dependency-graph
 const DepGraph = require('dependency-graph').DepGraph;
@@ -22,6 +23,7 @@ let hEyeSchema = fu.readJson(schemas.hEyeSchema);
 let validateOperation = ajv.compile(metaOperationSchema);
 let validateCrudOperation = ajv.compile(crudOperationsSchema);
 let validateDeclaration = ajv.compile(hEyeSchema);
+
 
 class DSL_V1 {
 
@@ -48,66 +50,59 @@ class DSL_V1 {
     }
 
     /**
-     * Goes from relative path to absolute path
-     * Fails if not in the current workspace
+     * Experimental, dependency graph
      */
-    static toAbsolutePath(dirRelativeTo, value) {
+    buildLocalDependencyGraph(dirRelativeTo){
 
-        if (typeof value !== 'string') {
-            throw Error("I don't know how to handle " + toJson(value));
-        }
+        let graph = new DepGraph({ circular: false });
 
-        // Already expanded
-        if (value.startsWith(serverOptions.workSpacePath)) {
-            return value;
-        }
-
-        let result;
-        if (path.isAbsolute(value)) {
-            result = path.join(serverOptions.workSpacePath, value);
-        } else {
-            result = path.join(dirRelativeTo, value);
-        }
-
-        if (!result.startsWith(serverOptions.workSpacePath)) {
-            throw Error("403 [" + result + "]");
-        }
-
-        return result;
-
-    }
-
-    buildLocalDependencyGraph(absolutePath){
-        let graph = new DepGraph();
-
-        const walkSync = (currentDir, apply) => {
-            if (fs.statSync(currentDir).isDirectory()) {
-                return fs.readdirSync(currentDir).map(f => walkSync(path.join(currentDir, f),apply))
-            } else {
-                if (currentDir.endsWith(serverOptions.indexFile)) {
-                    let index = fu.readJson(currentDir);
-                    if (index['hes:meta']){
-                        for (let meta of index['hes:meta']) {
-                            apply(currentDir, meta)
-                        }
-                    }
+        // All files
+        let pattern = "**/index.json";
+        let indexes = new Glob(pattern, {mark: true, sync:true, absolute:true, nodir:true, cwd:serverOptions.workSpacePath}).found;
+        for (let currentDir of indexes){
+            let index = fu.readJson(currentDir);
+            if (index['hes:meta']){
+                for (let meta of index['hes:meta']) {
+                    let parent = currentDir.substr(0, currentDir.lastIndexOf('/'));
+                    let id = (parent.replaceAll(serverOptions.workSpacePath, '') + '/' + meta['hes:name']);
+                    graph.addNode(id, meta );
                 }
-                return undefined
             }
-        };
-
-        function addNodes(dirRelativeTo, meta){
-            let parent = dirRelativeTo.substr(0, dirRelativeTo.lastIndexOf('/'));
-            let id = (parent.replaceAll(serverOptions.workSpacePath,'')+'/'+meta['hes:name']);
-            graph.addNode(id, meta);
         }
+
+        for (let currentDir of indexes){
+            let index = fu.readJson(currentDir);
+            if (index['hes:meta']){
+                for (let meta of index['hes:meta']) {
+                    addDependencies(currentDir,meta);
+                }
+            }
+        }
+
 
         function addHref(dirRelativeTo,from,to){
             if (!validUrl.is_web_uri(to)) {
                 let dependency = DSL_V1.toAbsolutePath(dirRelativeTo,to);
-                let operation = DSL_V1.findOperationByAbsolutePath(dependency);
+                let operation = DSL_V1.findOperation(dependency);
                 if (operation.exists) {
                     graph.addDependency(from, dependency.replaceAll(serverOptions.workSpacePath,''));
+                }
+            }
+        }
+
+        function addInferenceDependencies(dirRelativeTo,from,inference,field){
+            if (inference[field]){
+                if (inference[field]['hes:href']) {
+                    let href = inference[field]['hes:href'];
+                    // One value
+                    if (typeof href === 'string') {
+                        addHref(dirRelativeTo,from,href);
+                    } else {
+                        // Array of values
+                        inference[field]['hes:href'] = _.flatMap(href, href => {
+                            addHref(dirRelativeTo,from,href);
+                        });
+                    }
                 }
             }
         }
@@ -122,31 +117,35 @@ class DSL_V1 {
                 addHref(dirRelativeTo,from,meta["hes:href"]);
             } else if (meta["hes:inference"]) {
                 let inference = meta["hes:inference"];
+
                 // Query dependencies
                 if (inference['hes:query']['hes:href']) {
                     addHref(dirRelativeTo,from,inference['hes:query']['hes:href']);
                 }
                 // Data dependencies
-                if (inference['hes:data']['hes:href']) {
-                    let href = inference['hes:data']['hes:href'];
-                    // One value
-                    if (typeof href === 'string') {
-                        addHref(dirRelativeTo,from,href);
-                    } else {
-                        // Array of values
-                        inference['hes:data']['hes:href'] = _.flatMap(href, href => {
-                            addHref(dirRelativeTo,from,href);
-                        });
+                addInferenceDependencies(dirRelativeTo,from,inference,'hes:data')
+            } else if (meta["hes:imports"]) {
+                let imports = meta["hes:imports"];
+
+                addHref(dirRelativeTo,from,imports['hes:href']);
+
+                // Query dependencies
+                if (imports['hes:query']){
+                    if (imports['hes:query']['hes:href']) {
+                        addHref(dirRelativeTo,from,imports['hes:query']['hes:href']);
                     }
                 }
-            } else if (meta["hes:imports"]) {
-                //  TODO
+                addInferenceDependencies(dirRelativeTo,from,imports,'hes:data');
+                addInferenceDependencies(dirRelativeTo,from,imports,'hes:addData');
             }
         }
 
-
-        walkSync(absolutePath, addNodes);
-        walkSync(absolutePath, addDependencies);
+        for (let operation of graph.overallOrder()){
+            let nodeData = graph.getNodeData(operation);
+            let operationDir = DSL_V1.toAbsolutePath(serverOptions.workSpacePath,operation);
+            operationDir = operationDir.substr(0, operationDir.lastIndexOf('/'));
+            graph.setNodeData(operation, this.expandMeta(operationDir,   nodeData));
+        }
 
         return graph;
     }
@@ -209,7 +208,7 @@ class DSL_V1 {
     expandImports(dirRelativeTo, meta) {
 
         let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta["hes:imports"]['hes:href']);
-        let _operation = DSL_V1.findOperationByAbsolutePath(targetDir);
+        let _operation = DSL_V1.findOperation(targetDir);
 
         if (_operation.exists) {
             targetDir = targetDir.substr(0, targetDir.lastIndexOf('/'));
@@ -279,27 +278,59 @@ class DSL_V1 {
         }
     }
 
+    static findOperation(target) {
+        let targetDir = target.substr(0, target.lastIndexOf('/'));
+        let name = target.substr(target.lastIndexOf('/') + 1);
 
-    static findOperationByAbsolutePath(target) {
-        let targetDir = target.substr(0, target.lastIndexOf('/'))
-        let name = target.substr(target.lastIndexOf('/') + 1)
-        return DSL_V1.findOperation(targetDir, name)
-    }
-
-    static findOperation(targetDir, name) {
         // Gets the template
         if (fu.exists(targetDir + '/' + serverOptions.indexFile)) {
             let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
             if (index['hes:meta']) {
                 for (let operation of index['hes:meta']) {
                     if (operation['hes:name'] === name) {
-                        return {exists: true, operation};
+                        return {
+                            exists: true,
+                            operation: operation
+                        }
                     }
                 }
             }
         }
-        return {exists: false}
+        return {
+            exists: false
+        }
     }
+
+    /**
+     * Goes from relative path to absolute path
+     * Fails if not in the current workspace
+     */
+    static toAbsolutePath(dirRelativeTo, value) {
+
+        if (typeof value !== 'string') {
+            throw Error("I don't know how to handle " + toJson(value));
+        }
+
+        // Already expanded
+        if (value.startsWith(serverOptions.workSpacePath)) {
+            return value;
+        }
+
+        let result;
+        if (path.isAbsolute(value)) {
+            result = path.join(serverOptions.workSpacePath, value);
+        } else {
+            result = path.join(dirRelativeTo, value);
+        }
+
+        if (!result.startsWith(serverOptions.workSpacePath)) {
+            throw Error("403 [" + result + "]");
+        }
+
+        return result;
+
+    }
+
 
     /**
      * Expands an hes:href into a de-referenciable resource (by the reasoner)
@@ -312,33 +343,27 @@ class DSL_V1 {
      *  - A call to a meta-operation, which expands to URL.
      */
     toDereferenciable(dirRelativeTo, value) {
-
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return value;
         }
 
-        let target = DSL_V1.toAbsolutePath(dirRelativeTo, value);
+        // If its already expanded
+        let targetPath = DSL_V1.toAbsolutePath(dirRelativeTo, value);
 
-        if (fu.exists(target)) {
-            // Absolute and relative files
-            return target;
-        }
-
-        /**
-         * If there is a context defined, then we can search for possible virtual operations,
-         * (this is used when chaining operations.)
-         */
-        if (this.context) {
-            // Splits the URI to find the current local operation.
-            let operation = DSL_V1.findOperationByAbsolutePath(target);
+        if (!fu.exists(targetPath)){
+            let operation = DSL_V1.findOperation(targetPath);
             if (operation.exists) {
-                return this.context.toApiPath(target);
+                if (this.context){
+                    return this.context.toApiPath(targetPath);
+                } else {
+                    return targetPath.replaceAll(serverOptions.workSpacePath,'');
+                }
             }
+            throw Error("404 [" + value + "]");
+        } else {
+            return targetPath;
         }
-
-        // Nothing was found
-        throw Error("404 [" + value + "]");
     }
 
     /**
@@ -353,37 +378,50 @@ class DSL_V1 {
      *  - A file (absolute), which expands to a [file].
      *  - A call to a meta-operation, which expands to an URL
      */
-    toDereferenciables(dirRelativeTo, value) {
 
+    // Found the glorious node-glob implementation.
+
+    toDereferenciables(dirRelativeTo, value) {
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return [value]
         }
-        let target = DSL_V1.toAbsolutePath(dirRelativeTo, value);
 
-        let files = fu.readDir(target).files;
-
-        if (!files) {
-            /**
-             * If there is a context defined, then we can search for possible virtual operations,
-             * (this is used when chaining operations.)
-             */
-            if (this.context) {
-                let operation = DSL_V1.findOperationByAbsolutePath(target);
-                if (operation.exists) {
-                    return [this.context.toApiPath(target)];
-                }
-            }
-
-            if (fu.exists(target)) {
-                return [target];
-            }
-
-            // Nothing was found
-            throw Error("404 [" + target + "]");
+        let glob;
+        if (path.isAbsolute(value)) {
+            // options for absolute
+            let options = {mark: true, sync:true, root:serverOptions.workSpacePath, ignore:'**/index.json', absolute:false, nodir:true};
+            glob = new Glob(value.replaceAll(serverOptions.workSpacePath,''), options);
+        } else {
+            // options for relative
+            let options = {mark: true, sync:true, cwd:dirRelativeTo, ignore:'**/index.json', absolute:true, nodir:true};
+            glob = new Glob(value, options);
         }
 
-        return files.filter(x => !x.endsWith(serverOptions.indexFile));
+
+        if (glob.found && glob.found.length > 0){
+            return glob.found;
+        }
+
+        let targetPath = DSL_V1.toAbsolutePath(dirRelativeTo, value);
+        let operation = DSL_V1.findOperation(targetPath);
+        if (operation.exists) {
+            if (this.context){
+                return [this.context.toApiPath(targetPath)];
+            } else {
+                return [targetPath.replaceAll(serverOptions.workSpacePath,'')];
+            }
+        }
+
+        if (!fu.exists(targetPath)){
+            throw Error("404 [" + targetPath + "]");
+        }
+
+        if (fu.isDirectory(targetPath)){
+            throw Error("400 [" + targetPath + "] is directory");
+        }
+
+        throw Error("500 [" + targetPath + " unhandled error ]");
     }
 
 }

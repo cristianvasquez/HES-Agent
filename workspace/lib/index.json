@@ -19,7 +19,7 @@
       "hes:name": "whoIsWhat",
       "hes:inference": {
         "hes:data": {
-          "hes:href": "./data"
+          "hes:href": "./data/*"
         },
         "hes:query": {
           "hes:href": "/lib/query/whoIsWhat.n3"

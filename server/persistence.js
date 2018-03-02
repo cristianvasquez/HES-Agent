@@ -1,6 +1,8 @@
 const config = require('../config');
 const fs = require('fs-extra');
 const path = require('path');
+var glob = require("glob");
+
 
 function exists(fileOrDir) {
     return fs.existsSync(fileOrDir);
@@ -11,6 +13,11 @@ function isFile(fileOrDir){
     return !fs.statSync(fileOrDir).isDirectory();
 }
 exports.isFile = isFile;
+
+function isDirectory(fileOrDir){
+    return fs.statSync(fileOrDir).isDirectory();
+}
+exports.isDirectory = isDirectory;
 
 /**
  * All the files from a public directory
@@ -38,10 +45,11 @@ function readDir(dir) {
     let result = {
         files:[],
         directories:[],
-        exists:true
+        exists:true,
+        isDirectory:fs.statSync(dir).isDirectory()
     };
 
-    if (fs.statSync(dir).isDirectory()){
+    if (result.isDirectory){
         let elements = fs.readdirSync(dir);
         elements.forEach(function(file) {
             if (fs.statSync(dir + '/' + file).isDirectory()) {
@@ -51,13 +59,14 @@ function readDir(dir) {
                 result.files.push(path.resolve(dir+"/"+file));
             }
         });
-    } else {
-        result.files.push(dir)
     }
 
     return result;
 }
 exports.readDir = readDir;
+
+
+
 
 /**
  * Gets the index.json file from a local directory

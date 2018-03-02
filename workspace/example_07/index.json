@@ -20,7 +20,7 @@
       "hes:description": "Socrates proof",
       "hes:inference": {
         "hes:data": {
-          "hes:href": "/lib/data"
+          "hes:href": "/lib/data/*"
         },
         "hes:query": {
           "hes:raw": "{ ?who a ?what } => { ?who a ?what }."

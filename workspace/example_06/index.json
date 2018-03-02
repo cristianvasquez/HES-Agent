@@ -21,7 +21,7 @@
       "hes:imports": {
         "hes:href": "/lib/whoIsWhat",
         "hes:data": {
-          "hes:href": "./personal"
+          "hes:href": "./personal/*"
         }
       }
     },
@@ -31,7 +31,7 @@
       "hes:imports": {
         "hes:href": "/lib/whoIsWhat",
         "hes:addData": {
-          "hes:href": "./personal"
+          "hes:href": "./personal/*"
         }
       }
     },

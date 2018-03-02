@@ -49,6 +49,12 @@ http://localhost:3000
 
 Then 'follow the links'
 
+Operations and dependency graph:
+```
+http://localhost:3000/dataspaces/operations
+```
+
+
 ## Run with docker
 
 

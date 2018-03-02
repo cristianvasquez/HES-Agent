@@ -11,7 +11,9 @@ const DSL_V1 = require("../dsl_v1");
 const rp = require('request-promise');
 let hash = require('string-hash');
 
+
 class HES extends express.Router {
+
     constructor(processorOptions) {
         super();
 
@@ -19,18 +21,27 @@ class HES extends express.Router {
             throw new Error("must define processor options example: " + JSON.stringify(config.processorOptions, null, 2));
         }
 
-        // I'll check for cache on next iterations.
-        function getDependencyGraph(req) {
-            let context = new Context(req);
-            let dsl_v1 = new DSL_V1(context);
-            return dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
-        }
-
         this.get("/operations", function (req, res, next) {
             let context = new Context(req);
             let dsl_v1 = new DSL_V1(context);
+            cache.del('dependencyGraph');
             res.json(dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath));
         });
+
+        // I'll check for cache on next iterations.
+        var cache = require('memory-cache');
+        function getDependencyGraph(req) {
+            let dependencyGraph = cache.get('dependencyGraph');
+            if (!dependencyGraph) {
+                let context = new Context(req);
+                let dsl_v1 = new DSL_V1(context);
+                dependencyGraph = dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
+                cache.put('dependencyGraph',dependencyGraph,100000,function() {
+                    console.log('Reloading dependency graph');
+                });
+            }
+            return dependencyGraph;
+        }
 
         this.processorOptions = processorOptions;
 
@@ -192,9 +203,6 @@ class HES extends express.Router {
             if (hasDefinedOperation) {
 
                 let meta = dependencyGraph.getNodeData(context.getLocalHref());
-                /**
-                 * Handle Hrefs, @TODO:Refactor
-                 */
                 if (meta.href) {
 
                     let target = dsl_v1.toDereferenciable(context.getLocalDir(), meta.href);

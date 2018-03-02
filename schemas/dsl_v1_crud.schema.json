@@ -4,7 +4,7 @@
   "description": "schema for a meta operation entry",
   "type": "object",
   "properties": {
-    "hes:Content-Type:": {
+    "Content-Type:": {
       "description": "Defaults: application/x-json+ld",
       "enum": [
         "text/turtle",
@@ -38,30 +38,30 @@
     "raw-resource": {
       "type": "object",
       "properties": {
-        "hes:raw": {
+        "raw": {
           "type": "string"
         }
       },
       "required": [
-        "hes:raw"
+        "raw"
       ]
     },
     "href-resource": {
       "type": "object",
       "properties": {
-        "hes:href": {
+        "href": {
           "type": "string",
           "format": "uri-template"
         }
       },
       "required": [
-        "hes:href"
+        "href"
       ]
     },
     "raw-array-resource": {
       "type": "object",
       "properties": {
-        "hes:raw": {
+        "raw": {
           "type": "array",
           "items": {
             "type": "string"
@@ -70,13 +70,13 @@
         }
       },
       "required": [
-        "hes:raw"
+        "raw"
       ]
     },
     "href-array-resource": {
       "type": "object",
       "properties": {
-        "hes:href": {
+        "href": {
           "type": "array",
           "items": {
             "type": "string",
@@ -86,26 +86,26 @@
         }
       },
       "required": [
-        "hes:href"
+        "href"
       ]
     },
     "imports": {
       "type": "object",
       "properties": {
-        "hes:imports": {
+        "imports": {
           "type": "object",
           "properties": {
             "@id": {
               "type": "string",
               "format": "uri-template"
             },
-            "hes:data": {
+            "data": {
               "$ref": "#/definitions/resources"
             },
-            "hes:addData": {
+            "addData": {
               "$ref": "#/definitions/resources"
             },
-            "hes:removeData": {
+            "removeData": {
               "$ref": "#/definitions/resources"
             }
           },
@@ -115,7 +115,7 @@
         }
       },
       "required": [
-        "hes:imports"
+        "imports"
       ]
     }
   }

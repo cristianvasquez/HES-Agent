@@ -169,14 +169,14 @@ describe("dsl-interpreter", function () {
     it("example_01", function () {
         before();
         let input = {
-            "hes:name": "next",
-            "hes:description": "go to example 2",
-            "hes:href": "../example_02"
+            "name": "next",
+            "description": "go to example 2",
+            "href": "../example_02"
         };
         let expanded = {
-            "hes:name": "next",
-            "hes:description": "go to example 2",
-            "hes:href": config.serverOptions.workSpacePath+"/example_02"
+            "name": "next",
+            "description": "go to example 2",
+            "href": config.serverOptions.workSpacePath+"/example_02"
         };
         let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_01'),input);
         expect(result).to.deep.equal(expanded);
@@ -185,13 +185,13 @@ describe("dsl-interpreter", function () {
     it("example_02", function () {
         before();
         let input = {
-            "hes:name": "dbpedia",
-            "hes:description": "Dbpedia query",
-            "hes:query": {
-                "hes:endpoint": "http://dbpedia.restdesc.org",
-                "hes:default-graph-uri": "http://dbpedia.org",
-                "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-                "hes:Accept": "application/x-json+ld"
+            "name": "dbpedia",
+            "description": "Dbpedia query",
+            "query": {
+                "endpoint": "http://dbpedia.restdesc.org",
+                "default-graph-uri": "http://dbpedia.org",
+                "raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
+                "Accept": "application/x-json+ld"
             }
         };
         let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_02'),input);
@@ -201,29 +201,29 @@ describe("dsl-interpreter", function () {
     it("example_03", function () {
         before();
         let input = {
-            "hes:name": "socrates",
-            "hes:description": "Socrates example",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": "/lib/data/*"
+            "name": "socrates",
+            "description": "Socrates example",
+            "inference": {
+                "data": {
+                    "href": "/lib/data/*"
                 },
-                "hes:query": {
-                    "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                "query": {
+                    "raw": "{ ?who a ?what } => { ?who a ?what }."
                 }
             }
         };
         let expanded = {
-            "hes:name": "socrates",
-            "hes:description": "Socrates example",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": [
+            "name": "socrates",
+            "description": "Socrates example",
+            "inference": {
+                "data": {
+                    "href": [
                         config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                         config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
                     ]
                 },
-                "hes:query": {
-                    "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                "query": {
+                    "raw": "{ ?who a ?what } => { ?who a ?what }."
                 }
             }
         };
@@ -234,29 +234,29 @@ describe("dsl-interpreter", function () {
     it("example_04", function () {
         before();
         let input = {
-            "hes:name": "bob",
-            "hes:description": "Bob space",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": ["/lib/data/knowledge.n3", "./personal/*"]
+            "name": "bob",
+            "description": "Bob space",
+            "inference": {
+                "data": {
+                    "href": ["/lib/data/knowledge.n3", "./personal/*"]
                 },
-                "hes:query": {
-                    "hes:href": "/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": "/lib/query/whoIsWhat.n3"
                 }
             }
         };
         let expanded = {
-            "hes:name": "bob",
-            "hes:description": "Bob space",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": [
+            "name": "bob",
+            "description": "Bob space",
+            "inference": {
+                "data": {
+                    "href": [
                         config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                         config.serverOptions.workSpacePath+"/example_04/personal/Bob.n3"
                     ]
                 },
-                "hes:query": {
-                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
                 }
             }
         };
@@ -267,25 +267,25 @@ describe("dsl-interpreter", function () {
     it("example_05", function () {
         before();
         let input = {
-            "hes:name": "extend",
-            "hes:description": "extend /lib",
-            "hes:imports": {
-                "hes:href": "/lib/whoIsWhat"
+            "name": "extend",
+            "description": "extend /lib",
+            "imports": {
+                "href": "/lib/whoIsWhat"
             }
         };
 
         let expanded = {
-            "hes:name": "extend",
-            "hes:description": "extend /lib",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": [
+            "name": "extend",
+            "description": "extend /lib",
+            "inference": {
+                "data": {
+                    "href": [
                         config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                         config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
                     ]
                 },
-                "hes:query": {
-                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
                 }
             }
         };
@@ -296,27 +296,27 @@ describe("dsl-interpreter", function () {
     it("example_05_maintains_content_type", function () {
         before();
         let input = {
-            "hes:name": "extend",
-            "hes:Content-Type": "text/turtle",
-            "hes:description": "extend /lib",
-            "hes:imports": {
-                "hes:href": "/lib/whoIsWhat"
+            "name": "extend",
+            "Content-Type": "text/turtle",
+            "description": "extend /lib",
+            "imports": {
+                "href": "/lib/whoIsWhat"
             }
         };
 
         let expanded = {
-            "hes:name": "extend",
-            "hes:Content-Type": "text/turtle",
-            "hes:description": "extend /lib",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": [
+            "name": "extend",
+            "Content-Type": "text/turtle",
+            "description": "extend /lib",
+            "inference": {
+                "data": {
+                    "href": [
                         config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                         config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
                     ]
                 },
-                "hes:query": {
-                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
                 }
             }
         };
@@ -327,18 +327,18 @@ describe("dsl-interpreter", function () {
     it("example_05_maintains_content_type_for_href", function () {
         before();
         let input = {
-            "hes:name": "next",
-            "hes:Content-Type": "text/turtle",
-            "hes:imports": {
-                "hes:href": "/example_01/next"
+            "name": "next",
+            "Content-Type": "text/turtle",
+            "imports": {
+                "href": "/example_01/next"
             }
         };
 
         let expanded = {
-            "hes:name": "next",
-            "hes:Content-Type": "text/turtle",
-            "hes:description": "go to example 2",
-            "hes:href": config.serverOptions.workSpacePath+"/example_02"
+            "name": "next",
+            "Content-Type": "text/turtle",
+            "description": "go to example 2",
+            "href": config.serverOptions.workSpacePath+"/example_02"
         };
         let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_05'),input);
         expect(result).to.deep.equal(expanded);
@@ -347,27 +347,27 @@ describe("dsl-interpreter", function () {
     it("example_06", function () {
         before();
         let input = {
-            "hes:name": "alice",
-            "hes:description": "Alice's space",
-            "hes:imports": {
-                "hes:href": "/lib/whoIsWhat",
-                "hes:data": {
-                    "hes:href": "./personal/*"
+            "name": "alice",
+            "description": "Alice's space",
+            "imports": {
+                "href": "/lib/whoIsWhat",
+                "data": {
+                    "href": "./personal/*"
                 }
             }
         };
         let expanded = {
-            "hes:name": "alice",
-            "hes:description": "Alice's space",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": [
+            "name": "alice",
+            "description": "Alice's space",
+            "inference": {
+                "data": {
+                    "href": [
                         config.serverOptions.workSpacePath+"/example_06/personal/Alice.n3",
                         config.serverOptions.workSpacePath+"/example_06/personal/knowledge.n3"
                     ]
                 },
-                "hes:query": {
-                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
                 }
             }
         };
@@ -378,29 +378,29 @@ describe("dsl-interpreter", function () {
     it("example_06_add", function () {
         before();
         let input = {
-            "hes:name": "alice_2",
-            "hes:description": "Adds alice's space",
-            "hes:imports": {
-                "hes:href": "/lib/whoIsWhat",
-                "hes:addData": {
-                    "hes:href": "./personal/*"
+            "name": "alice_2",
+            "description": "Adds alice's space",
+            "imports": {
+                "href": "/lib/whoIsWhat",
+                "addData": {
+                    "href": "./personal/*"
                 }
             }
         };
         let expanded = {
-            "hes:name": "alice_2",
-            "hes:description": "Adds alice's space",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": [
+            "name": "alice_2",
+            "description": "Adds alice's space",
+            "inference": {
+                "data": {
+                    "href": [
                         config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                         config.serverOptions.workSpacePath+"/lib/data/socrates.n3",
                         config.serverOptions.workSpacePath+"/example_06/personal/Alice.n3",
                         config.serverOptions.workSpacePath+"/example_06/personal/knowledge.n3"
                     ]
                 },
-                "hes:query": {
-                    "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
                 }
             }
         };
@@ -411,12 +411,12 @@ describe("dsl-interpreter", function () {
     it("example_06_when_outside_directory", function () {
         before();
         let input = {
-            "hes:name": "alice",
-            "hes:description": "Alice's space",
-            "hes:imports": {
-                "hes:href": "/lib/whoIsWhat",
-                "hes:data": {
-                    "hes:href": "../../test/example"
+            "name": "alice",
+            "description": "Alice's space",
+            "imports": {
+                "href": "/lib/whoIsWhat",
+                "data": {
+                    "href": "../../test/example"
                 }
             }
         };
@@ -429,40 +429,40 @@ describe("dsl-interpreter", function () {
     it("example_07", function () {
         before();
         let input =      {
-            "hes:name": "socrates",
-            "hes:description": "Socrates proof",
-            "hes:inference": {
-                "hes:data": {
-                    "hes:href": "/lib/data/*"
+            "name": "socrates",
+            "description": "Socrates proof",
+            "inference": {
+                "data": {
+                    "href": "/lib/data/*"
                 },
-                "hes:query": {
-                    "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                "query": {
+                    "raw": "{ ?who a ?what } => { ?who a ?what }."
                 },
-                "hes:options":{
-                    "hes:proof":true
+                "options":{
+                    "proof":true
                 }
             }
         };
 
         let inference = {
-            "hes:data": {
-                "hes:href": [
+            "data": {
+                "href": [
                     config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                     config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
                 ]
             },
-            "hes:query": {
-                "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+            "query": {
+                "raw": "{ ?who a ?what } => { ?who a ?what }."
             },
-            "hes:options":{
-                "hes:proof":true
+            "options":{
+                "proof":true
             }
         };
 
         let expanded = {
-            "hes:name": "socrates",
-            "hes:description": "Socrates proof",
-            "hes:inference": inference
+            "name": "socrates",
+            "description": "Socrates proof",
+            "inference": inference
         };
 
         let result = dsl_v1.expandMeta(path.resolve(__dirname + '/../workspace/example_07'),input);
@@ -475,9 +475,9 @@ describe("dsl-interpreter", function () {
             config.serverOptions.workSpacePath = path.resolve(__dirname);
 
             let input = {
-                "hes:name": "exec",
-                "hes:imports": {
-                    "hes:href": "/circular_02/exec"
+                "name": "exec",
+                "imports": {
+                    "href": "/circular_02/exec"
                 }
             };
 
@@ -519,9 +519,9 @@ describe("validator", function () {
             console.log(indexFile);
             let contents = fs.readFileSync(indexFile);
             let index = JSON.parse(contents);
-            if (index['hes:meta']){
-                for (let operation of index['hes:meta']){
-                    console.log('\t'+operation['hes:name']);
+            if (index['meta']){
+                for (let operation of index['meta']){
+                    console.log('\t'+operation['name']);
                     expect(DSL_V1.validateOperation(operation)).to.equal(true);
                 }
             }
@@ -532,9 +532,9 @@ describe("validator", function () {
     it("example_1", function () {
         before();
         let input = {
-            "hes:name": "next",
-            "hes:description": "go to example 2",
-            "hes:href": "../example_02"
+            "name": "next",
+            "description": "go to example 2",
+            "href": "../example_02"
         };
         let result = DSL_V1.validateOperation(input);
         expect(result).to.equal(true);
@@ -544,13 +544,13 @@ describe("validator", function () {
         before();
 
         let input = {
-            "hes:name": "dbpedia",
-            "hes:description": "Dbpedia query",
-            "hes:query": {
-                "hes:endpoint": "http://dbpedia.restdesc.org",
-                "hes:default-graph-uri": "http://dbpedia.org",
-                "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
-                "hes:Accept": "application/x-json+ld"
+            "name": "dbpedia",
+            "description": "Dbpedia query",
+            "query": {
+                "endpoint": "http://dbpedia.restdesc.org",
+                "default-graph-uri": "http://dbpedia.org",
+                "raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10",
+                "Accept": "application/x-json+ld"
             }
         };
 
@@ -561,16 +561,16 @@ describe("validator", function () {
     it("example_3", function () {
         before();
         let input = {
-            "hes:name": "socrates",
-            "hes:description": "Socrates example",
-            "hes:inference": {
-                "hes:data": [
+            "name": "socrates",
+            "description": "Socrates example",
+            "inference": {
+                "data": [
                     {
-                        "hes:href": "/lib/data"
+                        "href": "/lib/data"
                     }
                 ],
-                "hes:query": {
-                    "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+                "query": {
+                    "raw": "{ ?who a ?what } => { ?who a ?what }."
                 }
             }
         };
@@ -582,19 +582,19 @@ describe("validator", function () {
         before();
 
         let input = {
-            "hes:name": "bob",
-            "hes:description": "Bob space",
-            "hes:inference": {
-                "hes:data": [
+            "name": "bob",
+            "description": "Bob space",
+            "inference": {
+                "data": [
                     {
-                        "hes:href": "/lib/data/knowledge.n3"
+                        "href": "/lib/data/knowledge.n3"
                     },
                     {
-                        "hes:href": "./personal"
+                        "href": "./personal"
                     }
                 ],
-                "hes:query": {
-                    "hes:href": "/lib/query/whoIsWhat.n3"
+                "query": {
+                    "href": "/lib/query/whoIsWhat.n3"
                 }
             }
         };
@@ -606,11 +606,11 @@ describe("validator", function () {
         before();
 
         let input = {
-            "hes:name": "extend",
-            "hes:description": "extend /lib",
-            "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat"
+            "name": "extend",
+            "description": "extend /lib",
+            "imports": {
+                "href": "/lib",
+                "name": "whoIsWhat"
             }
         };
 
@@ -622,14 +622,14 @@ describe("validator", function () {
         before();
 
         let input = {
-            "hes:name": "alice",
-            "hes:description": "Alice's space",
-            "hes:imports": {
-                "hes:href": "/lib",
-                "hes:name": "whoIsWhat",
-                "hes:data": [
+            "name": "alice",
+            "description": "Alice's space",
+            "imports": {
+                "href": "/lib",
+                "name": "whoIsWhat",
+                "data": [
                     {
-                        "hes:href": "./personal"
+                        "href": "./personal"
                     }
                 ]
             }
@@ -667,11 +667,11 @@ describe("validatorCrud", function () {
     it("create import", function () {
         before();
         let input = {
-            "hes:imports": {
+            "imports": {
                 "@id":"http://localhost:3000/some_path/agent/operation_name",
-                "hes:Content-Type":"application/x-json+ld",
-                "hes:addData": {
-                    "hes:href": ["../user_profile","../environment","../other_rule"]
+                "Content-Type":"application/x-json+ld",
+                "addData": {
+                    "href": ["../user_profile","../environment","../other_rule"]
                 }
             }
         };

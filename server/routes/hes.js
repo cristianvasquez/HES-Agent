@@ -12,13 +12,25 @@ const rp = require('request-promise');
 let hash = require('string-hash');
 
 class HES extends express.Router {
-
     constructor(processorOptions) {
         super();
 
         if (!processorOptions) {
             throw new Error("must define processor options example: " + JSON.stringify(config.processorOptions, null, 2));
         }
+
+        // I'll check for cache on next iterations.
+        function getDependencyGraph(req) {
+            let context = new Context(req);
+            let dsl_v1 = new DSL_V1(context);
+            return dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
+        }
+
+        this.get("/operations", function (req, res, next) {
+            let context = new Context(req);
+            let dsl_v1 = new DSL_V1(context);
+            res.json(dsl_v1.buildLocalDependencyGraph( serverOptions.workSpacePath));
+        });
 
         this.processorOptions = processorOptions;
 
@@ -27,32 +39,34 @@ class HES extends express.Router {
          */
         if (this.processorOptions.hydraOperations.indexOf('POST') !== -1) {
             this.post("*", function (req, res, next) {
-                addOrReplace(req, res, next);
+                createOrUpdate(req, res, next);
             });
         }
 
         if (this.processorOptions.hydraOperations.indexOf('PUT') !== -1) {
             this.put("*", function (req, res, next) {
-                addOrReplace(req, res, next);
+                createOrUpdate(req, res, next);
             });
         }
 
-        function addOrReplace(req, res, next) {
-            if (_.endsWith(req.originalUrl, '.ttl')) {
-                addOrReplaceFile(req, res, next);
+        function createOrUpdate(req, res, next) {
+            let dependencyGraph = getDependencyGraph(req);
+            let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
+            if (hasDefinedOperation){
+                createOrUpdateMeta(req, res, next)
             } else {
-                addOrReplaceOperation(req, res, next)
+                createOrUpdateFile(req, res, next);
             }
         }
 
-        function addOrReplaceFile(req, res, next) {
+        function createOrUpdateFile(req, res, next) {
             let context = new Context(req);
             let targetFile = context.getLocalDir();
             fu.writeFile(targetFile, req.body);
             res.json({'@id': context.getCurrentPath()});
         }
 
-        function addOrReplaceOperation(req, res, next) {
+        function createOrUpdateMeta(req, res, next) {
 
             let context = new Context(req);
             let targetDir = context.getTail().getLocalDir();
@@ -73,35 +87,35 @@ class HES extends express.Router {
 
             // get the meta descriptions
             let index = fu.readJson(indexPath);
-            let meta = index['hes:meta'];
+            let meta = index.meta;
 
             // First time a meta is defined
             if (!meta) {
                 meta = [];
             }
             // Remove existing operation with this name.
-            meta = meta.filter(x => x['hes:name'] !== targetName);
+            meta = meta.filter(x => x['name'] !== targetName);
 
-            if (!newOperation['hes:imports']['@id']) {
-                res.status(400).json({error: "cannot find ['hes:imports']['@id']"});
+            if (!newOperation['imports']['@id']) {
+                res.status(400).json({error: "cannot find ['imports']['@id']"});
             }
 
-            // Only hes:imports implemented at the moment
-            let targetContext = context.getContextForURL(newOperation['hes:imports']['@id']);
+            // Only imports implemented at the moment
+            let targetContext = context.getContextForURL(newOperation['imports']['@id']);
             let _operation = DSL_V1.findOperation(targetContext.getLocalDir());
             if (!_operation.exists) {
-                res.status(400).json({error: "cannot find operation at: " + newOperation['hes:imports']['@id']});
+                res.status(400).json({error: "cannot find operation at: " + newOperation['imports']['@id']});
             }
 
             // Add the name of the operation, and the name of imported operation
-            newOperation['hes:imports']['hes:name'] = targetContext.getHead();
-            newOperation['hes:imports']['hes:href'] = targetContext.getTail().getLocalHref();
-            delete newOperation['hes:imports']['@id'];
-            newOperation['hes:name'] = targetName;
+            newOperation['imports']['name'] = targetContext.getHead();
+            newOperation['imports']['href'] = targetContext.getTail().getLocalHref();
+            delete newOperation['imports']['@id'];
+            newOperation['name'] = targetName;
 
             // Add the operation
             meta.push(newOperation);
-            index['hes:meta'] = meta;
+            index.meta = meta;
 
             fu.writeFile(indexPath, JSON.stringify(index, null, 2));
             res.json({'@id': context.getCurrentPath()});
@@ -109,11 +123,18 @@ class HES extends express.Router {
 
         /**
          * Delete (at he moment, it only deletes operations inside a descriptor file)
+         *
+         * Could check for dependencies through the dependency graph, but I'm not sure how this will behave with any H-Eye interacting.
          */
         if (this.processorOptions.hydraOperations.indexOf('DELETE') !== -1) {
             this.delete("*", function (req, res, next) {
                 let context = new Context(req);
-                if (_.endsWith(req.originalUrl, '.ttl')) {
+
+                let dependencyGraph = getDependencyGraph(req);
+                let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
+
+
+                if (!hasDefinedOperation) {
 
                     // Delete a turtle file
                     let targetFile = context.getLocalDir();
@@ -135,10 +156,10 @@ class HES extends express.Router {
                     // Remove existing operation with this name.
                     let index = fu.readJson(indexPath);
 
-                    if (!index['hes:meta']) {
+                    if (!index.meta) {
                         res.status(400).json({error: context.getCurrentPath() + ' has no meta-operations defined'});
                     }
-                    index['hes:meta'] = index['hes:meta'].filter(x => x['hes:name'] !== targetName);
+                    index.meta = index.meta.filter(x => x['name'] !== targetName);
 
                     fu.writeFile(indexPath, JSON.stringify(index, null, 2));
                     res.json({deleted: {'@id': context.getCurrentPath()}});
@@ -146,192 +167,140 @@ class HES extends express.Router {
             });
         }
 
-        this.get("/operations", function (req, res, next) {
-            let context = new Context(req);
-            let dsl_v1 = new DSL_V1(context);
-            res.json(dsl_v1.buildLocalDependencyGraph( serverOptions.workSpacePath));
-        });
-
         /**
          * Fallback
          */
         this.get("*", function (req, res, next) {
             let context = new Context(req);
-            let virtuals = handleVirtuals(context);
-            if (virtuals.isVirtual) {
-                // Handle the corresponding virtual
-                virtuals.callback(res)
+            let dsl_v1 = new DSL_V1(context);
+
+            let dependencyGraph = getDependencyGraph(req);
+            let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
+            if (hasDefinedOperation){
+
+                let meta = dependencyGraph.getNodeData(context.getLocalHref());
+                let contentType = meta['Content-Type'];
+
+                /**
+                 * Handle Hrefs, @TODO:Refactor
+                 */
+                if (meta['href']) {
+                    if (!contentType) {
+                        contentType = processorOptions.hrefContentType
+                    }
+                    let value = meta['href'];
+
+                    let target = dsl_v1.toDereferenciable(context.getLocalDir(), value);
+
+                    if (fu.isFile(target)) { // its a local resource
+                        target = context.toResourcePath(target);
+                        let options = {
+                            uri: target,
+                            headers: {
+                                "Accept": contentType
+                            }
+                        };
+                        rp(options)
+                            .then(function (body) {
+                                renderSupportedContentypes(context, contentType, body, res);
+                            })
+                            .catch(function (error) {
+                                renderError(res, error);
+                            });
+                    } else { // Its either external or virtual operation, we redirect
+
+                        function insideWorkspace(someLocalDir){
+                            return someLocalDir.startsWith(serverOptions.workSpacePath)
+                        }
+
+                        if (insideWorkspace(target)){
+                            target = context.toApiPath(target);
+                        }
+                        res.set({
+                            "Accept": contentType
+                        });
+                        res.redirect(target);
+                    }
+
+
+
+                } else if (meta['raw']) {
+                    if (!contentType) {
+                        contentType = processorOptions.rawContentType
+                    }
+                    let value = meta['raw'];
+                    renderSupportedContentypes(context, contentType, value, res);
+
+
+                } else if (meta['inference']) {
+                    /**
+                     * Handle inference, @TODO:Refactor
+                     */
+                    if (!contentType) {
+                        contentType = processorOptions.sparqlQueryContentType
+                    }
+                    let inference = meta['inference'];
+
+                    function rawToUrl(context, rawValue) {
+                        let filename = hash(rawValue) + ".n3";
+                        if (!fu.exists(filename)) {
+                            fu.writeFile(serverOptions.workSpacePath + "/" + serverOptions.tmpFolder + "/" + filename, rawValue);
+                        }
+                        return context.getResourcesRoot() + "/" + serverOptions.tmpFolder + "/" + filename;
+                    }
+
+                    // Writes a temporary file to be read by Eye, I don't know yet how to handle content types in EYE
+                    if (inference['query']['raw']) {
+                        inference['query']['href'] = rawToUrl(context, inference['query']['raw']);
+                        delete inference['query']['raw'];
+                    }
+
+                    Promise.resolve(reasoner.eyePromise(inference))
+                        .then(function (body) {
+                            renderSupportedContentypes(context, contentType, body, res);
+                        })
+                        .catch(function (error) {
+                            renderError(res, error);
+                        });
+
+
+                } else if (meta['query']) {
+
+                    /**
+                     * Handle query, @TODO:Refactor
+                     */
+
+                    if (!contentType) {
+                        contentType = processorOptions.sparqlQueryContentType
+                    }
+                    let value = meta['query'];
+                    let options = {
+                        uri: value['endpoint'],
+                        qs: {
+                            query: value['raw'],
+                            "default-graph-uri": value['default-graph-uri']
+                        },
+                        headers: {
+                            "Accept": "text/turtle"
+                        }
+                    };
+                    rp(options)
+                        .then(function (body) {
+                            renderSupportedContentypes(context, contentType, body, res);
+                        }).catch(function (error) {
+                        console.error(error);
+                        renderError(res, error);
+                    });
+
+                }
             } else {
-                // Build the default index.
                 let index = buildIndex(processorOptions, req, res);
                 res.json(index);
             }
         });
 
-        function handleVirtuals(context) {
-            let localDir = context.getLocalDir();
-            let exists = fu.exists(localDir);
-
-            // Could be it is an inferred directory, or a link
-            // We check the parent if there are defined operations
-            if (!exists && context.getCurrentPath().length > context.getApiRoot().length) {
-                let operationId = context.getHead();
-                let localDir = context.getTail().getLocalDir();
-                let index = fu.readJson(localDir + '/' + serverOptions.indexFile);
-                if (index['hes:meta']) {
-                    for (let operation of index['hes:meta']) {
-                        if (operation['hes:name'] === operationId) {
-                            // The operation exists, therefore needs to be handled.
-                            // return doOperation(processorOptions, context, operation);
-
-                            // Expands operations and transform extends to regular operations
-                            let dsl_v1 = new DSL_V1(context);
-                            let _operation = dsl_v1.expandMeta(context.getTail().getLocalDir(), operation);
-                            let contentType = _operation['hes:Content-Type'];
-
-                            if (_operation['hes:href']) {
-                                if (!contentType) {
-                                    contentType = processorOptions.hrefContentType
-                                }
-                                return handleHref(context, _operation['hes:href'], contentType)
-                            } else if (_operation['hes:raw']) {
-                                if (!contentType) {
-                                    contentType = processorOptions.rawContentType
-                                }
-                                return handleRaw(context, _operation['hes:raw'], contentType)
-                            } else if (_operation['hes:inference']) {
-                                if (!contentType) {
-                                    contentType = processorOptions.sparqlQueryContentType
-                                }
-                                return handleInference(context, _operation['hes:inference'], contentType);
-                            } else if (_operation['hes:query']) {
-                                if (!contentType) {
-                                    contentType = processorOptions.sparqlQueryContentType
-                                }
-                                return handleQuery(context, _operation['hes:query'], contentType);
-                            }
-                            throw new Error("Cannot handle " + toJson(_operation));
-
-                        }
-                    }
-                }
-            }
-            return {
-                isVirtual: false
-            };
-        }
 
     }
-}
-
-function handleHref(context, value, contentType) {
-    let dsl_v1 = new DSL_V1(context);
-    let target = dsl_v1.toDereferenciable(context.getLocalDir(), value);
-
-    if (fu.isFile(target)) { // its a local resource
-        target = context.toResourcePath(target);
-        let options = {
-            uri: target,
-            headers: {
-                "Accept": contentType
-            }
-        };
-        return {
-            isVirtual: true,
-            callback: function (res) {
-                rp(options)
-                    .then(function (body) {
-                        renderSupportedContentypes(context, contentType, body, res);
-                    })
-                    .catch(function (error) {
-                        renderError(res, error);
-                    });
-            }
-        };
-    } else { // Its either external or virtual operation, we redirect
-
-        if (insideWorkspace(target)){
-            target = context.toApiPath(target);
-        }
-
-        return {
-            isVirtual: true,
-            callback: function (res) {
-                res.set({
-                    "Accept": contentType
-                });
-                res.redirect(target);
-            }
-        }
-    }
-}
-
-function insideWorkspace(someLocalDir){
-    return someLocalDir.startsWith(serverOptions.workSpacePath)
-}
-
-function handleRaw(context, value, contentType) {
-    return {
-        isVirtual: true,
-        callback: function (res) {
-            renderSupportedContentypes(context, contentType, value, res);
-        }
-    }
-}
-
-function handleQuery(context, query, contentType) {
-    let options = {
-        uri: query['hes:endpoint'],
-        qs: {
-            query: query['hes:raw'],
-            "default-graph-uri": query['hes:default-graph-uri']
-        },
-        headers: {
-            "Accept": "text/turtle"
-        }
-    };
-    return {
-        isVirtual: true,
-        callback: function (res) {
-            rp(options)
-                .then(function (body) {
-                    renderSupportedContentypes(context, contentType, body, res);
-                }).catch(function (error) {
-                    console.error(error);
-                    renderError(res, error);
-                });
-        }
-    };
-}
-
-function handleInference(context, inference, contentType) {
-
-    function rawToUrl(context, rawValue) {
-        let filename = hash(rawValue) + ".n3";
-        if (!fu.exists(filename)) {
-            fu.writeFile(serverOptions.workSpacePath + "/" + serverOptions.tmpFolder + "/" + filename, rawValue);
-        }
-        return context.getResourcesRoot() + "/" + serverOptions.tmpFolder + "/" + filename;
-    }
-
-    // Writes a temporary file to be read by Eye, I don't know yet how to handle content types in EYE
-    if (inference['hes:query']['hes:raw']) {
-        inference['hes:query']['hes:href'] = rawToUrl(context, inference['hes:query']['hes:raw']);
-        delete inference['hes:query']['hes:raw'];
-    }
-
-    return {
-        isVirtual: true,
-        callback: function (res) {
-            Promise.resolve(reasoner.eyePromise(inference))
-                .then(function (body) {
-                    renderSupportedContentypes(context, contentType, body, res);
-                })
-                .catch(function (error) {
-                    renderError(res, error);
-                });
-        }
-    };
 }
 
 
@@ -376,26 +345,27 @@ function buildIndex(processorOptions, req, res) {
     }
 
     // And process the meta
-    if (result['hes:meta']) {
+    if (result.meta) {
         let operations = [], currentOperation;
 
         // Handle build links for the operations
-        for (currentOperation of _.filter(result['hes:meta'])) {
-            let operationName = _.get(currentOperation, 'hes:name');
+        for (currentOperation of _.filter(result.meta)) {
+            let operationName = _.get(currentOperation, 'name');
             let operationUri = context.getCurrentPath() + '/' + operationName;
             let link = buildLink(operationUri, 'Operation');
-            if (currentOperation['hes:description']) {
-                link['hes:description'] = currentOperation['hes:description'];
+            if (currentOperation['description']) {
+                link['description'] = currentOperation['description'];
             }
             operations.push(link);
         }
-        delete result['hes:meta'];
+        delete result.meta;
         result['this:operation'] = operations;
     }
 
-    if (processorOptions.hydraOperations) {
-        result["this:operations"] = processorOptions.hydraOperations;
-    }
+    // this confusing people
+    // if (processorOptions.hydraOperations) {
+    //     result["this:operations"] = processorOptions.hydraOperations;
+    // }
 
     return result
 }
@@ -439,10 +409,6 @@ function renderSupportedContentypes(context, contentType, body, res) {
         res.end(body, 'utf-8');
     }
 
-}
-
-function toJson(x) {
-    return JSON.stringify(x, null, 2);
 }
 
 function turtle2JsonLD(body) {

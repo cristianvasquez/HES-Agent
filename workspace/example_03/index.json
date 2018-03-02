@@ -14,23 +14,23 @@
     }
   ],
   "this:description": "Uses all the files of /lib/data as data, and { ?who a ?what } => { ?who a ?what } as query",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "socrates",
-      "hes:description": "Socrates example",
-      "hes:inference": {
-        "hes:data": {
-          "hes:href": "/lib/data/*"
+      "name": "socrates",
+      "description": "Socrates example",
+      "inference": {
+        "data": {
+          "href": "/lib/data/*"
         },
-        "hes:query": {
-          "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+        "query": {
+          "raw": "{ ?who a ?what } => { ?who a ?what }."
         }
       }
     },
     {
-      "hes:name": "next",
-      "hes:description": "go to example 4",
-      "hes:href": "../example_04"
+      "name": "next",
+      "description": "go to example 4",
+      "href": "../example_04"
     }
   ]
 }

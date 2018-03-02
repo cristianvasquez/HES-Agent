@@ -18,8 +18,8 @@ function getEyeCommand(inference){
      * Handle flags
      */
     let flags = config.defaultEyeOptions.defaultFlags.join(" ");
-    if (inference['hes:options']){
-        if (inference['hes:options']["hes:proof"]){
+    if (inference['options']){
+        if (inference['options']["proof"]){
             flags = "";
         }
     } else if (inference['eye:flags']){
@@ -34,27 +34,27 @@ function getEyeCommand(inference){
     /**
      * Handle data
      */
-    if (inference['hes:data']){
-        // command = command+" --data "+inference['hes:data']['hes:href'].join(" ");
-        if (Array.isArray(inference['hes:data']['hes:href'])){
-            command = command+" "+inference['hes:data']['hes:href'].join(" ");
+    if (inference['data']){
+        // command = command+" --data "+inference['data']['href'].join(" ");
+        if (Array.isArray(inference['data']['href'])){
+            command = command+" "+inference['data']['href'].join(" ");
         } else {
-            command = command+" "+inference['hes:data']['hes:href'];
+            command = command+" "+inference['data']['href'];
         }
     }
 
     /**
      * Handle query
      */
-    if (inference['hes:query']){
-        if (Array.isArray(inference['hes:query']['hes:href'])){
-            if (inference['hes:query']['hes:href'].length===1){
-                command = command+" --query "+inference['hes:query']['hes:href'][0];
+    if (inference['query']){
+        if (Array.isArray(inference['query']['href'])){
+            if (inference['query']['href'].length===1){
+                command = command+" --query "+inference['query']['href'][0];
             }else {
                 throw new Error('cannot handle multiple queries');
             }
         } else {
-            command = command+" --query "+inference['hes:query']['hes:href'];
+            command = command+" --query "+inference['query']['href'];
         }
     }
 
@@ -62,14 +62,14 @@ function getEyeCommand(inference){
      * Handle proof
      */
     // proof only supports urls by the moment
-    if (inference['hes:proof']){
-        if (!inference['hes:proof']['hes:href']) {
-            throw new Error('hes:href for proof not specified');
+    if (inference['proof']){
+        if (!inference['proof']['href']) {
+            throw new Error('href for proof not specified');
         }
-        if (Array.isArray(inference['hes:proof']['hes:href'])){
-            command = command+" --proof "+inference['hes:proof']['hes:href'].join(" --proof ");
+        if (Array.isArray(inference['proof']['href'])){
+            command = command+" --proof "+inference['proof']['href'].join(" --proof ");
         } else {
-            command = command+" --proof "+inference['hes:proof']['hes:href'];
+            command = command+" --proof "+inference['proof']['href'];
         }
     }
 

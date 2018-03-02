@@ -5,11 +5,11 @@
     "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "exec",
-      "hes:imports": {
-        "hes:href": "/circular_01/exec"
+      "name": "exec",
+      "imports": {
+        "href": "/circular_01/exec"
       }
     }
   ]

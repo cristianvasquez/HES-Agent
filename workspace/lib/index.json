@@ -14,15 +14,15 @@
     }
   ],
   "this:description": "Library example",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "whoIsWhat",
-      "hes:inference": {
-        "hes:data": {
-          "hes:href": "./data/*"
+      "name": "whoIsWhat",
+      "inference": {
+        "data": {
+          "href": "./data/*"
         },
-        "hes:query": {
-          "hes:href": "/lib/query/whoIsWhat.n3"
+        "query": {
+          "href": "/lib/query/whoIsWhat.n3"
         }
       }
     }

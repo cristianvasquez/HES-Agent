@@ -14,31 +14,31 @@
     }
   ],
   "this:description": "Declaration of a sparql query",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "dbpedia",
-      "hes:description":"Dbpedia query",
-      "hes:Content-Type": "application/x-json+ld",
-      "hes:query": {
-        "hes:endpoint": "http://dbpedia.restdesc.org",
-        "hes:default-graph-uri": "http://dbpedia.org",
-        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
+      "name": "dbpedia",
+      "description":"Dbpedia query",
+      "Content-Type": "application/x-json+ld",
+      "query": {
+        "endpoint": "http://dbpedia.restdesc.org",
+        "default-graph-uri": "http://dbpedia.org",
+        "raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
       }
     },
     {
-      "hes:name": "dbpedia_turtle",
-      "hes:description":"Dbpedia query",
-      "hes:Content-Type": "text/turtle",
-      "hes:query": {
-        "hes:endpoint": "http://dbpedia.restdesc.org",
-        "hes:default-graph-uri": "http://dbpedia.org",
-        "hes:raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
+      "name": "dbpedia_turtle",
+      "description":"Dbpedia query",
+      "Content-Type": "text/turtle",
+      "query": {
+        "endpoint": "http://dbpedia.restdesc.org",
+        "default-graph-uri": "http://dbpedia.org",
+        "raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
       }
     },
     {
-      "hes:name": "next",
-      "hes:description":"go to example 3",
-      "hes:href": "../example_03"
+      "name": "next",
+      "description":"go to example 3",
+      "href": "../example_03"
     }
   ]
 }

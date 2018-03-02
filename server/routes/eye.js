@@ -46,11 +46,11 @@ router.get("/*", function (req, res, next) {
         res.header('Access-Control-Allow-Origin', '*');
 
         let inference = {
-            "hes:data": {
-                "hes:href": data
+            "data": {
+                "href": data
             },
-            "hes:query": {
-                "hes:href": query
+            "query": {
+                "href": query
             }
         };
 

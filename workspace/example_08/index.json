@@ -14,23 +14,23 @@
     }
   ],
   "this:description": "Uses the result of the first operation into the second operation. ",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "first_operation",
-      "hes:description": "Chained operation",
-      "hes:raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
+      "name": "first_operation",
+      "description": "Chained operation",
+      "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
     },
     {
-      "hes:name": "second_operation",
-      "hes:inference": {
-        "hes:data": {
-          "hes:href": [
+      "name": "second_operation",
+      "inference": {
+        "data": {
+          "href": [
             "/lib/data/knowledge.n3",
             "/example_08/first_operation"
           ]
         },
-        "hes:query": {
-          "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+        "query": {
+          "raw": "{ ?who a ?what } => { ?who a ?what }."
         }
       }
     }

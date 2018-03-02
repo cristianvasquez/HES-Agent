@@ -21,14 +21,14 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href": [
+            "data": {
+                "href": [
                     config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
                     config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
                 ]
             },
-            "hes:query": {
-                "hes:href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
+            "query": {
+                "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
             }
         };
         let command = reasoning.getEyeCommand(inference);
@@ -40,11 +40,11 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href": "data.n3"
+            "data": {
+                "href": "data.n3"
             },
-            "hes:query": {
-                "hes:href": "query.n3"
+            "query": {
+                "href": "query.n3"
             }
         };
 
@@ -56,11 +56,11 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href": ["data_01.n3","data_02.n3"]
+            "data": {
+                "href": ["data_01.n3","data_02.n3"]
             },
-            "hes:query": {
-                "hes:href": "query.n3"
+            "query": {
+                "href": "query.n3"
             }
         };
 
@@ -72,11 +72,11 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href": "data.n3"
+            "data": {
+                "href": "data.n3"
             },
-            "hes:query": {
-                "hes:href": ["query.n3"]
+            "query": {
+                "href": ["query.n3"]
             }
         };
 
@@ -88,11 +88,11 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href": "data.n3"
+            "data": {
+                "href": "data.n3"
             },
-            "hes:query": {
-                "hes:href": ["query_01.n3","query_02.n3"]
+            "query": {
+                "href": ["query_01.n3","query_02.n3"]
             }
         };
 
@@ -107,16 +107,16 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href": "data.n3"
+            "data": {
+                "href": "data.n3"
             },
-            "hes:query": {
-                "hes:href": "query.csvq"
+            "query": {
+                "href": "query.csvq"
             },
             "eye:flags": [
                 "--strings"
             ],
-            "hes:Accept": "application/CSV"
+            "Accept": "application/CSV"
         };
 
         let command = reasoning.getEyeCommand(inference);
@@ -127,14 +127,14 @@ describe("eyeOptions", function () {
         before();
 
         let inference =    {
-            "hes:data": {
-                "hes:href":["./agent2-map.n3","../lib/gps-plugin.n3"]
+            "data": {
+                "href":["./agent2-map.n3","../lib/gps-plugin.n3"]
             },
-            "hes:proof": {
-                "hes:href":["http://alice/alice_proof"]
+            "proof": {
+                "href":["http://alice/alice_proof"]
             },
-            "hes:query":{
-                "hes:href": "./agent2-query.n3"
+            "query":{
+                "href": "./agent2-query.n3"
             }
         };
         let command = reasoning.getEyeCommand(inference);
@@ -146,14 +146,14 @@ describe("eyeOptions", function () {
         before();
 
         let inference =    {
-            "hes:data": {
-                "hes:href":["./agent2-map.n3","../lib/gps-plugin.n3"]
+            "data": {
+                "href":["./agent2-map.n3","../lib/gps-plugin.n3"]
             },
-            "hes:proof": {
-                "hes:href":["http://alice/alice_proof","http://bob/bob_proof"]
+            "proof": {
+                "href":["http://alice/alice_proof","http://bob/bob_proof"]
             },
-            "hes:query":{
-                "hes:href": "./agent2-query.n3"
+            "query":{
+                "href": "./agent2-query.n3"
             }
         };
         let command = reasoning.getEyeCommand(inference);
@@ -167,18 +167,18 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "hes:data": {
-                "hes:href":["./agent2-map.n3","../lib/gps-plugin.n3"]
+            "data": {
+                "href":["./agent2-map.n3","../lib/gps-plugin.n3"]
             },
-            "hes:proof": {},
-            "hes:query":{
-                "hes:href": "./agent2-query.n3"
+            "proof": {},
+            "query":{
+                "href": "./agent2-query.n3"
             }
         };
 
         expect(function () {
             reasoning.getEyeCommand(inference)
-        }).to.throw("hes:href for proof not specified");
+        }).to.throw("href for proof not specified");
 
     });
 

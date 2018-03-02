@@ -4,7 +4,7 @@
   "description": "schema for a h-eye declaration",
   "type": "object",
   "properties": {
-    "hes:meta": {
+    "meta": {
       "type": "array",
       "items": { "$ref": "https://github.com/cristianvasquez/H-Eye/operations#" }
     }

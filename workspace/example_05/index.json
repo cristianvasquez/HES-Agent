@@ -14,18 +14,18 @@
     }
   ],
   "this:description":"Uses the definition of /lib",
-  "hes:meta":[
+  "meta":[
     {
-      "hes:name":"import",
-      "hes:description":"import /lib",
-      "hes:imports": {
-        "hes:href":"/lib/whoIsWhat"
+      "name":"import",
+      "description":"import /lib",
+      "imports": {
+        "href":"/lib/whoIsWhat"
       }
     },
     {
-      "hes:name":"next",
-      "hes:description":"go to example 6",
-      "hes:href":"../example_06"
+      "name":"next",
+      "description":"go to example 6",
+      "href":"../example_06"
     }
   ]
 }

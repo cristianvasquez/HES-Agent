@@ -14,31 +14,31 @@
     }
   ],
   "this:description": "Uses the definition of /lib, but uses /personal as data. ",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "alice",
-      "hes:description": "Uses only alice's space",
-      "hes:imports": {
-        "hes:href": "/lib/whoIsWhat",
-        "hes:data": {
-          "hes:href": "./personal/*"
+      "name": "alice",
+      "description": "Uses only alice's space",
+      "imports": {
+        "href": "/lib/whoIsWhat",
+        "data": {
+          "href": "./personal/*"
         }
       }
     },
     {
-      "hes:name": "alice_and_socrates",
-      "hes:description": "Adds alice's space",
-      "hes:imports": {
-        "hes:href": "/lib/whoIsWhat",
-        "hes:addData": {
-          "hes:href": "./personal/*"
+      "name": "alice_and_socrates",
+      "description": "Adds alice's space",
+      "imports": {
+        "href": "/lib/whoIsWhat",
+        "addData": {
+          "href": "./personal/*"
         }
       }
     },
     {
-      "hes:name":"next",
-      "hes:description":"go to example 7",
-      "hes:href":"../example_07"
+      "name":"next",
+      "description":"go to example 7",
+      "href":"../example_07"
     }
   ]
 }

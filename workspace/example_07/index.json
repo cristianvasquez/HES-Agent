@@ -14,26 +14,26 @@
     }
   ],
   "this:description": "Same as example 03, but returns proof instead of just the result. ",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "proof",
-      "hes:description": "Socrates proof",
-      "hes:inference": {
-        "hes:data": {
-          "hes:href": "/lib/data/*"
+      "name": "proof",
+      "description": "Socrates proof",
+      "inference": {
+        "data": {
+          "href": "/lib/data/*"
         },
-        "hes:query": {
-          "hes:raw": "{ ?who a ?what } => { ?who a ?what }."
+        "query": {
+          "raw": "{ ?who a ?what } => { ?who a ?what }."
         },
-        "hes:options":{
-          "hes:proof":true
+        "options":{
+          "proof":true
         }
       }
     },
     {
-      "hes:name":"next",
-      "hes:description":"go to example 8",
-      "hes:href":"../example_08"
+      "name":"next",
+      "description":"go to example 8",
+      "href":"../example_08"
     }
   ]
 }

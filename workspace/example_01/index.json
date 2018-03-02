@@ -14,16 +14,16 @@
     }
   ],
   "this:description": "Declaration of redirect pointers",
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "raw",
-      "hes:description": "raw data",
-      "hes:raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
+      "name": "raw",
+      "description": "raw data",
+      "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
     },
     {
-      "hes:name": "next",
-      "hes:description": "go to example 2",
-      "hes:href": "../example_02"
+      "name": "next",
+      "description": "go to example 2",
+      "href": "../example_02"
     }
   ]
 }

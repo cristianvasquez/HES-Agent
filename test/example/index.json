@@ -5,11 +5,11 @@
     "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "hes:meta": [
+  "meta": [
     {
-      "hes:name": "exec",
-      "hes:description": "Chained operation",
-      "hes:raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
+      "name": "exec",
+      "description": "Chained operation",
+      "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
     }
   ]
 }

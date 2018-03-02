@@ -165,9 +165,6 @@ function serve(){
 }
 
 function validateWorkspace(absolutePath){
-    /**
-     * Walk recursively through josd's fluid
-     */
     const walkSync = (d) => {
         if (fs.statSync(d).isDirectory()) {
             return fs.readdirSync(d).map(f => walkSync(path.join(d, f)))

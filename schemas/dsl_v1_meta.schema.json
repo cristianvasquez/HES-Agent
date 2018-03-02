@@ -4,13 +4,13 @@
   "description": "schema for a meta operation entry",
   "type": "object",
   "properties": {
-    "hes:name": {
+    "name": {
       "type": "string",
       "examples": [
         "first_operation"
       ]
     },
-    "hes:Content-Type:": {
+    "Content-Type:": {
       "description": "Defaults: application/x-json+ld",
       "enum": [
         "text/turtle",
@@ -19,7 +19,7 @@
     }
   },
   "required": [
-    "hes:name"
+    "name"
   ],
   "oneOf": [
     {
@@ -59,30 +59,30 @@
     "raw-resource": {
       "type": "object",
       "properties": {
-        "hes:raw": {
+        "raw": {
           "type": "string"
         }
       },
       "required": [
-        "hes:raw"
+        "raw"
       ]
     },
     "href-resource": {
       "type": "object",
       "properties": {
-        "hes:href": {
+        "href": {
           "type": "string",
           "format": "uri-template"
         }
       },
       "required": [
-        "hes:href"
+        "href"
       ]
     },
     "raw-array-resource": {
       "type": "object",
       "properties": {
-        "hes:raw": {
+        "raw": {
           "type": "array",
           "items": {
             "type": "string"
@@ -91,13 +91,13 @@
         }
       },
       "required": [
-        "hes:raw"
+        "raw"
       ]
     },
     "href-array-resource": {
       "type": "object",
       "properties": {
-        "hes:href": {
+        "href": {
           "type": "array",
           "items": {
             "type": "string",
@@ -107,72 +107,72 @@
         }
       },
       "required": [
-        "hes:href"
+        "href"
       ]
     },
     "raw": {
       "type": "object",
       "properties": {
-        "hes:raw": {
+        "raw": {
           "type": "string"
         }
       },
       "required": [
-        "hes:raw"
+        "raw"
       ]
     },
     "href": {
       "type": "object",
       "properties": {
-        "hes:href": {
+        "href": {
           "type": "string",
           "format": "uri-template"
         }
       },
       "required": [
-        "hes:href"
+        "href"
       ]
     },
     "query": {
       "type": "object",
       "properties": {
-        "hes:query": {
+        "query": {
           "type": "object",
           "properties": {
-            "hes:endpoint": {
+            "endpoint": {
               "type": "string",
               "format": "uri-template"
             },
             "default-graph-uri": {
               "type": "string"
             },
-            "hes:raw": {
+            "raw": {
               "type": "string"
             },
-            "hes:Accept": {
+            "Accept": {
               "type": "string"
             }
           },
           "required": [
-            "hes:endpoint",
-            "hes:raw"
+            "endpoint",
+            "raw"
           ]
         }
       },
       "required": [
-        "hes:query"
+        "query"
       ]
     },
     "inference": {
       "type": "object",
       "properties": {
-        "hes:inference": {
+        "inference": {
           "type": "object",
           "properties": {
-            "hes:data": {
+            "data": {
               "$ref": "#/definitions/resources"
             },
-            "hes:query": {
+            "query": {
               "oneOf": [
                 {
                   "$ref": "#/definitions/raw-resource"
@@ -184,43 +184,42 @@
             }
           },
           "required": [
-            "hes:data",
-            "hes:query"
+            "data",
+            "query"
           ]
         }
       },
       "required": [
-        "hes:inference"
+        "inference"
       ]
     },
     "imports": {
       "type": "object",
       "properties": {
-        "hes:imports": {
+        "imports": {
           "type": "object",
           "properties": {
-            "hes:href": {
+            "href": {
               "type": "string",
               "format": "uri-template"
             },
-            "hes:data": {
+            "data": {
               "$ref": "#/definitions/resources"
             },
-            "hes:addData": {
+            "addData": {
               "$ref": "#/definitions/resources"
             },
-            "hes:removeData": {
+            "removeData": {
               "$ref": "#/definitions/resources"
             }
           },
           "required": [
-            "hes:href",
-            "hes:name"
+            "href"
           ]
         }
       },
       "required": [
-        "hes:imports"
+        "imports"
       ]
     }
   }

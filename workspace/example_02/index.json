@@ -18,17 +18,6 @@
     {
       "name": "dbpedia",
       "description":"Dbpedia query",
-      "Content-Type": "application/x-json+ld",
-      "query": {
-        "endpoint": "http://dbpedia.restdesc.org",
-        "default-graph-uri": "http://dbpedia.org",
-        "raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
-      }
-    },
-    {
-      "name": "dbpedia_turtle",
-      "description":"Dbpedia query",
-      "Content-Type": "text/turtle",
       "query": {
         "endpoint": "http://dbpedia.restdesc.org",
         "default-graph-uri": "http://dbpedia.org",

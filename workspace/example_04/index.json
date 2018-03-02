@@ -28,19 +28,6 @@
       }
     },
     {
-      "name": "bob-turtle",
-      "description":"The same as Bob space but returning turtle as default",
-      "Content-Type":"text/turtle",
-      "inference": {
-        "data": {
-          "href":["/lib/data/knowledge.n3","./personal/*"]
-        },
-        "query":{
-          "href": "/lib/query/whoIsWhat.n3"
-        }
-      }
-    },
-    {
       "name":"next",
       "description":"go to example 5",
       "href":"../example_05"

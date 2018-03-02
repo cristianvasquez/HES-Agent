@@ -9,6 +9,7 @@ let app = express();
 let bodyParser = require('body-parser');
 
 app.use(bodyParser.text());
+app.use(bodyParser.text({ type: 'application/x-json+ld' }));
 app.use(bodyParser.text({ type: 'text/turtle' }));
 app.use(bodyParser.text({ type: 'text/n3' }));
 

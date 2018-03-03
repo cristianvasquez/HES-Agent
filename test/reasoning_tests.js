@@ -187,15 +187,14 @@ describe("eyeOptions", function () {
 describe("detectErrors", function () {
 
     // TODO: mock eye server
-    it("Detects an error", function () {
-        let command = "/opt/eye/bin/eye.sh --nope http://localhost:3000/dataspaces/irail schedule --query http://localhost:3000/resource/tmp/1512436968.ttl"
-        reasoning.invokeEye(command,false).then(function (result) {
-            console.error('Result '+result);
-            expect(result).to.equal("--nope");
-        }).catch(function (error) {
-            console.error('Result '+error);
-        });
-    });
+    // it("Detects an error", function () {
+    //     let command = "/opt/eye/bin/eye.sh --nope http://localhost:3000/dataspaces/irail schedule --query http://localhost:3000/resource/tmp/1512436968.ttl"
+    //     reasoning.invokeEye(command,false).then(function (result) {
+    //         expect("Cannot").to.equal("Succeed");
+    //     }).catch(function (error) {
+    //
+    //     });
+    // });
 
 });
 

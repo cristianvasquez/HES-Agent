@@ -32,120 +32,115 @@ class DSL_V1 {
 
     static validateOperation(meta) {
         let valid = validateOperation(meta);
-        if (!valid) console.error(validateOperation.errors);
+        // if (!valid) console.error(validateOperation.errors);
         return valid;
     }
 
     static validateCrudOperation(meta) {
         let valid = validateCrudOperation(meta);
-        if (!valid) console.error(validateCrudOperation.errors);
+        // if (!valid) console.error(validateCrudOperation.errors);
         return valid;
     }
 
     static validateDeclaration(meta) {
         let valid = validateDeclaration(meta);
-        if (!valid) console.error(validateDeclaration.errors);
+        // if (!valid) console.error(validateDeclaration.errors);
         return valid;
     }
 
     /**
      * Experimental, dependency graph
-     *
-     * TODO Refactor
      */
     buildLocalDependencyGraph(dirRelativeTo){
 
-        let graph = new DepGraph({ circular: false });
-
+        let graph = new DepGraph();
         // All files
         let pattern = "**/"+serverOptions.indexFile;
         let indexes = new Glob(pattern, {mark: true, sync:true, absolute:true, nodir:true, cwd:dirRelativeTo}).found;
 
+        // Oh god, Javascript...
+        let context = this.context;
+
+        // First run to add all expanded nodes
         for (let currentDir of indexes){
             let index = fu.readJson(currentDir);
             if (index.meta){
                 for (let meta of index.meta) {
+                    // Take out the index.json part
                     let parent = currentDir.substr(0, currentDir.lastIndexOf('/'));
+                    // Make the path relative and add operation name
                     let id = (parent.replaceAll(serverOptions.workSpacePath, '') + '/' + meta.name);
-                    graph.addNode(id, meta );
-                }
-            }
-        }
-
-        for (let currentDir of indexes){
-            let index = fu.readJson(currentDir);
-            if (index.meta){
-                for (let meta of index.meta) {
-                    addDependencies(currentDir,meta);
-                }
-            }
-        }
-
-        function addHref(dirRelativeTo,from,to){
-            if (!validUrl.is_web_uri(to)) {
-                let dependency = DSL_V1.toAbsolutePath(dirRelativeTo,to);
-                let operation = DSL_V1.findOperation(dependency);
-                if (operation.exists) {
-                    graph.addDependency(from, dependency.replaceAll(serverOptions.workSpacePath,''));
-                }
-            }
-        }
-
-        function addInferenceDependencies(dirRelativeTo,from,inference,field){
-            if (inference[field]){
-                if (inference[field].href) {
-                    let href = inference[field].href;
-                    // One value
-                    if (typeof href === 'string') {
-                        addHref(dirRelativeTo,from,href);
-                    } else {
-                        // Array of values
-                        inference[field].href = _.flatMap(href, href => {
-                            addHref(dirRelativeTo,from,href);
-                        });
+                    try {
+                        let expanded = this.expandMeta(parent, meta);
+                        graph.addNode(id,expanded);
+                    } catch (e) {
+                        let error = {
+                            message:"ERROR: cannot expand operation",
+                            operation:id,
+                            meta:meta,
+                            source:e.message
+                        };
+                        console.error(JSON.stringify(error,null,2));
+                        if (e.message==="Maximum call stack size exceeded"){
+                            throw e;// Fatal for circular dependencies
+                        }
                     }
                 }
             }
         }
 
-        function addDependencies(dirRelativeTo,meta){
-            let parent = dirRelativeTo.substr(0, dirRelativeTo.lastIndexOf('/'));
-            let from = (parent.replaceAll(serverOptions.workSpacePath,'')+'/'+meta.name);
+        //Second run to add dependencies
+        for (let id of graph.overallOrder()){
+            let meta = graph.getNodeData(id);
+            addDependencies(id,meta)
+        }
 
+        function addDependencies(id,meta){
             if (meta.query || meta['raw']) {
                 // No dependencies
             } else if (meta.href) {
-                addHref(dirRelativeTo,from,meta.href);
+                addHref(id,meta.href);
             } else if (meta.inference) {
                 let inference = meta.inference;
-
                 // Query dependencies
                 if (inference.query.href) {
-                    addHref(dirRelativeTo,from,inference.query.href);
+                    addHref(id,inference.query.href);
                 }
                 // Data dependencies
-                addInferenceDependencies(dirRelativeTo,from,inference,'data')
-            } else if (meta.imports) {
-                let imports = meta.imports;
-
-                addHref(dirRelativeTo,from,imports.href);
-
-                // Query dependencies
-                if (imports.query){
-                    if (imports.query.href) {
-                        addHref(dirRelativeTo,from,imports.query.href);
+                if (inference.data){
+                    if (inference.data.href) {
+                        let href = inference.data.href;
+                        // One value
+                        if (typeof href === 'string') {
+                            addHref(id,href);
+                        } else {
+                            // Array of values
+                            for (let current of href){
+                                addHref(id,current);
+                            }
+                        }
                     }
                 }
-                addInferenceDependencies(dirRelativeTo,from,imports,'data');
-                addInferenceDependencies(dirRelativeTo,from,imports,'addData');
             }
         }
 
-        for (let operation of graph.overallOrder()){
-            let nodeData = graph.getNodeData(operation);
-            let operationDir = DSL_V1.toAbsolutePath(serverOptions.workSpacePath,operation);
-            operationDir = operationDir.substr(0, operationDir.lastIndexOf('/'));
-            graph.setNodeData(operation, this.expandMeta(operationDir,   nodeData));
+        function addHref(from,to){
+            // A web resource
+            if (validUrl.is_web_uri(to)){
+                // Which is currently being exposed
+                if (context && context.isLocalApiPath(to)){
+                    let targetContext = context.getContextForURL(to);
+                    graph.addDependency(from, targetContext.getLocalHref());
+                }
+            } else { // A local resource
+                if (!fu.exists(to)){ // which could be virtual
+                    let targetPath = DSL_V1.toAbsolutePath(dirRelativeTo, to);
+                    let operation = DSL_V1.findOperation(targetPath);
+                    if (operation.exists) { // And is defined
+                        graph.addDependency(from, to.replaceAll(serverOptions.workSpacePath,''));
+                    }
+                }
+            }
         }
 
         return graph;
@@ -361,7 +356,7 @@ class DSL_V1 {
                     return targetPath.replaceAll(serverOptions.workSpacePath,'');
                 }
             }
-            throw Error('404 [' + value + ']');
+            throw Error('404 [' + value + '] relative to: ['+dirRelativeTo+']');
         } else {
             return targetPath;
         }

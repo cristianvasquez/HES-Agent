@@ -15,7 +15,7 @@ String.prototype.replaceAll = function (search, replacement) {
     return target.split(search).join(replacement);
 };
 
-function getContextualizedDslV1(){
+function getDslWithContext(){
     let request = {
         headers:{
             host:'example.org'
@@ -72,13 +72,13 @@ describe("toDereferenciable", function () {
 
     it("A meta operation (relative) expands to an url.", function () {
         before();
-        let result = getContextualizedDslV1().toDereferenciable(config.serverOptions.workSpacePath,"./example/exec");
+        let result = getDslWithContext().toDereferenciable(config.serverOptions.workSpacePath,"./example/exec");
         expect(result).to.equal('http://example.org/'+config.serverOptions.appEntrypoint+'/example/exec');
     });
 
     it("A meta operation (absolute) expands to an url.", function () {
         before();
-        let result = getContextualizedDslV1().toDereferenciable(config.serverOptions.workSpacePath,"/example/exec");
+        let result = getDslWithContext().toDereferenciable(config.serverOptions.workSpacePath,"/example/exec");
         expect(result).to.equal('http://example.org/'+config.serverOptions.appEntrypoint+'/example/exec');
     });
 
@@ -148,13 +148,13 @@ describe("toDereferenciables", function () {
 
     it("A meta operation (relative) expands to an url.", function () {
         before();
-        let result = getContextualizedDslV1().toDereferenciables(config.serverOptions.workSpacePath,"./example/exec");
+        let result = getDslWithContext().toDereferenciables(config.serverOptions.workSpacePath,"./example/exec");
         expect(result).to.deep.equal(['http://example.org/'+config.serverOptions.appEntrypoint+'/example/exec']);
     });
 
     it("A meta operation (absolute) expands to an url.", function () {
         before();
-        let result = getContextualizedDslV1().toDereferenciables(config.serverOptions.workSpacePath,"/example/exec");
+        let result = getDslWithContext().toDereferenciables(config.serverOptions.workSpacePath,"/example/exec");
         expect(result).to.deep.equal(['http://example.org/'+config.serverOptions.appEntrypoint+'/example/exec']);
     });
 
@@ -516,12 +516,10 @@ describe("validator", function () {
             }
         };
         function validate(indexFile){
-            console.log(indexFile);
             let contents = fs.readFileSync(indexFile);
             let index = JSON.parse(contents);
             if (index['meta']){
                 for (let operation of index['meta']){
-                    console.log('\t'+operation['name']);
                     expect(DSL_V1.validateOperation(operation)).to.equal(true);
                 }
             }
@@ -645,15 +643,18 @@ describe("dependency graphs", function () {
     it("all examples", function () {
         let dependencyGraph =   dsl_v1.buildLocalDependencyGraph(config.serverOptions.workSpacePath);
         expect(dependencyGraph.dependenciesOf('/example_08/second_operation')).to.deep.equal(['/example_08/first_operation']);
-
-        console.log(dependencyGraph);
     });
 
     it("detects circular dependencies", function () {
         config.serverOptions.workSpacePath = __dirname;
+        // expect(function () {
+        //     dsl_v1.buildLocalDependencyGraph(__dirname);
+        // }).to.throw("Dependency Cycle Found: /circular_01/exec -> /circular_02/exec -> /circular_01/exec");
+
         expect(function () {
             dsl_v1.buildLocalDependencyGraph(__dirname);
-        }).to.throw("Dependency Cycle Found: /circular_01/exec -> /circular_02/exec -> /circular_01/exec");
+        }).to.throw("Maximum call stack size exceeded");
+
     });
 
 });

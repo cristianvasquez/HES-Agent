@@ -1,6 +1,6 @@
 {
   "name": "h-eye",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "description": "H-Eye Dataspaces",
   "author": "Cristian Vasquez <cristianvasquez@gmail.com>",
   "keywords": [
@@ -12,7 +12,8 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "node ./bin/www serve ./workspace"
+    "start": "node ./bin/www serve ./workspace",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,6 @@
   },
   "dependencies": {
     "body-parser": "~1.17.1",
-    "chai": "^4.1.2",
     "child-process": "^1.0.2",
     "child-process-promise": "^2.2.1",
     "commander": "^2.13.0",
@@ -48,6 +48,7 @@
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.1"
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.1.2"
   }
 }

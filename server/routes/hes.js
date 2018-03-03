@@ -20,26 +20,25 @@ class HES extends express.Router {
         if (!processorOptions) {
             throw new Error("must define processor options example: " + JSON.stringify(config.processorOptions, null, 2));
         }
-
+        /**
+         * Exports metadata about the operations
+         */
         this.get("/operations", function (req, res, next) {
-            let context = new Context(req);
-            let dsl_v1 = new DSL_V1(context);
-            cache.del('dependencyGraph');
-            res.json(dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath));
+            res.json(getDependencyGraph(req));
         });
 
         // I'll check for cache on next iterations.
-        var cache = require('memory-cache');
+        // let cache = require('memory-cache');
         function getDependencyGraph(req) {
-            let dependencyGraph = cache.get('dependencyGraph');
-            if (!dependencyGraph) {
+            // let dependencyGraph = cache.get('dependencyGraph');
+            // if (!dependencyGraph) {
                 let context = new Context(req);
                 let dsl_v1 = new DSL_V1(context);
-                dependencyGraph = dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
-                cache.put('dependencyGraph',dependencyGraph,100000,function() {
-                    console.log('Reloading dependency graph');
-                });
-            }
+                let dependencyGraph = dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
+            //     cache.put('dependencyGraph',dependencyGraph,100000,function() {
+            //         console.log('Reloading dependency graph');
+            //     });
+            // }
             return dependencyGraph;
         }
 
@@ -62,6 +61,7 @@ class HES extends express.Router {
 
         function createOrUpdate(req, res, next) {
             let dependencyGraph = getDependencyGraph(req);
+            let context = new Context(req);
             let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
             if (hasDefinedOperation) {
                 createOrUpdateMeta(req, res, next)
@@ -203,6 +203,13 @@ class HES extends express.Router {
             if (hasDefinedOperation) {
 
                 let meta = dependencyGraph.getNodeData(context.getLocalHref());
+
+                // Forcing a particular content type (csv)
+                if (meta['Content-Type']){
+                    targetContentType = meta['Content-Type'];
+                }
+
+
                 if (meta.href) {
 
                     let target = dsl_v1.toDereferenciable(context.getLocalDir(), meta.href);
@@ -233,7 +240,7 @@ class HES extends express.Router {
                     renderSupportedContentypes(context, targetContentType, meta.raw, res);
 
                 } else if (meta.inference) {
-                    // console.log("\tinf\t"+context.getLocalHref()+" ("+targetContentType+")");
+
                     function rawToUrl(context, rawValue) {
                         let filename = hash(rawValue) + ".n3";
                         if (!fu.exists(filename)) {
@@ -302,6 +309,26 @@ function buildIndex(processorOptions, req, res) {
     let result = fu.readJson(localDir + '/' + serverOptions.indexFile);
     result["@id"] = context.getCurrentPath();
 
+
+
+    // And process the meta
+    if (result.meta) {
+        let operations = [], currentOperation;
+
+        // Handle build links for the operations
+        for (currentOperation of _.filter(result.meta)) {
+            let operationName = _.get(currentOperation, 'name');
+            let operationUri = context.getCurrentPath() + '/' + operationName;
+            let link = buildLink(operationUri, 'Operation');
+            if (currentOperation['description']) {
+                link['description'] = currentOperation['description'];
+            }
+            operations.push(link);
+        }
+        delete result.meta;
+        result['this:operation'] = operations;
+    }
+
     // Process directories
     if (processorOptions.showDirectories) {
         _.map(contents.directories,
@@ -328,24 +355,6 @@ function buildIndex(processorOptions, req, res) {
                 result["this:files"] = publicFiles;
             }
         }
-    }
-
-    // And process the meta
-    if (result.meta) {
-        let operations = [], currentOperation;
-
-        // Handle build links for the operations
-        for (currentOperation of _.filter(result.meta)) {
-            let operationName = _.get(currentOperation, 'name');
-            let operationUri = context.getCurrentPath() + '/' + operationName;
-            let link = buildLink(operationUri, 'Operation');
-            if (currentOperation['description']) {
-                link['description'] = currentOperation['description'];
-            }
-            operations.push(link);
-        }
-        delete result.meta;
-        result['this:operation'] = operations;
     }
 
     // this confusing people

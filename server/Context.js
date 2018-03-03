@@ -50,16 +50,20 @@ class _Context {
         return new _Context(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')));
     }
 
-    getContextForURL(someURI){
-        return new _Context(this.host, '/' +serverOptions.appEntrypoint+ someURI.replaceAll( this.getApiRoot(),''));
-    }
-
     toResourcePath(someLocalDir){
         return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.resourcesEntryPoint);
     }
 
     toApiPath(someLocalDir){
         return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.appEntrypoint);
+    }
+
+    getContextForURL(someURI){
+        return new _Context(this.host, '/' +serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''));
+    }
+
+    isLocalApiPath(someURL){
+        return someURL.startsWith(this.getApiRoot());
     }
 
 }

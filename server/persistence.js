@@ -98,8 +98,18 @@ exports.writeFile = writeFile;
 /**
  * Creates a new Dataspace
  */
-exports.copyDirectory = function(sourceDir,targetDir){
-    fs.copySync(sourceDir, targetDir);
+exports.copyDirectory = function(sourceDir,targetDir,recursive){
+
+    if (recursive){
+        fs.copySync(sourceDir, targetDir);
+    } else {
+        fs.ensureDirSync(targetDir);
+        for (let current of readDir(sourceDir).files){
+            fs.copySync(current, path.join(targetDir,current.replaceAll(sourceDir,'')));
+        }
+
+    }
+
     return targetDir;
 };
 

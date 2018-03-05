@@ -74,40 +74,62 @@ class HES extends express.Router {
         /**
          * Some operations (I don't have a clear idea yet of which ones to support)
          */
+
         if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
-            this.post("*", function (req, res, next) {
-                createOrUpdate(req, res, next);
+            this.post("*/operations", function (req, res, next) {
+                if(req.body.clone){
+                    clone(req,res,next)
+                } else {
+                    createOrUpdateMeta(req, res, next);
+                }
             });
         }
 
         if (processorOptions.hydraOperations.indexOf('PUT') !== -1) {
-            this.put("*", function (req, res, next) {
-                createOrUpdate(req, res, next);
+            this.put("*/operations", function (req, res, next) {
+                if(req.body.clone){
+                    clone(req,res,next)
+                } else {
+                    createOrUpdateMeta(req, res, next);
+                }
             });
         }
 
-        function createOrUpdate(req, res, next) {
+        function clone(req, res, next) {
             let context = new Context(req,serverOptions);
-            let hasDefinedOperation = getDependencyGraph(req).hasNode(context.getLocalHref());
-            if (hasDefinedOperation) {
-                createOrUpdateMeta(req, res, next)
-            } else {
-                createOrUpdateFile(req, res, next);
-            }
-        }
 
-        function createOrUpdateFile(req, res, next) {
-            let context = new Context(req,serverOptions);
-            let targetFile = context.getLocalDir();
-            fu.writeFile(targetFile, req.body);
-            res.json({'@id': context.getCurrentPath()});
+            let clone = req.body.clone;
+            let id = clone['@id'];
+            if (!id){
+                res.status(400).json({error: 'Has no source dir defined', operation:req.body});
+            }
+
+            if (!context.isLocalApiPath(id)){
+                res.status(403).json({error: 'Cannot clone resource', operation:req.body});
+            }
+
+            let sourceDir = context.getContextForURL(id).getLocalDir();
+            if (!fu.exists(sourceDir)){
+                res.status(400).json({error: 'Source dir does not exist', operation:req.body});
+            }
+            if (!fu.isDirectory(sourceDir)){
+                res.status(400).json({error: 'Source dir is not directory', operation:req.body});
+            }
+
+            let targetDir = context.getTail().getLocalDir();
+            console.log('Cloning '+sourceDir+' into '+targetDir);
+
+            fu.copyDirectory(sourceDir,targetDir,req.body.clone.recursive);
+            // Rebuild the dependency graph
+            rebuildGraph(req);
+            res.json({'@id': context.toApiPath(targetDir)});
+
         }
 
         function createOrUpdateMeta(req, res, next) {
 
             let context = new Context(req,serverOptions);
             let targetDir = context.getTail().getLocalDir();
-            let targetName = context.getHead();
 
             // check if there is a descriptor file
             let indexPath = targetDir + '/' + serverOptions.indexFile;
@@ -120,6 +142,10 @@ class HES extends express.Router {
             let valid = DSL_V1.validateCrudOperation(newOperation);
             if (!valid) {
                 res.status(400).json({error: JSON.stringify(DSL_V1.validateCrudOperation.errors, null, 2)});
+            }
+            let targetName = newOperation.name;
+            if (!targetName) {
+                res.status(400).json({error: 'Has no name defined', operation:newOperation});
             }
 
             // get the meta descriptions
@@ -152,7 +178,31 @@ class HES extends express.Router {
             meta.push(newOperation);
             index.meta = meta;
 
+            console.log('Updating '+indexPath);
             fu.writeFile(indexPath, JSON.stringify(index, null, 2));
+
+            // Rebuild the dependency graph
+            rebuildGraph(req);
+            res.json({'@id': context.getCurrentPath()+'/'+targetName});
+        }
+
+        if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
+            this.post("*", function (req, res, next) {
+                createOrUpdateFile(req, res, next);
+            });
+        }
+
+        if (processorOptions.hydraOperations.indexOf('PUT') !== -1) {
+            this.put("*", function (req, res, next) {
+                createOrUpdateFile(req, res, next);
+            });
+        }
+
+        function createOrUpdateFile(req, res, next) {
+            let context = new Context(req,serverOptions);
+            let targetFile = context.getLocalDir();
+            fu.writeFile(targetFile, req.body);
+            console.log('Writing file: '+targetFile);
             res.json({'@id': context.getCurrentPath()});
         }
 
@@ -196,6 +246,8 @@ class HES extends express.Router {
                     index.meta = index.meta.filter(x => x.name !== targetName);
 
                     fu.writeFile(indexPath, JSON.stringify(index, null, 2));
+                    // Rebuild the dependency graph
+                    rebuildGraph(req);
                     res.json({deleted: {'@id': context.getCurrentPath()}});
                 }
             });

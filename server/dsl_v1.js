@@ -353,6 +353,7 @@ class DSL_V1 {
                 _operation['Content-Type'] = meta['Content-Type'];
             }
             // It was other kind of operation
+            console.log('Importing '+JSON.stringify(_operation,null,2));
             return this.expandMeta(targetPath, _operation);
         } else {
             throw new Error('Could not find operation  ' + meta.imports.href + ' in ' + targetPath);

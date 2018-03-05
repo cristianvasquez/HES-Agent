@@ -1,6 +1,6 @@
 {
   "name": "h-eye",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "H-Eye Dataspaces",
   "author": "Cristian Vasquez <cristianvasquez@gmail.com>",
   "keywords": [
@@ -35,6 +35,7 @@
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.4",
     "memory-cache": "^0.2.0",
+    "minimatch": "^3.0.4",
     "mocha": "^5.0.0",
     "morgan": "~1.8.1",
     "node-glob": "^1.2.0",

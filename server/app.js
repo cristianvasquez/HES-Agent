@@ -23,13 +23,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let serverOptions = require("../config").serverOptions;
 let defaultProcessorOptions = require("../config").defaultProcessorOptions;
+let defaultServerOptions = require("../config").serverOptions;
 
 let index = require('./routes/index');
 const HES = require('./routes/hes');
 
 app.use('/', index);
 app.use('/'+ serverOptions.resourcesEntryPoint, express.static(serverOptions.workSpacePath));
-app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions));
+app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions,defaultServerOptions));
 app.set('trust proxy', '127.0.0.1');
 
 // catch 404 and forward to error handler

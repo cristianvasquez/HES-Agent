@@ -10,6 +10,18 @@
       "name": "exec",
       "description": "Chained operation",
       "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
+    },
+    {
+      "name": "people",
+      "description": "all people operations in sub-folders",
+      "inference": {
+        "data": {
+          "href":"./*/people"
+        },
+        "query": {
+          "raw": "{ ?s ?p ?o } => { ?s ?p ?o }"
+        }
+      }
     }
   ]
 }

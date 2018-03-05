@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "fluid": "http://josd.github.io/fluid#",
+    "hes": "http://cristianvasquez.github.io/hes#",
+    "this": "http://www.example.org#"
+  },
+  "meta": [
+    {
+      "name": "people",
+      "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Alice a :Woman ."
+    }
+  ]
+}

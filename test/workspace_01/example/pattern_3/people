@@ -1,0 +1,2 @@
+# A file to be matched
+@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Perico a :Parrot .

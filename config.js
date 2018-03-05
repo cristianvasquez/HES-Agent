@@ -21,7 +21,7 @@ var config = {
         workSpacePath: workSpacePath,
         tmpFolder: "tmp",
         verbose: false,
-        indexFile: 'index.json'
+        indexFile: 'index.json',
     },
 
     defaultEyeOptions:{
@@ -33,9 +33,6 @@ var config = {
     defaultProcessorOptions:{
         showFiles:true,
         showDirectories:true,
-        // hrefContentType:"text/turtle",
-        // rawContentType:"text/turtle",
-        // sparqlQueryContentType:"text/turtle",
         defaultContentType:"application/x-json+ld",
         hydraOperations:["POST","PUT","DELETE"]
     },

@@ -1,4 +1,3 @@
-const serverOptions = require("../config").serverOptions;
 const schemas = require("../config").schemas;
 const fu = require("./persistence");
 const _ = require('lodash');
@@ -9,6 +8,7 @@ const Glob = require("glob").Glob
 
 // https://github.com/jriecken/dependency-graph
 const DepGraph = require('dependency-graph').DepGraph;
+const minimatch = require("minimatch");
 
 function toJson(x) {
     return JSON.stringify(x, null, 2);
@@ -27,39 +27,56 @@ let validateDeclaration = ajv.compile(hEyeSchema);
 class DSL_V1 {
 
     constructor(context) {
+        if (!context) {
+            throw new Error('Need context');
+        }
+        if (!context.serverOptions) {
+            throw new Error('Need server options');
+        }
+        if (!context.serverOptions.workSpacePath) {
+            throw new Error('Need workSpacePath');
+        }
         this.context = context;
+        this.serverOptions = context.serverOptions;
     }
 
+    /**
+     * Schema
+     */
     static validateOperation(meta) {
-        let valid = validateOperation(meta);
-        // if (!valid) console.error(validateOperation.errors);
-        return valid;
+        return validateOperation(meta);
     }
 
     static validateCrudOperation(meta) {
-        let valid = validateCrudOperation(meta);
-        // if (!valid) console.error(validateCrudOperation.errors);
-        return valid;
+        return validateCrudOperation(meta);
     }
 
     static validateDeclaration(meta) {
-        let valid = validateDeclaration(meta);
-        // if (!valid) console.error(validateDeclaration.errors);
-        return valid;
+        return validateDeclaration(meta);
+    }
+
+    getAllKnownOperations(dirRelativeTo){
+        let graph = this.buildLocalDependencyGraph(dirRelativeTo);
+        return graph.overallOrder();
     }
 
     /**
      * Experimental, dependency graph
      */
+
+    toRelativePath(someDirectory){
+        return someDirectory.replaceAll(this.serverOptions.workSpacePath,'');
+    }
+
     buildLocalDependencyGraph(dirRelativeTo){
+        // Measuring how long it takes
+        let start = new Date();
+
 
         let graph = new DepGraph();
         // All files
-        let pattern = "**/"+serverOptions.indexFile;
+        let pattern = "**/"+this.serverOptions.indexFile;
         let indexes = new Glob(pattern, {mark: true, sync:true, absolute:true, nodir:true, cwd:dirRelativeTo}).found;
-
-        // Oh god, Javascript...
-        let context = this.context;
 
         // First run to add all expanded nodes
         for (let currentDir of indexes){
@@ -69,81 +86,101 @@ class DSL_V1 {
                     // Take out the index.json part
                     let parent = currentDir.substr(0, currentDir.lastIndexOf('/'));
                     // Make the path relative and add operation name
-                    let id = (parent.replaceAll(serverOptions.workSpacePath, '') + '/' + meta.name);
-                    try {
-                        let expanded = this.expandMeta(parent, meta);
-                        graph.addNode(id,expanded);
-                    } catch (e) {
-                        let error = {
-                            message:"ERROR: cannot expand operation",
-                            operation:id,
-                            meta:meta,
-                            source:e.message
-                        };
-                        console.error(JSON.stringify(error,null,2));
-                        if (e.message==="Maximum call stack size exceeded"){
-                            throw e;// Fatal for circular dependencies
-                        }
-                    }
+                    let id = this.toRelativePath(parent) + '/' + meta.name;
+                    graph.addNode(id,meta);
                 }
             }
         }
+        // The graph will be used to expand meta
+        this.dependencyGraph = graph;
 
-        //Second run to add dependencies
-        for (let id of graph.overallOrder()){
+
+        //Second run to expand meta and add dependencies
+        this.allNodes = this.dependencyGraph.overallOrder();
+        for (let id of this.allNodes){
             let meta = graph.getNodeData(id);
-            addDependencies(id,meta)
+            // Take out the operation name
+            let parent = id.substr(0, id.lastIndexOf('/'));
+            let dirRelativeTo = path.join(this.serverOptions.workSpacePath,parent);
+            try {
+                let expanded = this.expandMeta(dirRelativeTo, meta);
+                graph.setNodeData(id,expanded);
+            } catch (e) {
+                let error = {
+                    message:"ERROR: cannot expand operation",
+                    operation:id,
+                    meta:meta,
+                    source:e.message
+                };
+                if (e.message==="Maximum call stack size exceeded"){
+                    throw e;// Fatal for circular dependencies
+                }
+                console.error(JSON.stringify(error,null,2));
+            }
+
+            this.addDependencies(graph,id,meta)
         }
 
-        function addDependencies(id,meta){
-            if (meta.query || meta['raw']) {
-                // No dependencies
-            } else if (meta.href) {
-                addHref(id,meta.href);
-            } else if (meta.inference) {
-                let inference = meta.inference;
-                // Query dependencies
-                if (inference.query.href) {
-                    addHref(id,inference.query.href);
-                }
-                // Data dependencies
-                if (inference.data){
-                    if (inference.data.href) {
-                        let href = inference.data.href;
-                        // One value
-                        if (typeof href === 'string') {
-                            addHref(id,href);
-                        } else {
-                            // Array of values
-                            for (let current of href){
-                                addHref(id,current);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        function addHref(from,to){
-            // A web resource
-            if (validUrl.is_web_uri(to)){
-                // Which is currently being exposed
-                if (context && context.isLocalApiPath(to)){
-                    let targetContext = context.getContextForURL(to);
-                    graph.addDependency(from, targetContext.getLocalHref());
-                }
-            } else { // A local resource
-                if (!fu.exists(to)){ // which could be virtual
-                    let targetPath = DSL_V1.toAbsolutePath(dirRelativeTo, to);
-                    let operation = DSL_V1.findOperation(targetPath);
-                    if (operation.exists) { // And is defined
-                        graph.addDependency(from, to.replaceAll(serverOptions.workSpacePath,''));
-                    }
-                }
-            }
-        }
+        var end = new Date() - start;
+        console.log('built dependency graph '+end+' ms');
 
         return graph;
+    }
+
+    addDependencies(graph,id,meta){
+        if (meta.query || meta['raw']) {
+            // No dependencies
+        } else if (meta.href) {
+            this.addHref(graph,id,meta.href);
+        } else if (meta.inference) {
+            let inference = meta.inference;
+
+            if (!inference.query){
+                throw Error ('No query defined in '+JSON.stringify(meta,null,2));
+            }
+
+            // Query dependencies
+            if (inference.query.href) {
+                this.addHref(graph,id,inference.query.href);
+            }
+            // Data dependencies
+            if (inference.data){
+                if (inference.data.href) {
+                    let href = inference.data.href;
+                    // One value
+                    if (typeof href === 'string') {
+                        this.addHref(graph,id,href);
+                    } else {
+                        // Array of values
+                        for (let current of href){
+                            this.addHref(graph,id,current);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    addHref(graph,from,to){
+        // A web resource
+        if (validUrl.is_web_uri(to)){
+            // Which is currently being exposed
+            if (this.context.isLocalApiPath(to)){
+                // And and a defined operation
+                let targetContext = this.context.getContextForURL(to);
+                let targetOperation = targetContext.getLocalHref();
+                if (graph.hasNode(targetOperation)) { // which could be a defined operation
+                    graph.addDependency(from, targetOperation);
+                }
+            }
+
+
+        } else { // A local resource
+            let targetOperation = this.toRelativePath(to);
+            if (graph.hasNode(targetOperation)){ // which could be a defined operation
+                graph.addDependency(from, targetOperation);
+            }
+        }
     }
 
     /**
@@ -151,14 +188,18 @@ class DSL_V1 {
      *
      * Expand relative files
      * Expand directories
+     * Expand operations
      */
 
     expandMeta(dirRelativeTo, meta) {
+        if (!this.dependencyGraph) {
+            throw new Error('Need to build dependencies');
+        }
+
         let valid = validateDeclaration(meta);
         if (!valid) {
             throw Error(JSON.stringify(validateDeclaration.errors,null,2));
         }
-
         if (meta.query || meta['raw']) {
             return meta;
         } else if (meta.href) {
@@ -179,6 +220,7 @@ class DSL_V1 {
     expandInference(dirRelativeTo, meta) {
         let inference = meta.inference;
 
+        // console.log('expand inference',dirRelativeTo);
         // Expand query
         if (inference.query.href) {
             inference.query.href = this.toDereferenciable(dirRelativeTo, inference.query.href);
@@ -203,123 +245,144 @@ class DSL_V1 {
 
     expandImports(dirRelativeTo, meta) {
 
-        let targetDir = DSL_V1.toAbsolutePath(dirRelativeTo, meta.imports.href);
-        let _operation = DSL_V1.findOperation(targetDir);
+        let targetPath = this.toAbsolutePath(dirRelativeTo, meta.imports.href);
+        let targetOperation = this.toRelativePath(targetPath);
 
-        if (_operation.exists) {
-            targetDir = targetDir.substr(0, targetDir.lastIndexOf('/'));
+        // Check if this is an operation
+        if (this.dependencyGraph.hasNode(targetOperation)) {
 
-            // Override meta if present
-            if (meta['Content-Type']){
-                _operation.operation['Content-Type'] = meta['Content-Type'];
-            }
+            // The operation to be imported
+            let _operation = this.dependencyGraph.getNodeData(targetOperation);
 
-            if (_operation.operation.inference) {
+            if (_operation.inference) {
 
-                // This expansion is to keep the absolute paths of the extended.
-                let operation = this.expandInference(targetDir, _operation.operation);
+                // Build a clone
+                // Take out the operation name
+                let parent = targetPath.substr(0, targetPath.lastIndexOf('/'));
+                let result = JSON.parse(JSON.stringify(this.expandInference(parent,_operation)));
 
+                // Override name if present
+                if (meta.name) {
+                    result.name = meta.name;
+                }
+                // Override description if present
+                if (meta.description) {
+                    result.description = meta.description;
+                }
+                // Override meta if present
+                if (meta['Content-Type']){
+                    result['Content-Type'] = meta['Content-Type'];
+                }
                 /**
                  * It's not clear yet how I will represent Set, Union, Intersection etc.
                  */
-                meta.inference = {};
 
-                function overrideIfExisting(current) {
-                    // If parameter is defined in the extends clause, it overrides the one of the extended one.
-                    if (meta.imports[current]) {
-                        meta.inference[current] = meta.imports[current];
-                    } else {
-                        if (operation.inference[current]) {
-                            meta.inference[current] = operation.inference[current];
-                        }
-                    }
+                if (meta.imports.query) {
+                    result.inference.query = this.toAbsolutePath(dirRelativeTo,context.toResourcePath());
                 }
 
-                overrideIfExisting('query');
-                overrideIfExisting('options');
-                overrideIfExisting('flags');
+                if (meta.imports.options) {
+                    result.inference.options = meta.imports.options;
+                }
+                if (meta.imports.flags) {
+                    result.inference.flags = meta.imports.flags;
+                }
 
                 // Special case, addData (adds data to the current extended)
-                if (meta.imports['addData']) {
-                    let data = [];
-                    if (operation.inference.data) {
-                        data = operation.inference.data.href;
-                    }
-                    let href = meta.imports['addData'].href;
-                    // make sure is an array
-                    if (typeof href === 'string') {
-                        href = [href]
-                    }
-                    // Add them if they are not there
-                    for (let current of href) {
-                        if (data.indexOf(current) < 0) {
-                            data.push(current);
+                if (meta.imports.addData) {
+
+                    if (meta.imports.addData.href){
+
+                        let data;
+                        if (result.inference.data) {
+                            data = result.inference.data.href;
+                            // make sure is an array
+                            if (typeof data === 'string') {
+                                data = [data]
+                            }
+                        } else {
+                            data = [];
                         }
+
+                        let href = meta.imports.addData.href;
+                        // make sure is an array
+                        if (typeof href === 'string') {
+                            href = [href]
+                        }
+                        // Add them if they are not there
+                        for (let current of href) {
+                            for (let derref of this.toDereferenciables(dirRelativeTo, current)){
+                                if (data.indexOf(derref) < 0) {
+                                    data.push(derref);
+                                }
+                            }
+                        }
+
+                        result.inference.data = {
+                            'href': data
+                        };
                     }
-                    meta.inference.data = {
-                        'href': data
-                    };
                 } else {
-                    overrideIfExisting('data');
-                }
-
-                delete meta.imports;
-                return this.expandInference(dirRelativeTo, meta);
-            }
-
-            // It was other kind of operation
-            return this.expandMeta(targetDir, _operation.operation);
-        } else {
-            throw new Error('Could not find operation  ' + meta.imports.href + ' in ' + targetDir);
-        }
-    }
-
-    static findOperation(target) {
-        let targetDir = target.substr(0, target.lastIndexOf('/'));
-        let name = target.substr(target.lastIndexOf('/') + 1);
-
-        // Gets the template
-        if (fu.exists(targetDir + '/' + serverOptions.indexFile)) {
-            let index = fu.readJson(targetDir + '/' + serverOptions.indexFile);
-            if (index.meta) {
-                for (let operation of index.meta) {
-                    if (operation.name === name) {
-                        return {
-                            exists: true,
-                            operation: operation
+                    if (meta.imports.data) {
+                        if (meta.imports.data.href) {
+                            let href = meta.imports.data.href;
+                            // make sure is an array
+                            if (typeof href === 'string') {
+                                href = [href]
+                            }
+                            let data = [];
+                            for (let current of href) {
+                                for (let derref of this.toDereferenciables(dirRelativeTo, current)){
+                                    if (data.indexOf(derref) < 0) {
+                                        data.push(derref);
+                                    }
+                                }
+                            }
+                            result.inference.data =  {
+                                'href': data
+                            };
                         }
                     }
                 }
+
+                return result;
             }
-        }
-        return {
-            exists: false
+
+            // Override meta if present
+            if (meta['Content-Type']){
+                _operation['Content-Type'] = meta['Content-Type'];
+            }
+            // It was other kind of operation
+            return this.expandMeta(targetPath, _operation);
+        } else {
+            throw new Error('Could not find operation  ' + meta.imports.href + ' in ' + targetPath);
         }
     }
+
 
     /**
      * Goes from relative path to absolute path
      * Fails if not in the current workspace
      */
-    static toAbsolutePath(dirRelativeTo, value) {
+    toAbsolutePath(dirRelativeTo, value) {
 
         if (typeof value !== 'string') {
             throw Error("I don't know how to handle " + toJson(value));
         }
 
         // Already expanded
-        if (value.startsWith(serverOptions.workSpacePath)) {
+        if (value.startsWith(this.serverOptions.workSpacePath)) {
             return value;
         }
 
         let result;
         if (path.isAbsolute(value)) {
-            result = path.join(serverOptions.workSpacePath, value);
+            result = path.join(this.serverOptions.workSpacePath, value);
         } else {
             result = path.join(dirRelativeTo, value);
         }
 
-        if (!result.startsWith(serverOptions.workSpacePath)) {
+        if (!result.startsWith(this.serverOptions.workSpacePath)) {
             throw Error('403 [' + result + ']');
         }
 
@@ -334,32 +397,34 @@ class DSL_V1 {
      * Valid href values are:
      *
      *  - An external URL, which expands to URL.
-     *  - A file (relative), which expands to a file.
-     *  - A file (absolute), which expands to a file.
+     *  - A file (relative), which expands to a absolute file.
+     *  - A file (absolute), which expands to a absolute file.
      *  - A call to a meta-operation, which expands to URL.
      */
     toDereferenciable(dirRelativeTo, value) {
+
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return value;
         }
 
-        // If its already expanded
-        let targetPath = DSL_V1.toAbsolutePath(dirRelativeTo, value);
+        let targetPath = this.toAbsolutePath(dirRelativeTo, value);
+        let targetOperation = this.toRelativePath(targetPath);
 
-        if (!fu.exists(targetPath)){
-            let operation = DSL_V1.findOperation(targetPath);
-            if (operation.exists) {
-                if (this.context){
-                    return this.context.toApiPath(targetPath);
-                } else {
-                    return targetPath.replaceAll(serverOptions.workSpacePath,'');
-                }
+        if (this.dependencyGraph.hasNode(targetOperation)){
+            return this.context.toApiPath(targetPath);
+        }
+
+        if (fu.exists(targetPath)){
+            if (fu.isDirectory(targetPath)) {
+                return this.context.toApiPath(targetPath);
+                // throw Error('400 [' + value + '] is directory');
             }
-            throw Error('404 [' + value + '] relative to: ['+dirRelativeTo+']');
-        } else {
             return targetPath;
         }
+
+        throw Error('404 [' + value + ']');
+
     }
 
     /**
@@ -368,11 +433,11 @@ class DSL_V1 {
      * Valid href values are:
      *
      *  - An external URL, which expands to [URL].
-     *  - A directory (relative), which expands to an array of files.
-     *  - A directory (absolute), which expands to an array of files.
-     *  - A file (relative), which expands to a [file].
-     *  - A file (absolute), which expands to a [file].
-     *  - A call to a meta-operation, which expands to an URL
+     *  - A directory (relative), fails
+     *  - A directory (absolute), fails
+     *  - A glob file pattern (relative), which expands to a [file].
+     *  - A glob file pattern (absolute), which expands to a [file].
+     *  - A call to a meta-operation, which expands to [URL].
      */
 
     // Found the glorious node-glob implementation.
@@ -383,30 +448,39 @@ class DSL_V1 {
             return [value]
         }
 
+        let results = [];
+
+        // Search for files.
         let glob;
         if (path.isAbsolute(value)) {
             // options for absolute
-            let options = {mark: true, sync:true, root:serverOptions.workSpacePath, ignore:'**/'+serverOptions.indexFile, absolute:false, nodir:true};
-            glob = new Glob(value.replaceAll(serverOptions.workSpacePath,''), options);
+            // console.log('absolute',value);
+            let options = {mark: true, sync:true, root:this.serverOptions.workSpacePath, ignore:'**/'+this.serverOptions.indexFile, absolute:false, nodir:true};
+            glob = new Glob(this.toRelativePath(value), options);
         } else {
             // options for relative
-            let options = {mark: true, sync:true, cwd:dirRelativeTo, ignore:'**/'+serverOptions.indexFile, absolute:true, nodir:true};
+            // console.log('relative',dirRelativeTo,value);
+            let options = {mark: true, sync:true, cwd:dirRelativeTo, ignore:'**/'+this.serverOptions.indexFile, absolute:true, nodir:true};
             glob = new Glob(value, options);
         }
 
-
         if (glob.found && glob.found.length > 0){
-            return glob.found;
+            // console.log('found',glob.found);
+            results = glob.found;
         }
 
-        let targetPath = DSL_V1.toAbsolutePath(dirRelativeTo, value);
-        let operation = DSL_V1.findOperation(targetPath);
-        if (operation.exists) {
-            if (this.context){
-                return [this.context.toApiPath(targetPath)];
-            } else {
-                return [targetPath.replaceAll(serverOptions.workSpacePath,'')];
-            }
+        // Search for operations
+        let targetPath = this.toAbsolutePath(dirRelativeTo, value);
+        let targetOperation = this.toRelativePath(targetPath);
+        let matches = minimatch.match(this.allNodes, targetOperation);
+
+        for (let current of matches){
+            let operationLocalPath = path.join(this.context.serverOptions.workSpacePath,current);
+            results.push(this.context.toApiPath( operationLocalPath ))
+        }
+
+        if (results.length > 0) {
+            return results;
         }
 
         if (!fu.exists(targetPath)){

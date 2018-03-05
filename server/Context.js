@@ -1,5 +1,3 @@
-const serverOptions = require("../config").serverOptions;
-
 /**
  * Does Node provide something to do this easily? This is painful!
  */
@@ -10,22 +8,27 @@ String.prototype.replaceAll = function (search, replacement) {
     return target.split(search).join(replacement);
 };
 
-
 class _Context {
 
-    constructor(host,originalUrl) {
+    constructor(host,originalUrl,serverOptions) {
+        if (!serverOptions) {
+            throw new Error('Need serverOptions');
+        }
+        this.serverOptions = serverOptions;
         this.host = host;
         this.originalUrl = originalUrl.replace(/\/$/, "");
     }
 
     getApiRoot(){
-        return "http://" +this.host + "/" + serverOptions.appEntrypoint;
+        return "http://" +this.host + "/" + this.serverOptions.appEntrypoint;
     }
 
     getResourcesRoot(){
-        return "http://" +this.host + "/" + serverOptions.resourcesEntryPoint;
+        return "http://" +this.host + "/" + this.serverOptions.resourcesEntryPoint;
     }
 
+    // @TODO test
+    //   var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     getCurrentPath(){
         return "http://" +this.host + this.originalUrl.replace(/\/$/, "");
     }
@@ -35,7 +38,7 @@ class _Context {
     }
 
     getLocalDir(){
-        return this.getCurrentPath().replaceAll(this.getApiRoot(), serverOptions.workSpacePath);
+        return this.getCurrentPath().replaceAll(this.getApiRoot(), this.serverOptions.workSpacePath);
     }
 
     getCurrentResource(){
@@ -47,19 +50,19 @@ class _Context {
     }
 
     getTail(){
-        return new _Context(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')));
+        return new _Context(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')),this.serverOptions);
     }
 
     toResourcePath(someLocalDir){
-        return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.resourcesEntryPoint);
+        return someLocalDir.replaceAll(this.serverOptions.workSpacePath, "http://" +this.host +'/'+ this.serverOptions.resourcesEntryPoint);
     }
 
     toApiPath(someLocalDir){
-        return someLocalDir.replaceAll(serverOptions.workSpacePath, "http://" +this.host +'/'+ serverOptions.appEntrypoint);
+        return someLocalDir.replaceAll(this.serverOptions.workSpacePath, "http://" +this.host +'/'+ this.serverOptions.appEntrypoint);
     }
 
     getContextForURL(someURI){
-        return new _Context(this.host, '/' +serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''));
+        return new _Context(this.host, '/' +this.serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''),this.serverOptions);
     }
 
     isLocalApiPath(someURL){
@@ -69,8 +72,8 @@ class _Context {
 }
 
 class Context extends _Context{
-    constructor(req) {
-        super(req.headers.host,req.originalUrl);
+    constructor(req,serverOptions) {
+        super(req.headers.host,req.originalUrl,serverOptions);
     }
 }
 

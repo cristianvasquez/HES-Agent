@@ -1,68 +1,86 @@
-const serverOptions = require("../../config").serverOptions;
 const express = require("express");
 const fu = require("../persistence");
 const _ = require('lodash');
 const N3Parser = require('../lib/N3Parser/N3Parser');
 const JSONLDParser = require('../lib/N3Parser/JSONLDParser');
-
 const Context = require("../Context");
 const reasoner = require("../reasoning");
 const DSL_V1 = require("../dsl_v1");
 const rp = require('request-promise');
 let hash = require('string-hash');
 
-
+/**
+ * Uses processorOptions as constructor
+ *
+ * Builds dependency tree the first time is needed.
+ * In the meantime this is refreshed through the *\/operations endpoint
+ */
 class HES extends express.Router {
 
-    constructor(processorOptions) {
+    constructor(processorOptions,serverOptions) {
         super();
 
         if (!processorOptions) {
-            throw new Error("must define processor options example: " + JSON.stringify(config.processorOptions, null, 2));
+            throw new Error("must define processor options");
         }
-        /**
-         * Exports metadata about the operations
-         */
-        this.get("/operations", function (req, res, next) {
-            res.json(getDependencyGraph(req));
-        });
 
-        // I'll check for cache on next iterations.
-        // let cache = require('memory-cache');
+        if (!serverOptions) {
+            throw new Error("must define server options");
+        }
+
+        function getDSL(req){
+            let context = new Context(req, serverOptions);
+            return new DSL_V1(context);
+        }
+
         function getDependencyGraph(req) {
-            // let dependencyGraph = cache.get('dependencyGraph');
-            // if (!dependencyGraph) {
-                let context = new Context(req);
-                let dsl_v1 = new DSL_V1(context);
-                let dependencyGraph = dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
-            //     cache.put('dependencyGraph',dependencyGraph,100000,function() {
-            //         console.log('Reloading dependency graph');
-            //     });
+            // if (!this.dependencyGraph){
+            //     this.dependencyGraph = getDSL(req).buildLocalDependencyGraph(serverOptions.workSpacePath);
             // }
-            return dependencyGraph;
+            // return this.dependencyGraph;
+            return getDSL(req).buildLocalDependencyGraph(serverOptions.workSpacePath);
         }
 
-        this.processorOptions = processorOptions;
+        /**
+         * Exports metadata about the operations on a given URL
+         */
+        this.get("*/operations", function (req, res, next) {
+            let dsl_v1 = getDSL(req);
+            // this.dependencyGraph = dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
+            let graph = getDependencyGraph(req);
+
+            let context = new Context(req, serverOptions);
+            let currentPath = context.getTail().getLocalHref();
+            // let allNodes = this.dependencyGraph.overallOrder();
+            let allNodes = graph.overallOrder();
+
+            for (let id of allNodes){
+                // Filter out others
+                if (!id.startsWith(currentPath)){
+                    graph.removeNode(id);
+                }
+            }
+            res.json(graph);
+        });
 
         /**
          * Some operations (I don't have a clear idea yet of which ones to support)
          */
-        if (this.processorOptions.hydraOperations.indexOf('POST') !== -1) {
+        if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
             this.post("*", function (req, res, next) {
                 createOrUpdate(req, res, next);
             });
         }
 
-        if (this.processorOptions.hydraOperations.indexOf('PUT') !== -1) {
+        if (processorOptions.hydraOperations.indexOf('PUT') !== -1) {
             this.put("*", function (req, res, next) {
                 createOrUpdate(req, res, next);
             });
         }
 
         function createOrUpdate(req, res, next) {
-            let dependencyGraph = getDependencyGraph(req);
-            let context = new Context(req);
-            let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
+            let context = new Context(req,serverOptions);
+            let hasDefinedOperation = getDependencyGraph(req).hasNode(context.getLocalHref());
             if (hasDefinedOperation) {
                 createOrUpdateMeta(req, res, next)
             } else {
@@ -71,7 +89,7 @@ class HES extends express.Router {
         }
 
         function createOrUpdateFile(req, res, next) {
-            let context = new Context(req);
+            let context = new Context(req,serverOptions);
             let targetFile = context.getLocalDir();
             fu.writeFile(targetFile, req.body);
             res.json({'@id': context.getCurrentPath()});
@@ -79,7 +97,7 @@ class HES extends express.Router {
 
         function createOrUpdateMeta(req, res, next) {
 
-            let context = new Context(req);
+            let context = new Context(req,serverOptions);
             let targetDir = context.getTail().getLocalDir();
             let targetName = context.getHead();
 
@@ -113,8 +131,7 @@ class HES extends express.Router {
 
             // Only imports implemented at the moment
             let targetContext = context.getContextForURL(newOperation.imports['@id']);
-            let _operation = DSL_V1.findOperation(targetContext.getLocalDir());
-            if (!_operation.exists) {
+            if (!getDependencyGraph(req).hasNode(targetContext.getLocalHref())) {
                 res.status(400).json({error: "cannot find operation at: " + newOperation.imports['@id']});
             }
 
@@ -136,13 +153,12 @@ class HES extends express.Router {
          *
          * Could check for dependencies through the dependency graph, but I'm not sure how this will behave with any H-Eye interacting.
          */
-        if (this.processorOptions.hydraOperations.indexOf('DELETE') !== -1) {
+        if (processorOptions.hydraOperations.indexOf('DELETE') !== -1) {
             this.delete("*", function (req, res, next) {
-                let context = new Context(req);
+                let context = new Context(req,serverOptions);
 
                 let dependencyGraph = getDependencyGraph(req);
                 let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
-
 
                 if (!hasDefinedOperation) {
 
@@ -194,14 +210,12 @@ class HES extends express.Router {
                 }
             });
 
-
-            let context = new Context(req);
-            let dsl_v1 = new DSL_V1(context);
+            let context = new Context(req,serverOptions);
+            let dsl_v1 = getDSL(req);
 
             let dependencyGraph = getDependencyGraph(req);
             let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
             if (hasDefinedOperation) {
-
                 let meta = dependencyGraph.getNodeData(context.getLocalHref());
 
                 // Forcing a particular content type (csv)
@@ -209,12 +223,12 @@ class HES extends express.Router {
                     targetContentType = meta['Content-Type'];
                 }
 
-
                 if (meta.href) {
-
-                    let target = dsl_v1.toDereferenciable(context.getLocalDir(), meta.href);
-                    if (fu.isFile(target)) { // is a local file
-                        target = context.toResourcePath(target);
+                    // let target = dsl_v1.toDereferenciable(context.getLocalDir(), meta.href);
+                    // let target = context.getLocalDir();
+                    let targetFile = dsl_v1.toAbsolutePath(context.getLocalDir(),meta.href);
+                    if (fu.exists(targetFile)&&fu.isFile(targetFile)) { // is a local file
+                        let target = context.toResourcePath(targetFile);
                         let options = {
                             uri: target,
                             headers: {
@@ -229,6 +243,7 @@ class HES extends express.Router {
                                 renderError(res, error);
                             });
                     } else { // Its either external or virtual operation, we redirect
+                        let target = dsl_v1.toDereferenciable(context.getLocalDir(), meta.href);
                         if (target.startsWith(serverOptions.workSpacePath)) { // Only to resources inside the worksPace
                             target = context.toApiPath(target);
                         }
@@ -236,9 +251,7 @@ class HES extends express.Router {
                         res.redirect(target);
                     }
                 } else if (meta.raw) {
-
                     renderSupportedContentypes(context, targetContentType, meta.raw, res);
-
                 } else if (meta.inference) {
 
                     function rawToUrl(context, rawValue) {
@@ -285,7 +298,7 @@ class HES extends express.Router {
 
                 }
             } else {
-                let index = buildIndex(processorOptions, req, res);
+                let index = buildIndex(processorOptions,serverOptions, req, res);
                 // renderSupportedContentypes(context, targetContentType, index, res);
                 res.json(index);
             }
@@ -300,16 +313,14 @@ class HES extends express.Router {
 /**
  * Gets the index.json file and populates it with additional info such as files.
  */
-function buildIndex(processorOptions, req, res) {
-    let context = new Context(req);
+function buildIndex( processorOptions, serverOptions, req, res) {
+    let context = new Context(req,serverOptions);
     let localDir = context.getLocalDir();
     let contents = fu.readDir(localDir);
 
     // Was not an inferred operation, we read the index
     let result = fu.readJson(localDir + '/' + serverOptions.indexFile);
     result["@id"] = context.getCurrentPath();
-
-
 
     // And process the meta
     if (result.meta) {

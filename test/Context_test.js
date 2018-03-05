@@ -1,6 +1,5 @@
 const expect = require("chai").expect;
 const Context = require("../server/Context");
-const serverOptions = require("../config").serverOptions;
 
 /**
  * Chai: https://devhints.io/chai
@@ -12,6 +11,9 @@ String.prototype.replaceAll = function (search, replacement) {
     return target.split(search).join(replacement);
 };
 
+const defaultServerOptions = require("../config").serverOptions;
+
+let serverOptions = JSON.parse(JSON.stringify(defaultServerOptions))
 serverOptions.workSpacePath = __dirname;
 let request = {
     headers:{
@@ -21,56 +23,50 @@ let request = {
 };
 
 describe("specToPublic: converts an href specific to a set of uris to feed the reasoner", function () {
+    let context = new Context(request,serverOptions);
 
     it("constructor", function () {
-        let context = new Context(request);
         expect(context.host).to.equal('localhost:3333');
         expect(context.originalUrl).to.equal('/dataspaces/some/url/there');
     });
 
     it("getApiRoot()", function () {
-        let context = new Context(request);
         expect(context.getApiRoot()).to.equal("http://localhost:3333/"+serverOptions.appEntrypoint);
     });
 
     it("getResourcesRoot()", function () {
-        let context = new Context(request);
         expect(context.getResourcesRoot()).to.equal("http://localhost:3333/"+serverOptions.resourcesEntryPoint);
     });
 
     it("getCurrentPath()", function () {
-        let context = new Context(request);
         expect(context.getCurrentPath()).to.equal("http://localhost:3333/"+serverOptions.appEntrypoint+"/some/url/there");
     });
 
     it("getLocalDir()", function () {
-        let context = new Context(request);
         expect(context.getLocalDir()).to.equal(serverOptions.workSpacePath+"/some/url/there");
     });
 
     it("getCurrentResource()", function () {
-        let context = new Context(request);
         expect(context.getCurrentResource()).to.equal("http://localhost:3333/"+serverOptions.resourcesEntryPoint+"/some/url/there");
     });
 
     it("getHead()", function () {
-        let context = new Context(request);
         expect(context.getHead()).to.equal("there");
     });
 
     it("getTail()", function () {
-        let context = new Context(request);
+        let context = new Context(request,serverOptions);
         let request_tail = {
             headers:{
                 host:"localhost:3333"
             },
             originalUrl:'/'+serverOptions.appEntrypoint+"/some/url"
         };
-        expect(context.getTail()).to.deep.equal(new Context(request_tail));
+        expect(context.getTail()).to.deep.equal(new Context(request_tail,serverOptions));
     });
 
     it("getContextForURL()", function () {
-        let context = new Context(request);
+        let context = new Context(request,serverOptions);
         let context2 = context.getContextForURL('http://localhost:3333/dataspaces/serviceDefinitions/T0/step_3');
         expect(context2.getHead()).to.equal('step_3');
         expect(context2.host).to.equal('localhost:3333');
@@ -87,7 +83,7 @@ describe("specToPublic: converts an href specific to a set of uris to feed the r
             },
             originalUrl:'/'+serverOptions.appEntrypoint
         };
-        let context = new Context(request_root);
+        let context = new Context(request_root,serverOptions);
         expect(context.getTail().getCurrentPath()).to.equal("http://localhost:3333");
     });
 

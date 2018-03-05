@@ -6,7 +6,6 @@ const serverOptions = require("../config").serverOptions;
 const defaultEyeOptions = require("../config").defaultEyeOptions;
 const program = require('commander');
 const fu = require('../server/persistence');
-const debug = require('debug')('the-hydra-eye-js:server');
 const pjson = require('../package.json');
 const fs = require('fs-extra')
 const path = require('path');
@@ -184,11 +183,11 @@ function validateWorkspace(absolutePath){
     let pattern = "**";
     let all = {mark: true, sync:true, absolute:true, nodir:true, cwd:absolutePath};
     const Glob = require("glob").Glob
-    let indexes = new Glob(pattern, all).found;
+    let allFiles = new Glob(pattern, all).found;
 
-    for (let currentDir of indexes){
+    for (let current of allFiles){
         // remove-utf8-bom, just in case
-        let contents = fs.readFileSync(currentDir,{ encoding: 'utf8' });
+        let contents = fs.readFileSync(current,{ encoding: 'utf8' });
         if (contents.charCodeAt(0) === 0xFEFF) {
             contents = contents.substr(1);
             console.log('utf8-bom detected at ' + d + ', being removed');

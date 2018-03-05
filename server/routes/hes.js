@@ -17,6 +17,7 @@ let hash = require('string-hash');
  */
 class HES extends express.Router {
 
+
     constructor(processorOptions,serverOptions) {
         super();
 
@@ -33,25 +34,32 @@ class HES extends express.Router {
             return new DSL_V1(context);
         }
 
+
+        let dependencyGraph = undefined;
+
         function getDependencyGraph(req) {
-            // if (!this.dependencyGraph){
-            //     this.dependencyGraph = getDSL(req).buildLocalDependencyGraph(serverOptions.workSpacePath);
-            // }
-            // return this.dependencyGraph;
-            return getDSL(req).buildLocalDependencyGraph(serverOptions.workSpacePath);
+            if (!dependencyGraph){
+                rebuildGraph(req);
+            }
+            return dependencyGraph;
         }
+
+        function rebuildGraph(req){
+            let context = new Context(req, serverOptions);
+            let dsl = new DSL_V1(context);
+            dependencyGraph = dsl.buildLocalDependencyGraph(serverOptions.workSpacePath);
+        }
+
 
         /**
          * Exports metadata about the operations on a given URL
          */
         this.get("*/operations", function (req, res, next) {
-            let dsl_v1 = getDSL(req);
-            // this.dependencyGraph = dsl_v1.buildLocalDependencyGraph(serverOptions.workSpacePath);
+            rebuildGraph(req);
             let graph = getDependencyGraph(req);
 
             let context = new Context(req, serverOptions);
             let currentPath = context.getTail().getLocalHref();
-            // let allNodes = this.dependencyGraph.overallOrder();
             let allNodes = graph.overallOrder();
 
             for (let id of allNodes){
@@ -299,7 +307,6 @@ class HES extends express.Router {
                 }
             } else {
                 let index = buildIndex(processorOptions,serverOptions, req, res);
-                // renderSupportedContentypes(context, targetContentType, index, res);
                 res.json(index);
             }
 

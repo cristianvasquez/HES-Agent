@@ -1,5 +1,7 @@
 # H-Eye agent
 
+GPS4IC stable
+
 Note: (To try the application without installing EYE reasoner, you can use the Docker version below)
 
 ![](hes-client.png?raw=true)

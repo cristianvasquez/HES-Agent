@@ -1,31 +1,22 @@
 {
   "@context": {
-    "hydra": "http://www.w3.org/ns/hydra/core#",
-    "fluid": "http://josd.github.io/fluid#",
-    "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "@type": [
-    "this:Example"
-  ],
-  "this:name": [
-    {
-      "@value": "Using another service"
-    }
-  ],
-  "this:description":"Uses the definition of /lib",
-  "meta":[
-    {
-      "name":"import",
-      "description":"import /lib",
-      "imports": {
-        "href":"/lib/whoIsWhat"
-      }
+  "features": {
+    "first_operation": {
+      "description": "Some raw data",
+      "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
     },
-    {
-      "name":"next",
-      "description":"go to example 6",
-      "href":"../example_06"
+    "query": {
+      "description": "Who is what",
+      "raw": "{ ?who a ?what } => { ?who a ?what }."
+    },
+    "second_operation": {
+      "description": "Uses other operations as resources. ",
+      "inference": {
+        "data": ["/lib/data/knowledge.n3", "./first_operation"],
+        "query": "./query"
+      }
     }
-  ]
+  }
 }

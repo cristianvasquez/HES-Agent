@@ -1,36 +1,32 @@
 {
   "@context": {
-    "hydra": "http://www.w3.org/ns/hydra/core#",
-    "fluid": "http://josd.github.io/fluid#",
-    "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "@type": [
-    "this:Example"
-  ],
-  "this:name": [
-    {
-      "@value": "Inference + personal data"
-    }
-  ],
-  "this:description":"Uses all the files of /lib/data as data and /lib/query/whoIsWhat.n3 as query, adding the contents of the ./personal folder",
-  "meta":[
-    {
-      "name": "bob",
-      "description":"Bob space",
-      "inference": {
-        "data": {
-          "href":["/lib/data/knowledge.n3","./personal/*"]
-        },
-        "query":{
-          "href": "/lib/query/whoIsWhat.n3"
-        }
+  "features": {
+    "alice": {
+      "description": "Imports /lib/socrates, but uses ./personal/* as data. ",
+      "imports": "/lib/socrates",
+      "replace":{
+        "inference.data": "./personal/*"
       }
     },
-    {
-      "name":"next",
-      "description":"go to example 5",
-      "href":"../example_05"
+    "alice_and_socrates": {
+      "description": "Imports /lib/socrates, and adds ./personal/* to the data",
+      "imports": "/lib/socrates",
+      "add":{
+        "inference.data": "./personal/*"
+      }
+    },
+    "alice_without_socrates": {
+      "description": "Imports /lib/socrates, adds ./personal/* and removes /lib/data/socrates.n3",
+      "imports": "/lib/socrates",
+      "add":{
+        "inference.data": "./personal/*"
+      },
+      "remove":{
+        "inference.data": "/lib/data/socrates.n3"
+      }
     }
-  ]
+  },
+  "next": "../example_05"
 }

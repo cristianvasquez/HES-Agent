@@ -1,33 +1,16 @@
 {
   "@context": {
-    "hydra": "http://www.w3.org/ns/hydra/core#",
-    "fluid": "http://josd.github.io/fluid#",
-    "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "@type": [
-    "this:Example"
-  ],
-  "this:name": [
-    {
-      "@value": "Sparql"
-    }
-  ],
-  "this:description": "Declaration of a sparql query",
-  "meta": [
-    {
-      "name": "dbpedia",
-      "description":"Dbpedia query",
+  "features": {
+    "dbpedia": {
+      "description": "Exposes results of a sparql query",
       "query": {
         "endpoint": "http://dbpedia.restdesc.org",
         "default-graph-uri": "http://dbpedia.org",
-        "raw": "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } limit 10"
+        "sparql": "./construct.sparql"
       }
     },
-    {
-      "name": "next",
-      "description":"go to example 3",
-      "href": "../example_03"
-    }
-  ]
+    "next": "../example_03"
+  }
 }

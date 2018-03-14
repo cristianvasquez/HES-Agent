@@ -5,10 +5,9 @@
     "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "meta": [
-    {
-      "name": "people",
+  "features": {
+    "people": {
       "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Alice a :Woman ."
     }
-  ]
+  }
 }

@@ -1,36 +1,25 @@
 {
   "@context": {
-    "hydra": "http://www.w3.org/ns/hydra/core#",
-    "fluid": "http://josd.github.io/fluid#",
-    "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "@type": [
-    "this:Example"
-  ],
-  "this:name": [
-    {
-      "@value": "inference"
-    }
-  ],
-  "this:description": "Uses all the files of /lib/data as data, and { ?who a ?what } => { ?who a ?what } as query",
-  "meta": [
-    {
-      "name": "socrates",
-      "description": "Socrates example",
+  "features": {
+    "cindy": {
+      "description": "Inference example about dating",
       "inference": {
-        "data": {
-          "href": "/lib/data/*"
-        },
-        "query": {
-          "raw": "{ ?who a ?what } => { ?who a ?what }."
+        "data": ["./cindy_personal_space/*", "reflexives.n3", "symmetric.n3"],
+        "query": "./query_all.n3"
+      }
+    },
+    "proof": {
+      "description": "returns proof instead.",
+      "inference": {
+        "data": ["./cindy_personal_space/*", "reflexives.n3", "symmetric.n3"],
+        "query": "./query_all.n3",
+        "options": {
+          "proof": true
         }
       }
     },
-    {
-      "name": "next",
-      "description": "go to example 4",
-      "href": "../example_04"
-    }
-  ]
+    "next": "../example_04"
+  }
 }

@@ -1,0 +1,10 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+{
+  ?predicate a owl:SymmetricProperty.
+  ?subject ?predicate ?object.
+}
+=>
+{
+  ?object ?predicate ?subject.
+}.

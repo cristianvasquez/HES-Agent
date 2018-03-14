@@ -5,23 +5,18 @@
     "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "meta": [
-    {
+  "features": {
+    "exec": {
       "name": "exec",
       "description": "Chained operation",
       "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
     },
-    {
-      "name": "people",
-      "description": "all people operations in sub-folders",
+    "people": {
       "inference": {
-        "data": {
-          "href":"./*/people"
-        },
-        "query": {
-          "raw": "{ ?s ?p ?o } => { ?s ?p ?o }"
-        }
+        "description": "all people operations in sub-folders",
+        "data": "./*/people",
+        "query": "./all.sparql"
       }
     }
-  ]
+  }
 }

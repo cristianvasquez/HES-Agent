@@ -1,0 +1,5 @@
+@prefix example: <http://example.org/people#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+
+example:Cindy foaf:knows example:John.
+example:Cindy example:dates example:John.

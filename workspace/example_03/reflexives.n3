@@ -1,0 +1,6 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix example: <http://example.org/people#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+foaf:knows a owl:SymmetricProperty.
+example:dates a owl:SymmetricProperty.

@@ -66,8 +66,6 @@ function readDir(dir) {
 exports.readDir = readDir;
 
 
-
-
 /**
  * Gets the index.json file from a local directory
  */
@@ -86,6 +84,12 @@ function readJson(filePath){
     }
 }
 exports.readJson = readJson;
+
+
+function readFile(filePath){
+    return fs.readFileSync(filePath,"utf8");
+}
+exports.readFile = readFile;
 
 /**
  * Write a file to a local directory

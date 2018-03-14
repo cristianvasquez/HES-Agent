@@ -21,15 +21,11 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "data": {
-                "href": [
-                    config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
-                    config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
-                ]
-            },
-            "query": {
-                "href": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
-            }
+            "data": [
+                config.serverOptions.workSpacePath+"/lib/data/knowledge.n3",
+                config.serverOptions.workSpacePath+"/lib/data/socrates.n3"
+            ],
+            "query": config.serverOptions.workSpacePath+"/lib/query/whoIsWhat.n3"
         };
         let command = reasoning.getEyeCommand(inference);
 
@@ -40,12 +36,8 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "data": {
-                "href": "data.n3"
-            },
-            "query": {
-                "href": "query.n3"
-            }
+            "data":"data.n3",
+            "query": "query.n3"
         };
 
         let command = reasoning.getEyeCommand(inference);
@@ -56,12 +48,8 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "data": {
-                "href": ["data_01.n3","data_02.n3"]
-            },
-            "query": {
-                "href": "query.n3"
-            }
+            "data": ["data_01.n3","data_02.n3"],
+            "query": "query.n3"
         };
 
         let command = reasoning.getEyeCommand(inference);
@@ -72,12 +60,8 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "data": {
-                "href": "data.n3"
-            },
-            "query": {
-                "href": ["query.n3"]
-            }
+            "data": "data.n3",
+            "query": ["query.n3"]
         };
 
         let command = reasoning.getEyeCommand(inference);
@@ -88,12 +72,8 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "data": {
-                "href": "data.n3"
-            },
-            "query": {
-                "href": ["query_01.n3","query_02.n3"]
-            }
+            "data": "data.n3",
+            "query": ["query_01.n3","query_02.n3"]
         };
 
         expect(function () {
@@ -107,12 +87,8 @@ describe("eyeOptions", function () {
         before();
 
         let inference = {
-            "data": {
-                "href": "data.n3"
-            },
-            "query": {
-                "href": "query.csvq"
-            },
+            "data": "data.n3",
+            "query": "query.csvq",
             "eye:flags": [
                 "--strings"
             ],
@@ -127,15 +103,9 @@ describe("eyeOptions", function () {
         before();
 
         let inference =    {
-            "data": {
-                "href":["./agent2-map.n3","../lib/gps-plugin.n3"]
-            },
-            "proof": {
-                "href":["http://alice/alice_proof"]
-            },
-            "query":{
-                "href": "./agent2-query.n3"
-            }
+            "data": ["./agent2-map.n3","../lib/gps-plugin.n3"],
+            "proof": ["http://alice/alice_proof"],
+            "query":"./agent2-query.n3"
         };
         let command = reasoning.getEyeCommand(inference);
 
@@ -146,39 +116,14 @@ describe("eyeOptions", function () {
         before();
 
         let inference =    {
-            "data": {
-                "href":["./agent2-map.n3","../lib/gps-plugin.n3"]
-            },
-            "proof": {
-                "href":["http://alice/alice_proof","http://bob/bob_proof"]
-            },
-            "query":{
-                "href": "./agent2-query.n3"
-            }
+            "data": ["./agent2-map.n3","../lib/gps-plugin.n3"],
+            "proof": ["http://alice/alice_proof","http://bob/bob_proof"],
+            "query":"./agent2-query.n3"
         };
         let command = reasoning.getEyeCommand(inference);
 
         expect(command).to.contain("--proof http://alice/alice_proof");
         expect(command).to.contain("--proof http://bob/bob_proof");
-
-    });
-
-    it("Fails with proof without href", function () {
-        before();
-
-        let inference = {
-            "data": {
-                "href":["./agent2-map.n3","../lib/gps-plugin.n3"]
-            },
-            "proof": {},
-            "query":{
-                "href": "./agent2-query.n3"
-            }
-        };
-
-        expect(function () {
-            reasoning.getEyeCommand(inference)
-        }).to.throw("href for proof not specified");
 
     });
 

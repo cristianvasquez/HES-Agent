@@ -9,9 +9,9 @@ const port = process.env.PORT || '3000';
 var config = {
 
     schemas:{
-        hEyeSchema:path.join(__dirname, './schemas/dsl_v1.schema.json'),
-        metaOperationSchema:path.join(__dirname, './schemas/dsl_v1_meta.schema.json'),
-        crudOperationsSchema:path.join(__dirname, './schemas/dsl_v1_crud.schema.json')
+        // hEyeSchema:path.join(__dirname, './schemas/dsl_v1.schema.json'),
+        metaOperationSchema:path.join(__dirname, './schemas/dsl_v1_meta.schema.json')
+        // crudOperationsSchema:path.join(__dirname, './schemas/dsl_v1_crud.schema.json')
     },
 
     serverOptions:{

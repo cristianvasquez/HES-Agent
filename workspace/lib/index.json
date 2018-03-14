@@ -1,30 +1,18 @@
 {
   "@context": {
-    "hydra": "http://www.w3.org/ns/hydra/core#",
-    "fluid": "http://josd.github.io/fluid#",
-    "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
   "@type": [
     "this:Library"
   ],
-  "this:name": [
-    {
-      "@value": "A library"
-    }
-  ],
   "this:description": "Library example",
-  "meta": [
-    {
-      "name": "whoIsWhat",
+  "features": {
+    "socrates": {
+      "description":"infers socrates is mortal",
       "inference": {
-        "data": {
-          "href": "./data/*"
-        },
-        "query": {
-          "href": "/lib/query/whoIsWhat.n3"
-        }
+        "data": "./data/*",
+        "query": "/lib/query/whoIsWhat.n3"
       }
     }
-  ]
+  }
 }

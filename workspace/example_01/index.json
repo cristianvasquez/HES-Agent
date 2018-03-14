@@ -1,29 +1,12 @@
 {
   "@context": {
-    "hydra": "http://www.w3.org/ns/hydra/core#",
-    "fluid": "http://josd.github.io/fluid#",
-    "hes": "http://cristianvasquez.github.io/hes#",
     "this": "http://www.example.org#"
   },
-  "@type": [
-    "this:Example"
-  ],
-  "this:name": [
-    {
-      "@value": "simple pointer"
-    }
-  ],
-  "this:description": "Declaration of redirect pointers",
-  "meta": [
-    {
-      "name": "raw",
-      "description": "raw data",
+  "features": {
+    "socrates": {
+      "description": "Exposes some turtle as Json-ld (default)",
       "raw": "@prefix : <http://www.agfa.com/w3c/euler/socrates#> . :Socrates a :Man ."
     },
-    {
-      "name": "next",
-      "description": "go to example 2",
-      "href": "../example_02"
-    }
-  ]
+    "next": "../example_02"
+  }
 }

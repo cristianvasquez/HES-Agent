@@ -35,11 +35,10 @@ function getEyeCommand(inference){
      * Handle data
      */
     if (inference['data']){
-        // command = command+" --data "+inference['data']['href'].join(" ");
-        if (Array.isArray(inference['data']['href'])){
-            command = command+" "+inference['data']['href'].join(" ");
+        if (Array.isArray(inference['data'])){
+            command = command+" "+inference['data'].join(" ");
         } else {
-            command = command+" "+inference['data']['href'];
+            command = command+" "+inference['data'];
         }
     }
 
@@ -47,14 +46,14 @@ function getEyeCommand(inference){
      * Handle query
      */
     if (inference['query']){
-        if (Array.isArray(inference['query']['href'])){
-            if (inference['query']['href'].length===1){
-                command = command+" --query "+inference['query']['href'][0];
+        if (Array.isArray(inference['query'])){
+            if (inference['query'].length===1){
+                command = command+" --query "+inference['query'][0];
             }else {
                 throw new Error('cannot handle multiple queries');
             }
         } else {
-            command = command+" --query "+inference['query']['href'];
+            command = command+" --query "+inference['query'];
         }
     }
 
@@ -63,13 +62,13 @@ function getEyeCommand(inference){
      */
     // proof only supports urls by the moment
     if (inference['proof']){
-        if (!inference['proof']['href']) {
+        if (!inference['proof']) {
             throw new Error('href for proof not specified');
         }
-        if (Array.isArray(inference['proof']['href'])){
-            command = command+" --proof "+inference['proof']['href'].join(" --proof ");
+        if (Array.isArray(inference['proof'])){
+            command = command+" --proof "+inference['proof'].join(" --proof ");
         } else {
-            command = command+" --proof "+inference['proof']['href'];
+            command = command+" --proof "+inference['proof'];
         }
     }
 

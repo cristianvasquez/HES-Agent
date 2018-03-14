@@ -34,28 +34,25 @@ class HES extends express.Router {
             return new DSL_V1(context);
         }
 
-
-        let dependencyGraph = undefined;
-
+        // let dependencyGraph = undefined;
         function getDependencyGraph(req) {
-            if (!dependencyGraph){
-                rebuildGraph(req);
-            }
-            return dependencyGraph;
-        }
-
-        function rebuildGraph(req){
             let context = new Context(req, serverOptions);
             let dsl = new DSL_V1(context);
-            dependencyGraph = dsl.buildLocalDependencyGraph(serverOptions.workSpacePath);
+            return dsl.buildLocalDependencyGraph(serverOptions.workSpacePath);
+            // if (!dependencyGraph){
+            //     rebuildGraph(req);
+            // }
+            // return dependencyGraph;
         }
+        // @TODO look for better cache strategies for the dependency graph, this one is just dangerous
+        // function rebuildGraph(req){
+        //     let context = new Context(req, serverOptions);
+        //     let dsl = new DSL_V1(context);
+        //     dependencyGraph = dsl.buildLocalDependencyGraph(serverOptions.workSpacePath);
+        // }
 
-
-        /**
-         * Exports metadata about the operations on a given URL
-         */
-        this.get("*/operations", function (req, res, next) {
-            rebuildGraph(req);
+        function getDependencyGraphAtPath(req, res, next){
+            // rebuildGraph(req);
             let graph = getDependencyGraph(req);
 
             let context = new Context(req, serverOptions);
@@ -68,7 +65,45 @@ class HES extends express.Router {
                     graph.removeNode(id);
                 }
             }
+            return graph;
+        }
+
+
+        /**
+         * Exports metadata about the operations on a given URL
+         */
+
+        this.get("*/operations", function (req, res, next) {
+            let graph = getDependencyGraphAtPath(req,res,next);
+
+            for (let nodePath in graph.nodes){
+                if (graph.nodes[nodePath].inference){
+                    graph.nodes[nodePath].eyeCall = reasoner.getEyeCommand(graph.nodes[nodePath].inference);
+                }
+            }
             res.json(graph);
+        });
+
+
+        this.get("*/discover", function (req, res, next) {
+            let context = new Context(req,serverOptions);
+
+            let operations = [];
+            let graph = getDependencyGraphAtPath(req,res,next);
+
+            for (let nodePath in graph.nodes){
+                let current = buildLink(context.getApiRoot()+nodePath, 'Feature');
+                if (graph.nodes[nodePath].description){
+                    current.description =graph.nodes[nodePath].description;
+                }
+                operations.push(current);
+            }
+            res.json({
+                "@context": {
+                    "@base": "http://www.example.org#"
+                },
+                'features': operations
+            });
         });
 
         /**
@@ -192,6 +227,7 @@ class HES extends express.Router {
 /**
  * Gets the index.json file and populates it with additional info such as files.
  */
+
 function buildIndex( processorOptions, serverOptions, req, res) {
     let context = new Context(req,serverOptions);
     let localDir = context.getLocalDir();
@@ -202,10 +238,9 @@ function buildIndex( processorOptions, serverOptions, req, res) {
     result["@id"] = context.getCurrentPath();
 
 
-
     // And process the meta
     if (result.features) {
-        let operations = [], currentOperation;
+        let operations = [];
 
         for (operationName in result.features) {
             let operationUri = context.getCurrentPath() + '/' + operationName;
@@ -218,7 +253,7 @@ function buildIndex( processorOptions, serverOptions, req, res) {
         }
 
         delete result.features;
-        result['this:operation'] = operations;
+        result['operation'] = operations;
     }
 
     // Process directories
@@ -227,8 +262,8 @@ function buildIndex( processorOptions, serverOptions, req, res) {
             directory => {
                 // Peek types
                 let directoryIndex = fu.readJson(localDir + "/" + directory + '/' + serverOptions.indexFile);
-                let type = _.get(directoryIndex, '@type', 'this:Resource');
-                result["this:" + directory] = buildLink(context.getCurrentPath() + "/" + directory, type)
+                let type = _.get(directoryIndex, '@type', 'Resource');
+                result[directory] = buildLink(context.getCurrentPath() + "/" + directory, type)
             }
         );
     }
@@ -244,12 +279,13 @@ function buildIndex( processorOptions, serverOptions, req, res) {
         if (contents.files) {
             let publicFiles = getPublicFiles(contents.files);
             if (!_.isEmpty(publicFiles)) {
-                result["this:files"] = publicFiles;
+                result["files"] = publicFiles;
             }
         }
     }
 
-    result["this:debug"] = context.getCurrentPath()+'/operations';
+    result["discover"] = buildLink(context.getCurrentPath()+'/discover', 'Container');
+    result["debug"] = buildLink(context.getCurrentPath()+'/operations', 'DebugEndpoint') ;
 
     return result
 }
@@ -263,7 +299,7 @@ function buildLink(uri, type) {
 }
 
 /**
- * ContentType utils
+ * ContentType utils. @TODO re-think and revisit this!
  */
 
 function renderError(res, error) {

@@ -1,11 +1,11 @@
 {
   "@context": {
-    "this": "http://www.example.org#"
+    "@vocab": "http://www.example.org#"
   },
   "@type": [
-    "this:Library"
+    "Library"
   ],
-  "this:description": "Library example",
+  "description": "Library example",
   "features": {
     "socrates": {
       "description":"infers socrates is mortal",

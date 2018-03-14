@@ -3,7 +3,7 @@
     "hydra": "http://www.w3.org/ns/hydra/core#",
     "fluid": "http://josd.github.io/fluid#",
     "hes": "http://cristianvasquez.github.io/hes#",
-    "this": "http://www.example.org#"
+    "@base": "http://www.example.org#"
   },
   "features": {
     "people": {

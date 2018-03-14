@@ -1,6 +1,6 @@
 {
   "@context": {
-    "this": "http://www.example.org#"
+    "@vocab": "http://www.example.org#"
   },
   "features": {
     "socrates": {

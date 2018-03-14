@@ -1,14 +1,14 @@
 {
   "@context": {
-    "@vocab": "http://josd.github.io/fluid#",
+    "@vocab": "http://www.example.org#",
+    "fluid": "http://josd.github.io/fluid#",
     "hydra": "http://www.w3.org/ns/hydra/core#",
-    "gps": "http://josd.github.io/fluid/gps/gps-schema#",
-    "this": "http://localhost/ephemereal#"
+    "this": "http://example.com/custom/and/ephemereal#"
   },
   "@type": [
-    "this:Api"
+    "Api"
   ],
-  "this:name": [
+  "name": [
     {
       "@value": "The HES entry point now"
     }

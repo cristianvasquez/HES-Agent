@@ -38,6 +38,7 @@ var config = {
     },
 
     defaultContext: {
+        "@vocab": "http://example.org#",
         "fluid": "http://josd.github.io/fluid#",
         "hes": "http://cristianvasquez.github.io/hes#"
     },

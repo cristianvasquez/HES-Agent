@@ -411,20 +411,20 @@ module.exports = N3Parser;
 //var jp = new JSONLDParser();
 //console.log(jp.toN3(jsonld, 'http://www.example.org/'));
 
-// let input = "PREFIX people: <http://example.org/people#>\n" +
-//     "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-//     "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
-//     "\n" +
-//     "people:Cindy foaf:knows people:John.\n" +
-//     "people:John foaf:knows people:Cindy.\n" +
-//     "people:Cindy people:dates people:John.\n" +
-//     "people:John people:dates people:Cindy.\n" +
-//     "foaf:knows a owl:SymmetricProperty.\n" +
-//     "people:dates a owl:SymmetricProperty.";
-//
-// var JSONLDParser = require('./JSONLDParser');
-// var parser = new N3Parser();
-// // console.log(input);
-// console.log(parser.toJSONLD(input));
+let input = "PREFIX people: <http://example.org/people#>\n" +
+    "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
+    "\n" +
+    "people:Cindy foaf:knows people:John.\n" +
+    "people:John foaf:knows people:Cindy.\n" +
+    "people:Cindy people:dates people:John.\n" +
+    "people:John people:dates people:Cindy.\n" +
+    "foaf:knows a owl:SymmetricProperty.\n" +
+    "people:dates a owl:SymmetricProperty.";
+
+var JSONLDParser = require('./JSONLDParser');
+var parser = new N3Parser();
+// console.log(input);
+console.log(parser.toJSONLD(input));
 
 

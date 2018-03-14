@@ -10,7 +10,7 @@
         "query": "./query_all.n3"
       }
     },
-    "proof": {
+    "cindy_proof": {
       "description": "returns proof instead.",
       "inference": {
         "data": ["./cindy_personal_space/*", "reflexives.n3", "symmetric.n3"],
@@ -18,6 +18,14 @@
         "options": {
           "proof": true
         }
+      }
+    },
+    "cindy_turtle": {
+      "description": "forces default content type to be Turtle.",
+      "Content-Type": "text/turtle",
+      "inference": {
+        "data": ["./cindy_personal_space/*", "reflexives.n3", "symmetric.n3"],
+        "query": "./query_all.n3"
       }
     },
     "next": "../example_04"

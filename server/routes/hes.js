@@ -116,6 +116,7 @@ class HES extends express.Router {
 
                 if (typeof meta !== 'string' && meta['Content-Type']){
                     targetContentType = meta['Content-Type'];
+                    // console.log('forcing to '+targetContentType);
                 }
 
                 if (typeof meta === 'string') {

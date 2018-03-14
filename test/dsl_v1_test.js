@@ -163,14 +163,16 @@ describe("toDereferenciables", function () {
 });
 
 describe("dsl-interpreter", function () {
-    let workSpacePath = path.join(__dirname, '/../workspace');
-    let dsl_v1 = getDslWithContext(workSpacePath);
-    dsl_v1.buildLocalDependencyGraph(workSpacePath);
+    let workspacePath = path.join(__dirname, '/../workspace');
+    let dsl_v1 = getDslWithContext(workspacePath);
+    dsl_v1.buildLocalDependencyGraph(workspacePath);
 
     function getFeature(exampleName, featureName) {
-        let indexFile = path.join(workSpacePath, exampleName, defaultServerOptions.indexFile);
+        let indexFile = path.join(workspacePath, exampleName, defaultServerOptions.indexFile);
         let contents = fs.readFileSync(indexFile);
-        return JSON.parse(contents).features[featureName];
+        let result = JSON.parse(contents).features[featureName];
+        if (!result) throw new Error('cannot find spec '+exampleName+" "+featureName);
+        return result;
     }
 
     it("example_01_next", function () {
@@ -202,27 +204,30 @@ describe("dsl-interpreter", function () {
             "description": "Inference example about dating",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/cindy_personal_space/cindy.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/reflexives.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/symmetric.n3"
+                    workspacePath + "/example_03/cindy_personal_space/cindy.n3",
+                    workspacePath + "/example_03/reflexives.n3",
+                    workspacePath + "/example_03/symmetric.n3"
                 ],
-                "query": "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/query_all.n3"
+                "query": workspacePath + "/example_03/query_all.n3"
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_03'), input);
         expect(result).to.deep.equal(expanded);
     });
     it("example_03_proof", function () {
-        let input = getFeature('example_03', 'cindy');
+        let input = getFeature('example_03', 'cindy_proof');
         let expanded = {
-            "description": "Inference example about dating",
+            "description": "returns proof instead.",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/cindy_personal_space/cindy.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/reflexives.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/symmetric.n3",
+                    workspacePath + "/example_03/cindy_personal_space/cindy.n3",
+                    workspacePath + "/example_03/reflexives.n3",
+                    workspacePath + "/example_03/symmetric.n3",
                 ],
-                "query": "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_03/query_all.n3"
+                "options": {
+                    "proof": true
+                },
+                "query": workspacePath + "/example_03/query_all.n3"
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_03'), input);
@@ -235,10 +240,10 @@ describe("dsl-interpreter", function () {
             "description": "Imports /lib/socrates, but uses ./personal/* as data. ",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_04/personal/Alice.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_04/personal/knowledge.n3",
+                    workspacePath + "/example_04/personal/Alice.n3",
+                    workspacePath + "/example_04/personal/knowledge.n3",
                 ],
-                "query": "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/query/whoIsWhat.n3",
+                "query": workspacePath + "/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
@@ -251,12 +256,12 @@ describe("dsl-interpreter", function () {
             "description": "Imports /lib/socrates, and adds ./personal/* to the data",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/data/knowledge.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/data/socrates.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_04/personal/Alice.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_04/personal/knowledge.n3",
+                    workspacePath + "/lib/data/knowledge.n3",
+                    workspacePath + "/lib/data/socrates.n3",
+                    workspacePath + "/example_04/personal/Alice.n3",
+                    workspacePath + "/example_04/personal/knowledge.n3",
                 ],
-                "query": "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/query/whoIsWhat.n3",
+                "query": workspacePath + "/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
@@ -275,7 +280,7 @@ describe("dsl-interpreter", function () {
 
         expect(function () {
             dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
-        }).to.throw("403 [" + path.join(workSpacePath, "../test/example") + "]");
+        }).to.throw("403 [" + path.join(workspacePath, "../test/example") + "]");
     });
 
     it("example_04_alice_without_socrates", function () {
@@ -284,11 +289,11 @@ describe("dsl-interpreter", function () {
             "description": "Imports /lib/socrates, adds ./personal/* and removes /lib/data/socrates.n3",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/data/knowledge.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_04/personal/Alice.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/example_04/personal/knowledge.n3",
+                    workspacePath + "/lib/data/knowledge.n3",
+                    workspacePath + "/example_04/personal/Alice.n3",
+                    workspacePath + "/example_04/personal/knowledge.n3",
                 ],
-                "query": "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/query/whoIsWhat.n3",
+                "query": workspacePath + "/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
@@ -311,7 +316,7 @@ describe("dsl-interpreter", function () {
             "description": "Uses other operations as resources. ",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/data/knowledge.n3",
+                    workspacePath + "/lib/data/knowledge.n3",
                     "http://example.org/dataspaces/example_05/first_operation",
                 ],
                 "query": "http://example.org/dataspaces/example_05/query",
@@ -335,10 +340,10 @@ describe("dsl-interpreter", function () {
             "description": "extend /lib",
             "inference": {
                 "data": [
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/data/knowledge.n3",
-                    "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/data/socrates.n3",
+                    workspacePath + "/lib/data/knowledge.n3",
+                    workspacePath + "/lib/data/socrates.n3",
                 ],
-                "query": "/home/cvasquez/github.com/cristianvasquez/H-Eye/workspace/lib/query/whoIsWhat.n3",
+                "query": workspacePath + "/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_05'), input);
@@ -352,10 +357,10 @@ describe("dsl-interpreter", function () {
  * Should change to simply check against json schema when dsl is stable.
  */
 describe("validator", function () {
-    let workSpacePath = path.join(__dirname, '/../workspace');
-    let dsl_v1 = getDslWithContext(workSpacePath);
-    dsl_v1.buildLocalDependencyGraph(workSpacePath);
-    let serverOptions = getServerOptions(workSpacePath);
+    let workspacePath = path.join(__dirname, '/../workspace');
+    let dsl_v1 = getDslWithContext(workspacePath);
+    dsl_v1.buildLocalDependencyGraph(workspacePath);
+    let serverOptions = getServerOptions(workspacePath);
 
     it("all_examples", function () {
         const Glob = require("glob").Glob;
@@ -366,7 +371,7 @@ describe("validator", function () {
             sync: true,
             absolute: true,
             nodir: true,
-            cwd: workSpacePath
+            cwd: workspacePath
         }).found;
 
         for (let current of indexes) {
@@ -393,7 +398,8 @@ describe("dependency graphs", function () {
             "/example_02/next",
             "/example_03/cindy",
             "/example_03/next",
-            "/example_03/proof",
+            "/example_03/cindy_proof",
+            "/example_03/cindy_turtle",
             "/example_04/alice",
             "/example_04/alice_and_socrates",
             "/example_04/alice_without_socrates",
@@ -426,44 +432,28 @@ describe("dependency graphs", function () {
 
 });
 
-// describe("validatorCrud", function () {
-//     it("create import", function () {
-//         let input = {
-//             "imports": {
-//                 "@id":"http://localhost:3000/some_path/agent/operation_name",
-//                 "Content-Type":"application/x-json+ld",
-//                 "addData": {
-//                     "href": ["../user_profile","../environment","../other_rule"]
-//                 }
-//             }
-//         };
-//         let result = DSL_V1.validateCrudOperation(input);
-//         expect(result).to.equal(true);
-//     });
-// });
-
 describe("toAbsolutePath", function () {
 
-    let workSpacePath = __dirname;
-    let dsl_v1 = getDslWithContext(workSpacePath);
-    dsl_v1.buildLocalDependencyGraph(workSpacePath);
+    let workspacePath = __dirname;
+    let dsl_v1 = getDslWithContext(workspacePath);
+    dsl_v1.buildLocalDependencyGraph(workspacePath);
 
     describe("toAbsolutePath, basic functionality", function () {
 
         it("Respects absolute path inside the workspace", function () {
-            let result = dsl_v1.toAbsolutePath(workSpacePath + "/inside_1", "/inside_2");
-            expect(result).to.equal(workSpacePath + "/inside_2");
+            let result = dsl_v1.toAbsolutePath(workspacePath + "/inside_1", "/inside_2");
+            expect(result).to.equal(workspacePath + "/inside_2");
         });
 
         it("Respects relative path inside the workspace", function () {
-            let result = dsl_v1.toAbsolutePath(workSpacePath + "/inside_1", "../inside_2");
-            expect(result).to.equal(workSpacePath + "/inside_2");
+            let result = dsl_v1.toAbsolutePath(workspacePath + "/inside_1", "../inside_2");
+            expect(result).to.equal(workspacePath + "/inside_2");
         });
 
         it("Don't handle relative outside workspace", function () {
             expect(function () {
-                dsl_v1.toAbsolutePath(workSpacePath + "/inside", "../../inside_2")
-            }).to.throw("403 [" + path.join(workSpacePath + "/inside", "../../inside_2") + "]");
+                dsl_v1.toAbsolutePath(workspacePath + "/inside", "../../inside_2")
+            }).to.throw("403 [" + path.join(workspacePath + "/inside", "../../inside_2") + "]");
         });
 
     });

@@ -44,9 +44,10 @@ N3Lexer.prototype._parse = function (state)
     while (!state.eof())
     {
         var c = state.firstChar();
-        statements.push(this._statement(state));
+        var statement = this._statement(state);
+        statements.push(statement);
         // PREFIX and BASE
-        if (c !== 'P' && c !== 'p' && c !== 'B' && c !== 'b') // TODO: should we check for newlines?
+        if ((statement.type !== 'Prefix' && statement.type !== 'Base') || c === '@')
             state.move('.');
     }
     return { type: 'Document', val: statements };
@@ -56,7 +57,9 @@ N3Lexer.prototype._statement = function (state)
 {
     var c = state.firstChar();
     var result;
-    if (c === '@' || c ==='P' || c === 'p' || c === 'B' || c === 'b')
+    if (c === '@' ||
+        ((c ==='P' || c === 'p') && state.firstWord().toLowerCase() === 'prefix') ||
+        ((c ==='B' || c === 'b') && state.firstWord().toLowerCase() === 'base'))
     {
         var first = state.firstWord();
         if (first === '@forAll')

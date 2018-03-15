@@ -181,8 +181,8 @@ class DSL_V1 {
             return this.expandQuery(dirRelativeTo, meta);
         } else if (meta.inference) {
             return this.expandInference(dirRelativeTo, meta);
-        } else if (meta.imports) {
-            return this.expandImports(dirRelativeTo, meta);
+        } else if (meta.use) {
+            return this.expandExternal(dirRelativeTo, meta);
         } else if (typeof meta === 'string'){
             return this.expandHref(dirRelativeTo, meta);
         }
@@ -216,9 +216,9 @@ class DSL_V1 {
         return meta;
     }
 
-    expandImports(dirRelativeTo, meta) {
+    expandExternal(dirRelativeTo, meta) {
 
-        let targetPath = this.toAbsolutePath(dirRelativeTo, meta.imports);
+        let targetPath = this.toAbsolutePath(dirRelativeTo, meta.use);
         let targetOperation = this.toRelativePath(targetPath);
 
         // Check if this is an operation
@@ -257,19 +257,13 @@ class DSL_V1 {
                 }
 
                 // Special cases @TODO enable json paths
-                // @TODO use some library of sets in JS
-
-                if (meta['replace']){
-                    result.inference.data =_.flatMap(ensureArray(meta['replace']['inference.data']), target => {return this.toDereferenciables(dirRelativeTo, target)});
-                } else {
-                    if (meta['add']){
-                        let toAdd = _.flatMap(ensureArray(meta['add']['inference.data']), target => {return this.toDereferenciables(dirRelativeTo, target)});
-                        result.inference.data = _.union(result.inference.data,toAdd);
-                    }
-                    if (meta['remove']){
-                        let toRemove = _.flatMap(ensureArray(meta['remove']['inference.data']), target => {return this.toDereferenciables(dirRelativeTo, target)});
-                        result.inference.data = _.difference(result.inference.data,toRemove);
-                    }
+                if (meta['without']){
+                    let toRemove = _.flatMap(ensureArray(meta['without']['inference.data']), target => {return this.toDereferenciables(dirRelativeTo, target)});
+                    result.inference.data = _.difference(result.inference.data,toRemove);
+                }
+                if (meta['with']){
+                    let toAdd = _.flatMap(ensureArray(meta['with']['inference.data']), target => {return this.toDereferenciables(dirRelativeTo, target)});
+                    result.inference.data = _.union(result.inference.data,toAdd);
                 }
 
                 result.inference.data = _.uniq(result.inference.data);
@@ -285,7 +279,7 @@ class DSL_V1 {
             // It was other kind of operation
             return this.expandMeta(targetPath, _operation);
         } else {
-            throw new Error('Could not find operation  ' + meta.imports + ' in ' + targetPath);
+            throw new Error('Could not find operation  ' + meta.use + ' in ' + targetPath);
         }
     }
 

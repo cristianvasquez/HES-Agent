@@ -7,7 +7,7 @@
   },
   "features": {
     "exec": {
-      "imports": "/circular_02/exec"
+      "use": "/circular_02/exec"
     }
   }
 }

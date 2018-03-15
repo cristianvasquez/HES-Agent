@@ -5,26 +5,29 @@
   "features": {
     "alice": {
       "description": "Imports /lib/socrates, but uses ./personal/* as data. ",
-      "imports": "/lib/socrates",
-      "replace":{
+      "use": "/lib/socrates",
+      "without":{
+        "inference.data": "/**"
+      },
+      "with":{
         "inference.data": "./personal/*"
       }
     },
     "alice_and_socrates": {
       "description": "Imports /lib/socrates, and adds ./personal/* to the data",
-      "imports": "/lib/socrates",
-      "add":{
+      "use": "/lib/socrates",
+      "with":{
         "inference.data": "./personal/*"
       }
     },
     "alice_without_socrates": {
       "description": "Imports /lib/socrates, adds ./personal/* and removes /lib/data/socrates.n3",
-      "imports": "/lib/socrates",
-      "add":{
-        "inference.data": "./personal/*"
-      },
-      "remove":{
+      "use": "/lib/socrates",
+      "without":{
         "inference.data": "/lib/data/socrates.n3"
+      },
+      "with":{
+        "inference.data": "./personal/*"
       }
     }
   },

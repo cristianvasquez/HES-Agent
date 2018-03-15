@@ -272,8 +272,8 @@ describe("dsl-interpreter", function () {
         let input = {
             "name": "alice",
             "description": "Alice's space",
-            "imports": "/lib/socrates",
-            "add": {
+            "use": "/lib/socrates",
+            "with": {
                 "inference.data": "../../test/example"
             }
         };
@@ -329,10 +329,9 @@ describe("dsl-interpreter", function () {
 
     it("example_05_maintains_content_type", function () {
         let input = {
-            "name": "extend",
             "Content-Type": "text/turtle",
             "description": "extend /lib",
-            "imports": "/lib/socrates"
+            "use": "/lib/socrates"
         };
 
         let expanded = {

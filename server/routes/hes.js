@@ -73,7 +73,7 @@ class HES extends express.Router {
          * Exports metadata about the operations on a given URL
          */
 
-        this.get("*/operations", function (req, res, next) {
+        this.get("*/dependencies", function (req, res, next) {
             let graph = getDependencyGraphAtPath(req,res,next);
 
             for (let nodePath in graph.nodes){
@@ -85,9 +85,90 @@ class HES extends express.Router {
         });
 
 
+        this.get("*/flare", function (req, res, next) {
+            let graph = getDependencyGraphAtPath(req,res,next);
+            function ensureArray(value){
+                if (typeof value === 'string'){
+                    return [value];
+                } else {
+                    return value;
+                }
+            }
+            let flareStyle = [];
+            let files = [];
+            for (let nodeName in graph.nodes){
+                let imports = [];
+                let node = graph.nodes[nodeName];
+                if (node.inference){
+                    if (node.inference.data){
+                        for (let resource of ensureArray(node.inference.data)){
+                            imports.push(resource);
+                            if (!files.includes(resource)){
+                                files.push(resource);
+                            }
+                        }
+                    }
+                    if (node.inference.query){
+                        for (let resource of ensureArray(node.inference.query)){
+                            imports.push(resource);
+                            if (!files.includes(resource)){
+                                files.push(resource);
+                            }
+                        }
+                    }
+                }
+
+
+                for (let outgoingEdge of graph.outgoingEdges[nodeName]){
+                    if (imports.indexOf(outgoingEdge)!==-1){
+                        imports.push(outgoingEdge);
+                    }
+                }
+
+                flareStyle.push({
+                    name:nodeName,
+                    size:1,
+                    imports:imports
+                });
+            }
+
+            for (let file of files){
+                flareStyle.push({
+                    name:file,
+                    size:1,
+                    imports:[]
+                })
+            }
+
+            var getLabel = function(string){
+                // .replaceAll('\/','.')
+                return string.replaceAll(serverOptions.workSpacePath,'').replaceAll('.','\/');
+            };
+            for (let source in flareStyle){
+                flareStyle[source].name = getLabel(flareStyle[source].name);
+                for (let target in flareStyle[source].imports){
+                    flareStyle[source].imports[target]=getLabel(flareStyle[source].imports[target]);
+                }
+            }
+            res.json(flareStyle);
+        });
+
+
+
+        if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
+            this.post("*/dependencies", function (req, res, next) {
+                res.status(500).json({error: 'Not available anymore'});
+            });
+        }
+
+        if (processorOptions.hydraOperations.indexOf('PUT') !== -1) {
+            this.put("*/dependencies", function (req, res, next) {
+                res.status(500).json({error: 'Not available anymore'});
+            });
+        }
+
         this.get("*/discover", function (req, res, next) {
             let context = new Context(req,serverOptions);
-
             let operations = [];
             let graph = getDependencyGraphAtPath(req,res,next);
 
@@ -105,22 +186,6 @@ class HES extends express.Router {
                 'features': operations
             });
         });
-
-        /**
-         * Some operations (I don't have a clear idea yet of which ones to support)
-         */
-
-        if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
-            this.post("*/operations", function (req, res, next) {
-                res.status(500).json({error: 'Not available anymore'});
-            });
-        }
-
-        if (processorOptions.hydraOperations.indexOf('PUT') !== -1) {
-            this.put("*/operations", function (req, res, next) {
-                res.status(500).json({error: 'Not available anymore'});
-            });
-        }
 
         /**
          * Fallback
@@ -285,7 +350,7 @@ function buildIndex( processorOptions, serverOptions, req, res) {
     }
 
     result["discover"] = buildLink(context.getCurrentPath()+'/discover', 'Container');
-    result["debug"] = buildLink(context.getCurrentPath()+'/operations', 'DebugEndpoint') ;
+    result["debug"] = buildLink(context.getCurrentPath()+'/dependencies', 'DebugEndpoint') ;
 
     return result
 }

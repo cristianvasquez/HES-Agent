@@ -63,10 +63,9 @@ class DSL_V1 {
         let pattern = "**/"+this.serverOptions.indexFile;
         let indexes = new Glob(pattern, {mark: true, sync:true, absolute:true, nodir:true, cwd:dirRelativeTo}).found;
 
-        // First run to add all expanded nodes
+        // First run to add nodes
         for (let currentDir of indexes){
             let index = fu.readJson(currentDir);
-
             if (index.features){
                 for (let featureName in index.features) {
                     let meta = index.features[featureName];
@@ -114,15 +113,15 @@ class DSL_V1 {
     }
 
 
-
-
     addDependencies(graph,id,meta){
         if (meta.query || meta.raw) {
             // No dependencies
         } else if (typeof meta === 'string') {
-            this.addHref(graph,id,meta);
+            this.addDependency(graph,id,meta);
         } else if (meta.inference) {
             let inference = meta.inference;
+
+            // console.log(toJson(meta));
 
             if (!inference.query){
                 throw Error ('No query defined in '+JSON.stringify(meta,null,2));
@@ -130,18 +129,23 @@ class DSL_V1 {
 
             // Query dependencies
             if (inference.query) {
-                this.addHref(graph,id,inference.query);
+                this.addDependency(graph,id,inference.query);
             }
+
+            if (!inference.data){
+                throw Error ('No data defined in '+JSON.stringify(meta,null,2));
+            }
+
             // Data dependencies
             if (inference.data){
                 for (let current of ensureArray(inference.data)){
-                    this.addHref(graph,id,current);
+                    this.addDependency(graph,id,current);
                 }
             }
         }
     }
 
-    addHref(graph,from,to){
+    addDependency(graph, from, to){
         // A web resource
         if (validUrl.is_web_uri(to)){
             // Which is currently being exposed

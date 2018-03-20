@@ -7,7 +7,7 @@ const Context = require("../Context");
 const reasoner = require("../reasoning");
 const DSL_V1 = require("../dsl_v1");
 const rp = require('request-promise');
-let hash = require('string-hash');
+const handlebars = require('handlebars');
 
 /**
  * Uses processorOptions as constructor
@@ -140,7 +140,7 @@ class HES extends express.Router {
                 })
             }
 
-            var getLabel = function(string){
+            let getLabel = function(string){
                 // .replaceAll('\/','.')
                 return string.replaceAll(serverOptions.workSpacePath,'').replaceAll('.','\/');
             };
@@ -276,6 +276,18 @@ class HES extends express.Router {
                         renderError(res, error);
                     });
 
+                }else if (meta.handlebars) {
+                    // @TODO precompile templates
+                    let source = fu.readFile(meta.handlebars);
+                    let template = handlebars.compile(source);
+                    let data = meta.context;
+                    let body = template(data);
+                    renderSupportedContentypes(context, targetContentType, body, res);
+                } else {
+                    res.status(500).json({
+                        "message":"cannot interpret meta",
+                        "meta":meta
+                    });
                 }
             } else {
                 let index = buildIndex(processorOptions,serverOptions, req, res);

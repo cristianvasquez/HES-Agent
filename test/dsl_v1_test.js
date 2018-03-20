@@ -349,6 +349,34 @@ describe("dsl-interpreter", function () {
         expect(result).to.deep.equal(expanded);
     });
 
+    it("example_06_javascript", function () {
+        let input = getFeature('example_06', 'javascript');
+        let expanded = {
+            "Content-Type": "text/javascript",
+            "description": "generate a javascript hook",
+            "handlebars": workspacePath +"/example_06/app/source.js.handlebars",
+            "context": {
+                "data": "http://example.org/dataspaces/example_06/data"
+            }
+        };
+        let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_06'), input);
+        expect(result).to.deep.equal(expanded);
+    });
+
+    it("example_06_html", function () {
+        let input = getFeature('example_06', 'html');
+        let expanded = {
+            "Content-Type": "text/html",
+            "description": "Expose a web page via template",
+            "handlebars": workspacePath +"/example_06/app/index.html.handlebars",
+            "context": {
+                "title":"hello world",
+                "javascript": "http://example.org/dataspaces/example_06/javascript"
+            }
+        };
+        let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_06'), input);
+        expect(result).to.deep.equal(expanded);
+    });
 
 });
 
@@ -405,6 +433,9 @@ describe("dependency graphs", function () {
             "/example_05/first_operation",
             "/example_05/query",
             "/example_05/second_operation",
+            "/example_06/data",
+            "/example_06/html",
+            "/example_06/javascript",
             "/lib/socrates"].sort();
         let workSpacePath = path.join(__dirname, '/../workspace');
         let dsl = getDslWithContext(workSpacePath);

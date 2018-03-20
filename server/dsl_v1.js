@@ -187,6 +187,8 @@ class DSL_V1 {
             return this.expandInference(dirRelativeTo, meta);
         } else if (meta.use) {
             return this.expandExternal(dirRelativeTo, meta);
+        } else if (meta.handlebars) {
+            return this.expandHandlebars(dirRelativeTo, meta);
         } else if (typeof meta === 'string'){
             return this.expandHref(dirRelativeTo, meta);
         }
@@ -217,6 +219,30 @@ class DSL_V1 {
             });
         }
         meta.inference = inference;
+        return meta;
+    }
+
+    expandHandlebars(dirRelativeTo, meta) {
+
+        let context = meta.context?meta.context:{};
+
+        if (meta.with){
+            for (let param in meta.with) {
+                context[param] = this.toDereferenciables(dirRelativeTo,meta.with[param]);
+            }
+            delete meta.with_one;
+        }
+        if (meta.with_one){
+            for (let param in meta.with_one) {
+                context[param] = this.toDereferenciable(dirRelativeTo,meta.with_one[param]);
+            }
+            delete meta.with_one;
+        }
+        if (meta.handlebars){
+            meta.handlebars = this.toDereferenciable(dirRelativeTo,meta.handlebars);
+        }
+
+        meta.context = context;
         return meta;
     }
 
@@ -260,7 +286,7 @@ class DSL_V1 {
                     result.inference.flags = meta.flags;
                 }
 
-                // Special cases @TODO enable json paths
+                // Special cases @TODO enable json paths if does not complicate the DSL (https://lodash.com/docs/4.17.5#get)
                 if (meta['without']){
                     let toRemove = _.flatMap(ensureArray(meta['without']['inference.data']), target => {return this.toDereferenciables(dirRelativeTo, target)});
                     result.inference.data = _.difference(result.inference.data,toRemove);
@@ -367,9 +393,6 @@ class DSL_V1 {
      *  - A glob file pattern (absolute), which expands to a [file].
      *  - A call to a meta-operation, which expands to [URL].
      */
-
-    // Found the glorious node-glob implementation.
-
     toDereferenciables(dirRelativeTo, value) {
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
@@ -387,13 +410,11 @@ class DSL_V1 {
             glob = new Glob(this.toRelativePath(value), options);
         } else {
             // options for relative
-            // console.log('relative',dirRelativeTo,value);
             let options = {mark: true, sync:true, cwd:dirRelativeTo, ignore:'**/'+this.serverOptions.indexFile, absolute:true, nodir:true};
             glob = new Glob(value, options);
         }
 
         if (glob.found && glob.found.length > 0){
-            // console.log('found',glob.found);
             results = glob.found;
         }
 

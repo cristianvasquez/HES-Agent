@@ -4,27 +4,26 @@
   },
   "features": {
     "data": {
-      "raw": "@prefix : <http://www.example.org#> . :Alarm a :Event ."
-    },
-    "javascript": {
-      "description": "generate a javascript hook",
-      "Content-Type": "text/javascript",
-      "handlebars": "./app/source.js.handlebars",
-      "with_one": {
-        "data":"./data"
-      }
+      "raw": "@prefix : <http://www.example.org#> . :Alarm a :Event ; :message 'Run!' ."
     },
     "html": {
       "description": "Expose a web page via template",
       "Content-Type": "text/html",
       "handlebars": "./app/index.html.handlebars",
       "context": {
-        "title":"hello world"
+        "title":"Example 06"
       },
-      "with_one":{
-        "javascript": "./javascript"
+      "withUrl":{
+        "javascript": "./javascript_hook.js"
+      }
+    },
+    "javascript_hook.js": {
+      "description": "generate a javascript hook",
+      "Content-Type": "text/javascript",
+      "handlebars": "./app/source.js.handlebars",
+      "withUrl": {
+        "url":"./data"
       }
     }
-  },
-  "next": "../example_05"
+  }
 }

@@ -1,1 +1,15 @@
-alert('{{data}}');
+console.log('Doing something with data at [{{url}}]');
+
+function httpGetAsync(theUrl, callback)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous
+    xmlHttp.send(null);
+}
+httpGetAsync('{{url}}', function(response) {
+    document.getElementById("response").innerHTML = response;
+});

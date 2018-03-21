@@ -1,0 +1,20 @@
+{
+  "@context": {
+    "@vocab": "http://www.example.org#"
+  },
+  "features": {
+    "applications": {
+      "description": "Generates an index of all the applications of the house",
+      "Content-Type": "text/html",
+      "handlebars": "./index.html.handlebars",
+      "context": {
+        "title":"People in the house"
+      },
+      "withUrls":{
+        "people": "./*/foaf.turtle"
+      }
+    },
+    "relations":"https://www.w3.org/2000/10/swap/test/gedcom/gedcom-relations.n3",
+    "imaginary_families":"https://www.w3.org/2000/10/swap/test/gedcom/gedcom-facts.n3"
+  }
+}

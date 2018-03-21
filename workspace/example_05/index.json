@@ -17,6 +17,7 @@
         "data": ["/lib/data/knowledge.n3", "./first_operation"],
         "query": "./query"
       }
-    }
+    },
+    "next": "../example_06"
   }
 }

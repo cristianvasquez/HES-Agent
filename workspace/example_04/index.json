@@ -29,7 +29,7 @@
       "with":{
         "inference.data": "./personal/*"
       }
-    }
-  },
-  "next": "../example_05"
+    },
+    "next": "../example_05"
+  }
 }

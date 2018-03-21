@@ -59,6 +59,7 @@ class DSL_V1 {
         let start = new Date();
 
         let graph = new DepGraph();
+
         // All files
         let pattern = "**/"+this.serverOptions.indexFile;
         let indexes = new Glob(pattern, {mark: true, sync:true, absolute:true, nodir:true, cwd:dirRelativeTo}).found;
@@ -82,6 +83,7 @@ class DSL_V1 {
 
         //Second run to expand meta and add dependencies
         this.allNodes = this.dependencyGraph.overallOrder();
+
         for (let id of this.allNodes){
             let meta = graph.getNodeData(id);
             // Take out the operation name
@@ -112,30 +114,32 @@ class DSL_V1 {
         return graph;
     }
 
-
     addDependencies(graph,id,meta){
         if (meta.query || meta.raw) {
             // No dependencies
         } else if (typeof meta === 'string') {
             this.addDependency(graph,id,meta);
+        } else if (meta.handlebars) {
+            if (meta.context) {
+                for (let param in meta.context){
+                    for (let current of ensureArray(meta.context[param])){
+                        this.addDependency(graph,id,current);
+
+                    }
+                }
+            }
         } else if (meta.inference) {
             let inference = meta.inference;
-
-            // console.log(toJson(meta));
-
             if (!inference.query){
                 throw Error ('No query defined in '+JSON.stringify(meta,null,2));
             }
-
             // Query dependencies
             if (inference.query) {
                 this.addDependency(graph,id,inference.query);
             }
-
             if (!inference.data){
                 throw Error ('No data defined in '+JSON.stringify(meta,null,2));
             }
-
             // Data dependencies
             if (inference.data){
                 for (let current of ensureArray(inference.data)){
@@ -157,7 +161,6 @@ class DSL_V1 {
                     graph.addDependency(from, targetOperation);
                 }
             }
-
 
         } else { // A local resource
             let targetOperation = this.toRelativePath(to);
@@ -223,21 +226,22 @@ class DSL_V1 {
     }
 
     expandHandlebars(dirRelativeTo, meta) {
-
         let context = meta.context?meta.context:{};
 
-        if (meta.with){
-            for (let param in meta.with) {
-                context[param] = this.toDereferenciables(dirRelativeTo,meta.with[param]);
+        if (meta.withUrls){
+            for (let param in meta.withUrls) {
+                context[param] = this.toDereferenciables(dirRelativeTo,meta.withUrls[param]);
             }
-            delete meta.with_one;
+            delete meta.withUrls;
         }
-        if (meta.with_one){
-            for (let param in meta.with_one) {
-                context[param] = this.toDereferenciable(dirRelativeTo,meta.with_one[param]);
+
+        if (meta.withUrl){
+            for (let param in meta.withUrl) {
+                context[param] = this.toDereferenciable(dirRelativeTo,meta.withUrl[param]);
             }
-            delete meta.with_one;
+            delete meta.withUrl;
         }
+
         if (meta.handlebars){
             meta.handlebars = this.toDereferenciable(dirRelativeTo,meta.handlebars);
         }
@@ -372,13 +376,11 @@ class DSL_V1 {
         if (fu.exists(targetPath)){
             if (fu.isDirectory(targetPath)) {
                 return this.context.toApiPath(targetPath);
-                // throw Error('400 [' + value + '] is directory');
             }
-            return targetPath;
+            return this.context.toResourcePath(targetPath);
         }
 
         throw Error('404 [' + value + ']');
-
     }
 
     /**
@@ -394,6 +396,7 @@ class DSL_V1 {
      *  - A call to a meta-operation, which expands to [URL].
      */
     toDereferenciables(dirRelativeTo, value) {
+
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return [value]
@@ -405,7 +408,6 @@ class DSL_V1 {
         let glob;
         if (path.isAbsolute(value)) {
             // options for absolute
-            // console.log('absolute',value);
             let options = {mark: true, sync:true, root:this.serverOptions.workSpacePath, ignore:'**/'+this.serverOptions.indexFile, absolute:false, nodir:true};
             glob = new Glob(this.toRelativePath(value), options);
         } else {
@@ -413,9 +415,8 @@ class DSL_V1 {
             let options = {mark: true, sync:true, cwd:dirRelativeTo, ignore:'**/'+this.serverOptions.indexFile, absolute:true, nodir:true};
             glob = new Glob(value, options);
         }
-
         if (glob.found && glob.found.length > 0){
-            results = glob.found;
+            results = glob.found.map(x => this.context.toResourcePath(x));
         }
 
         // Search for operations
@@ -433,14 +434,14 @@ class DSL_V1 {
         }
 
         if (!fu.exists(targetPath)){
-            throw Error('404 [' + targetPath + ']');
+            throw Error('404 [' + value +']');
         }
 
         if (fu.isDirectory(targetPath)){
-            throw Error('400 [' + targetPath + '] is directory');
+            throw Error('400 [' + this.context.toApiPath(targetPath) + '] is not a valid resource');
         }
 
-        throw Error('500 [' + targetPath + ' unhandled error ]');
+        throw Error('500 [' + value + ' unhandled error ]');
     }
 
 }

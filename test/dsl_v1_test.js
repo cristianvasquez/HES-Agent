@@ -42,25 +42,24 @@ describe("toDereferenciable", function () {
     dsl_v1.buildLocalDependencyGraph(workSpacePath);
 
     // *  - An external URL, which expands to URL.
-
     it("Does leave an http url as the same", function () {
-        let result = dsl_v1.toDereferenciable(workSpacePath, "http://www.example.org");
-        expect(result).to.equal("http://www.example.org");
+        let result = dsl_v1.toDereferenciable(workSpacePath, "http://www.example_2.org");
+        expect(result).to.equal("http://www.example_2.org");
     });
 
     it("Does leave an https url as the same", function () {
-        let result = dsl_v1.toDereferenciable(workSpacePath, "https://www.example.org");
-        expect(result).to.equal("https://www.example.org");
+        let result = dsl_v1.toDereferenciable(workSpacePath, "https://www.example_2.org");
+        expect(result).to.equal("https://www.example_2.org");
     });
 
     it("A file (relative) expands to a file.", function () {
         let result = dsl_v1.toDereferenciable(workSpacePath, "./example/files/file_1.ttl");
-        expect(result).to.equal(workSpacePath + "/example/files/file_1.ttl");
+        expect(result).to.equal("http://example.org/resource/example/files/file_1.ttl");
     });
 
     it("A file (absolute) expands to a file.", function () {
         let result = dsl_v1.toDereferenciable(workSpacePath, "/example/files/file_1.ttl");
-        expect(result).to.equal(workSpacePath + "/example/files/file_1.ttl");
+        expect(result).to.equal("http://example.org/resource/example/files/file_1.ttl");
     });
 
     it("Fails with an invalid pointer", function () {
@@ -105,12 +104,12 @@ describe("toDereferenciables", function () {
 
     it("A file (relative) expands to a file.", function () {
         let result = dsl_v1.toDereferenciables(workSpacePath, "./example/files/file_1.ttl");
-        expect(result).to.deep.equal([workSpacePath + "/example/files/file_1.ttl"]);
+        expect(result).to.deep.equal(["http://example.org/resource/example/files/file_1.ttl"]);
     });
 
     it("A file (absolute) expands to a file.", function () {
         let result = dsl_v1.toDereferenciables(workSpacePath, "example/files/file_1.ttl");
-        expect(result).to.deep.equal([workSpacePath + "/example/files/file_1.ttl"]);
+        expect(result).to.deep.equal(["http://example.org/resource/example/files/file_1.ttl"]);
     });
 
     it("Fails with an invalid pointer", function () {
@@ -122,22 +121,22 @@ describe("toDereferenciables", function () {
     it("Fails with a file or directory that does not exist", function () {
         expect(function () {
             dsl_v1.toDereferenciables(workSpacePath, "/example/does_not_exist")
-        }).to.throw("404 [" + workSpacePath + "/example/does_not_exist]");
+        }).to.throw("404 [/example/does_not_exist]");
     });
 
     it("A directory (absolute) expands to files.", function () {
         let result = dsl_v1.toDereferenciables(workSpacePath, "/example/files/*");
         expect(result.sort()).to.deep.equal([
-            workSpacePath + "/example/files/file_1.ttl",
-            workSpacePath + "/example/files/file_2.ttl"
+            "http://example.org/resource/example/files/file_1.ttl",
+            "http://example.org/resource/example/files/file_2.ttl"
         ].sort());
     });
 
     it("A directory (relative) expands to files.", function () {
         let result = dsl_v1.toDereferenciables(workSpacePath, "./example/files/*");
         expect(result.sort()).to.deep.equal([
-            workSpacePath + "/example/files/file_1.ttl",
-            workSpacePath + "/example/files/file_2.ttl"
+            "http://example.org/resource/example/files/file_1.ttl",
+            "http://example.org/resource/example/files/file_2.ttl"
         ].sort());
     });
 
@@ -156,7 +155,7 @@ describe("toDereferenciables", function () {
         expect(result.sort()).to.deep.equal([
             'http://example.org/' + serverOptions.appEntrypoint + '/example/pattern_1/people',
             'http://example.org/' + serverOptions.appEntrypoint + '/example/pattern_2/people',
-            workSpacePath + "/example/pattern_3/people",
+            "http://example.org/resource/example/pattern_3/people",
         ].sort());
     });
 
@@ -204,11 +203,11 @@ describe("dsl-interpreter", function () {
             "description": "Inference example about dating",
             "inference": {
                 "data": [
-                    workspacePath + "/example_03/cindy_personal_space/cindy.n3",
-                    workspacePath + "/example_03/reflexives.n3",
-                    workspacePath + "/example_03/symmetric.n3"
+                    "http://example.org/resource/example_03/cindy_personal_space/cindy.n3",
+                    "http://example.org/resource/example_03/reflexives.n3",
+                    "http://example.org/resource/example_03/symmetric.n3"
                 ],
-                "query": workspacePath + "/example_03/query_all.n3"
+                "query": "http://example.org/resource/example_03/query_all.n3"
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_03'), input);
@@ -220,14 +219,14 @@ describe("dsl-interpreter", function () {
             "description": "returns proof instead.",
             "inference": {
                 "data": [
-                    workspacePath + "/example_03/cindy_personal_space/cindy.n3",
-                    workspacePath + "/example_03/reflexives.n3",
-                    workspacePath + "/example_03/symmetric.n3",
+                    "http://example.org/resource/example_03/cindy_personal_space/cindy.n3",
+                    "http://example.org/resource/example_03/reflexives.n3",
+                    "http://example.org/resource/example_03/symmetric.n3",
                 ],
                 "options": {
                     "proof": true
                 },
-                "query": workspacePath + "/example_03/query_all.n3"
+                "query": "http://example.org/resource/example_03/query_all.n3"
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_03'), input);
@@ -240,10 +239,10 @@ describe("dsl-interpreter", function () {
             "description": "Imports /lib/socrates, but uses ./personal/* as data. ",
             "inference": {
                 "data": [
-                    workspacePath + "/example_04/personal/Alice.n3",
-                    workspacePath + "/example_04/personal/knowledge.n3",
+                    "http://example.org/resource/example_04/personal/Alice.n3",
+                    "http://example.org/resource/example_04/personal/knowledge.n3",
                 ],
-                "query": workspacePath + "/lib/query/whoIsWhat.n3",
+                "query": "http://example.org/resource/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
@@ -256,12 +255,12 @@ describe("dsl-interpreter", function () {
             "description": "Imports /lib/socrates, and adds ./personal/* to the data",
             "inference": {
                 "data": [
-                    workspacePath + "/lib/data/knowledge.n3",
-                    workspacePath + "/lib/data/socrates.n3",
-                    workspacePath + "/example_04/personal/Alice.n3",
-                    workspacePath + "/example_04/personal/knowledge.n3",
+                    "http://example.org/resource/lib/data/knowledge.n3",
+                    "http://example.org/resource/lib/data/socrates.n3",
+                    "http://example.org/resource/example_04/personal/Alice.n3",
+                    "http://example.org/resource/example_04/personal/knowledge.n3",
                 ],
-                "query": workspacePath + "/lib/query/whoIsWhat.n3",
+                "query": "http://example.org/resource/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
@@ -289,11 +288,11 @@ describe("dsl-interpreter", function () {
             "description": "Imports /lib/socrates, adds ./personal/* and removes /lib/data/socrates.n3",
             "inference": {
                 "data": [
-                    workspacePath + "/lib/data/knowledge.n3",
-                    workspacePath + "/example_04/personal/Alice.n3",
-                    workspacePath + "/example_04/personal/knowledge.n3",
+                    "http://example.org/resource/lib/data/knowledge.n3",
+                    "http://example.org/resource/example_04/personal/Alice.n3",
+                    "http://example.org/resource/example_04/personal/knowledge.n3",
                 ],
-                "query": workspacePath + "/lib/query/whoIsWhat.n3",
+                "query": "http://example.org/resource/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_04'), input);
@@ -316,7 +315,7 @@ describe("dsl-interpreter", function () {
             "description": "Uses other operations as resources. ",
             "inference": {
                 "data": [
-                    workspacePath + "/lib/data/knowledge.n3",
+                    "http://example.org/resource/lib/data/knowledge.n3",
                     "http://example.org/dataspaces/example_05/first_operation",
                 ],
                 "query": "http://example.org/dataspaces/example_05/query",
@@ -339,10 +338,10 @@ describe("dsl-interpreter", function () {
             "description": "extend /lib",
             "inference": {
                 "data": [
-                    workspacePath + "/lib/data/knowledge.n3",
-                    workspacePath + "/lib/data/socrates.n3",
+                    "http://example.org/resource/lib/data/knowledge.n3",
+                    "http://example.org/resource/lib/data/socrates.n3",
                 ],
-                "query": workspacePath + "/lib/query/whoIsWhat.n3",
+                "query": "http://example.org/resource/lib/query/whoIsWhat.n3",
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_05'), input);
@@ -354,7 +353,7 @@ describe("dsl-interpreter", function () {
         let expanded = {
             "Content-Type": "text/javascript",
             "description": "generate a javascript hook",
-            "handlebars": workspacePath +"/example_06/app/source.js.handlebars",
+            "handlebars": "http://example.org/resource/example_06/app/source.js.handlebars",
             "context": {
                 "data": "http://example.org/dataspaces/example_06/data"
             }
@@ -368,7 +367,7 @@ describe("dsl-interpreter", function () {
         let expanded = {
             "Content-Type": "text/html",
             "description": "Expose a web page via template",
-            "handlebars": workspacePath +"/example_06/app/index.html.handlebars",
+            "handlebars": "http://example.org/resource/example_06/app/index.html.handlebars",
             "context": {
                 "title":"hello world",
                 "javascript": "http://example.org/dataspaces/example_06/javascript"
@@ -424,13 +423,15 @@ describe("dependency graphs", function () {
             "/example_02/dbpedia",
             "/example_02/next",
             "/example_03/cindy",
-            "/example_03/next",
             "/example_03/cindy_proof",
             "/example_03/cindy_turtle",
+            "/example_03/next",
             "/example_04/alice",
             "/example_04/alice_and_socrates",
             "/example_04/alice_without_socrates",
+            "/example_04/next",
             "/example_05/first_operation",
+            "/example_05/next",
             "/example_05/query",
             "/example_05/second_operation",
             "/example_06/data",

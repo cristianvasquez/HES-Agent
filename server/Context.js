@@ -41,6 +41,10 @@ class _Context {
         return this.getCurrentPath().replaceAll(this.getApiRoot(), this.serverOptions.workSpacePath);
     }
 
+    getLocalDirForResource(someResourceUrl){
+        return someResourceUrl.replaceAll(this.getResourcesRoot(), this.serverOptions.workSpacePath);
+    }
+
     getCurrentResource(){
         return this.getCurrentPath().replaceAll(this.getApiRoot(), this.getResourcesRoot())
     }

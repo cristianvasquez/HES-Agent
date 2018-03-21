@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "@vocab": "http://www.example.org#"
+  },
+  "features": {
+    "infered_relations":{
+      "description": "Some rules relating relationships. One's father's sister is ones' aunt, and so on",
+      "inference": {
+        "data": ["./family.n3", "relation_rules.n3"],
+        "query": "./query_all.n3"
+      }
+    }
+  }
+}

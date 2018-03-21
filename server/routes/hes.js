@@ -72,7 +72,6 @@ class HES extends express.Router {
         /**
          * Exports metadata about the operations on a given URL
          */
-
         this.get("*/dependencies", function (req, res, next) {
             let graph = getDependencyGraphAtPath(req,res,next);
 
@@ -83,7 +82,6 @@ class HES extends express.Router {
             }
             res.json(graph);
         });
-
 
         this.get("*/flare", function (req, res, next) {
             let graph = getDependencyGraphAtPath(req,res,next);
@@ -117,21 +115,17 @@ class HES extends express.Router {
                         }
                     }
                 }
-
-
-                for (let outgoingEdge of graph.outgoingEdges[nodeName]){
-                    if (imports.indexOf(outgoingEdge)!==-1){
-                        imports.push(outgoingEdge);
+                for (let incomingEdge of graph.incomingEdges[nodeName]){
+                    if (!imports.includes(incomingEdge)){
+                        imports.push(incomingEdge);
                     }
                 }
-
                 flareStyle.push({
                     name:nodeName,
                     size:1,
                     imports:imports
                 });
             }
-
             for (let file of files){
                 flareStyle.push({
                     name:file,
@@ -141,19 +135,18 @@ class HES extends express.Router {
             }
 
             let getLabel = function(string){
-                // .replaceAll('\/','.')
                 return string.replaceAll(serverOptions.workSpacePath,'').replaceAll('.','\/');
             };
+
             for (let source in flareStyle){
                 flareStyle[source].name = getLabel(flareStyle[source].name);
                 for (let target in flareStyle[source].imports){
                     flareStyle[source].imports[target]=getLabel(flareStyle[source].imports[target]);
                 }
-            }
+            };
+
             res.json(flareStyle);
         });
-
-
 
         if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
             this.post("*/dependencies", function (req, res, next) {
@@ -213,10 +206,8 @@ class HES extends express.Router {
                 let meta = dependencyGraph.getNodeData(context.getLocalHref());
 
                 // Forcing a particular content type (csv)
-
                 if (typeof meta !== 'string' && meta['Content-Type']){
                     targetContentType = meta['Content-Type'];
-                    // console.log('forcing to '+targetContentType);
                 }
 
                 if (typeof meta === 'string') {
@@ -229,7 +220,6 @@ class HES extends express.Router {
                                 "Accept": targetContentType
                             }
                         };
-
                         rp(options)
                             .then(function (body) {
                                 renderSupportedContentypes(context, targetContentType, body, res);
@@ -278,7 +268,7 @@ class HES extends express.Router {
 
                 }else if (meta.handlebars) {
                     // @TODO precompile templates
-                    let source = fu.readFile(meta.handlebars);
+                    let source = fu.readFile(context.getLocalDirForResource(meta.handlebars));
                     let template = handlebars.compile(source);
                     let data = meta.context;
                     let body = template(data);
@@ -361,7 +351,7 @@ function buildIndex( processorOptions, serverOptions, req, res) {
         }
     }
 
-    result["discover"] = buildLink(context.getCurrentPath()+'/discover', 'Container');
+    // result["discover"] = buildLink(context.getCurrentPath()+'/discover', 'Container');
     result["debug"] = buildLink(context.getCurrentPath()+'/dependencies', 'DebugEndpoint') ;
 
     return result

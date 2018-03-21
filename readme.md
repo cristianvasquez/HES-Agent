@@ -1,4 +1,4 @@
-# H-Eye agent
+# H-Eye agent, Data driven applications
 
 Note: (To try the application without installing EYE reasoner, you can use the Docker version below)
 

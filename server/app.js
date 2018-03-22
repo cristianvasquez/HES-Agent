@@ -33,7 +33,7 @@ app.use('/', index);
 app.use('/'+ serverOptions.resourcesEntryPoint, express.static(serverOptions.workSpacePath));
 app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions,defaultServerOptions));
 app.use('/flare', new Flare(defaultProcessorOptions,defaultServerOptions));
-app.use('/apps', express.static('../applications'));
+app.use('/apps', express.static(path.join(__dirname, './apps')));
 
 app.set('trust proxy', '127.0.0.1');
 

@@ -7,6 +7,22 @@ Note: (To try the application without installing EYE reasoner, you can use the D
 * TODO: Introduction
 * In the meantime: [examples](./workspace)
 
+
+## Default entry points
+
+API
+
+* http://localhost:3000/dataspaces
+
+Dependency graph
+
+* http://localhost:3000/dataspaces/depencencies
+
+Built-in applications:
+
+* http://localhost:3000/apps/flare
+
+
 ## Running it as command line
 
 First of all, you need to **install the EYE reasoner** ([Windows](http://eulersharp.sourceforge.net/README.Windows) – [OS X](http://eulersharp.sourceforge.net/README.MacOSX) – [Linux](http://eulersharp.sourceforge.net/README.Linux)).

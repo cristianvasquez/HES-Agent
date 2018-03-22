@@ -27,10 +27,14 @@ let defaultServerOptions = require("../config").serverOptions;
 
 let index = require('./routes/index');
 const HES = require('./routes/hes');
+const Flare = require('./routes/flare');
 
 app.use('/', index);
 app.use('/'+ serverOptions.resourcesEntryPoint, express.static(serverOptions.workSpacePath));
 app.use('/'+ serverOptions.appEntrypoint, new HES(defaultProcessorOptions,defaultServerOptions));
+app.use('/flare', new Flare(defaultProcessorOptions,defaultServerOptions));
+app.use('/apps', express.static('../applications'));
+
 app.set('trust proxy', '127.0.0.1');
 
 // catch 404 and forward to error handler

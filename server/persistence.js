@@ -1,8 +1,6 @@
 const config = require('../config');
 const fs = require('fs-extra');
 const path = require('path');
-var glob = require("glob");
-
 
 function exists(fileOrDir) {
     return fs.existsSync(fileOrDir);
@@ -79,7 +77,8 @@ function readJson(filePath){
         }
     } else {
         return {
-            "@context": config.defaultContext
+            "@context": config.defaultContext,
+            "description":"default response"
         }
     }
 }

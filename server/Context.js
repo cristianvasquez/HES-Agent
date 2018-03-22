@@ -8,7 +8,7 @@ String.prototype.replaceAll = function (search, replacement) {
     return target.split(search).join(replacement);
 };
 
-class _Context {
+class BaseContext {
 
     constructor(host,originalUrl,serverOptions) {
         if (!serverOptions) {
@@ -27,8 +27,6 @@ class _Context {
         return "http://" +this.host + "/" + this.serverOptions.resourcesEntryPoint;
     }
 
-    // @TODO test
-    //   var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     getCurrentPath(){
         return "http://" +this.host + this.originalUrl.replace(/\/$/, "");
     }
@@ -54,7 +52,7 @@ class _Context {
     }
 
     getTail(){
-        return new _Context(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')),this.serverOptions);
+        return new BaseContext(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')),this.serverOptions);
     }
 
     toResourcePath(someLocalDir){
@@ -66,7 +64,7 @@ class _Context {
     }
 
     getContextForURL(someURI){
-        return new _Context(this.host, '/' +this.serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''),this.serverOptions);
+        return new BaseContext(this.host, '/' +this.serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''),this.serverOptions);
     }
 
     isLocalApiPath(someURL){
@@ -75,10 +73,14 @@ class _Context {
 
 }
 
-class Context extends _Context{
+class Context extends BaseContext{
     constructor(req,serverOptions) {
         super(req.headers.host,req.originalUrl,serverOptions);
     }
 }
+
+Context.byHostAndUrl = function (host,originalUrl,serverOptions) {
+    return new BaseContext(host,originalUrl,serverOptions)
+};
 
 module.exports = Context;

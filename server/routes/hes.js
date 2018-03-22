@@ -83,82 +83,108 @@ class HES extends express.Router {
             res.json(graph);
         });
 
-        this.get("*/flare", function (req, res, next) {
-            let graph = getDependencyGraphAtPath(req,res,next);
-            function ensureArray(value){
-                if (typeof value === 'string'){
-                    return [value];
-                } else {
-                    return value;
-                }
-            }
-            let flareStyle = [];
-            let files = [];
-            for (let nodeName in graph.nodes){
-                let imports = [];
-                let node = graph.nodes[nodeName];
-                if (node.inference){
-                    if (node.inference.data){
-                        for (let resource of ensureArray(node.inference.data)){
-                            imports.push(resource);
-                            if (!files.includes(resource)){
-                                files.push(resource);
-                            }
-                        }
-                    }
-                    if (node.inference.query){
-                        for (let resource of ensureArray(node.inference.query)){
-                            imports.push(resource);
-                            if (!files.includes(resource)){
-                                files.push(resource);
-                            }
-                        }
-                    }
-                }
-                for (let incomingEdge of graph.incomingEdges[nodeName]){
-                    if (!imports.includes(incomingEdge)){
-                        imports.push(incomingEdge);
-                    }
-                }
-                flareStyle.push({
-                    name:nodeName,
-                    size:1,
-                    imports:imports
-                });
-            }
-            for (let file of files){
-                flareStyle.push({
-                    name:file,
-                    size:1,
-                    imports:[]
-                })
-            }
-
-            let getLabel = function(string){
-                return string.replaceAll(serverOptions.workSpacePath,'').replaceAll('.','\/');
-            };
-
-            for (let source in flareStyle){
-                flareStyle[source].name = getLabel(flareStyle[source].name);
-                for (let target in flareStyle[source].imports){
-                    flareStyle[source].imports[target]=getLabel(flareStyle[source].imports[target]);
-                }
-            };
-
-            res.json(flareStyle);
-        });
-
+        /**
+         * Experimental, I don't know yet if I really need this.
+         */
         if (processorOptions.hydraOperations.indexOf('POST') !== -1) {
             this.post("*/dependencies", function (req, res, next) {
-                res.status(500).json({error: 'Not available anymore'});
+                createOrUpdateMeta(req,res,next);
             });
         }
 
         if (processorOptions.hydraOperations.indexOf('PUT') !== -1) {
             this.put("*/dependencies", function (req, res, next) {
-                res.status(500).json({error: 'Not available anymore'});
+                createOrUpdateMeta(req,res,next);
             });
         }
+
+        function createOrUpdateMeta(req, res, next) {
+
+            let context = new Context(req,serverOptions);
+            let targetDir = context.getTail().getLocalDir();
+
+            // check if there is a descriptor file
+            let indexPath = targetDir + '/' + serverOptions.indexFile;
+            if (!fu.exists(indexPath)) {
+                res.status(400).json({error: context.getCurrentPath() + ' has no descriptor file'});
+            }
+
+            // get the meta descriptions
+            let index = fu.readJson(indexPath);
+            let features = index.features;
+
+            // First time a meta is defined
+            if (!features) {
+                features = {};
+            }
+
+            let updated = [];
+
+            for (let featureName in req.body){
+                // Remove existing feature with this name.
+                delete features[featureName];
+                let newOperation = req.body[featureName];
+
+                // Only 'use' feature implemented at the moment
+                if (!newOperation.use) {
+                    res.status(400).json({error: "only 'use' feature implemented at the moment"});
+                }
+
+                let targetFeature = context.getContextForURL(newOperation.use);
+                if (!getDependencyGraph(req).hasNode(targetFeature.getLocalHref())) {
+                    res.status(400).json({error: "cannot find feature at: " + newOperation.use});
+                }
+                newOperation.use = targetFeature.getLocalHref();
+                features[featureName] = newOperation;
+                updated.push(context.getCurrentPath()+'/'+featureName);
+            }
+
+            index.features = features;
+            console.log('Updating '+indexPath);
+            fu.writeFile(indexPath, JSON.stringify(index, null, 2));
+            res.json({'updated':updated });
+        }
+
+        if (processorOptions.hydraOperations.indexOf('DELETE') !== -1) {
+            this.delete("*", function (req, res, next) {
+                let context = new Context(req,serverOptions);
+
+                let dependencyGraph = getDependencyGraph(req);
+                let hasDefinedOperation = dependencyGraph.hasNode(context.getLocalHref());
+
+                if (!hasDefinedOperation) {
+
+                    // Delete a turtle file
+                    let targetFile = context.getLocalDir();
+                    fu.deleteFileOrDirectory(targetFile);
+                    res.json({deleted: {'@id': context.getCurrentPath()}});
+
+                } else {
+
+                    // Delete an operation
+                    let targetDir = context.getTail().getLocalDir();
+                    let targetName = context.getHead();
+
+                    // check if there is a descriptor file
+                    let indexPath = targetDir + '/' + serverOptions.indexFile;
+                    if (!fu.exists(indexPath)) {
+                        res.status(400).json({error: context.getCurrentPath() + ' has no descriptor file'});
+                    }
+
+                    // Remove existing operation with this name.
+                    let index = fu.readJson(indexPath);
+
+                    if (!index.features) {
+                        res.status(400).json({error: context.getCurrentPath() + ' has no features defined'});
+                    }
+                    delete index.features[targetName];
+
+                    fu.writeFile(indexPath, JSON.stringify(index, null, 2));
+                    res.json({deleted: {'@id': context.getCurrentPath()}});
+                }
+            });
+        }
+
 
         this.get("*/discover", function (req, res, next) {
             let context = new Context(req,serverOptions);
@@ -352,7 +378,7 @@ function buildIndex( processorOptions, serverOptions, req, res) {
     }
 
     // result["discover"] = buildLink(context.getCurrentPath()+'/discover', 'Container');
-    result["debug"] = buildLink(context.getCurrentPath()+'/dependencies', 'DebugEndpoint') ;
+    result["dependencies"] = buildLink(context.getCurrentPath()+'/dependencies', 'DependencyGraph') ;
 
     return result
 }

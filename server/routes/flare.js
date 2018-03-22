@@ -25,18 +25,10 @@ class Flare extends express.Router {
             let chunks = req.originalUrl.split('/');
             let currentPath = '/'+_.slice(chunks,2,chunks.length).join('/');
             let dataspacesURL = serverOptions.appEntrypoint + currentPath;
-            let context = Context.byHostAndUrl(req.host,dataspacesURL,serverOptions);
+            let context = Context.byHostAndDataspacesUrl(req.host,dataspacesURL,serverOptions);
 
             let dsl = new DSL_V1(context);
             let graph = dsl.buildLocalDependencyGraph(serverOptions.workSpacePath);
-
-            let allNodes = graph.overallOrder();
-            for (let id of allNodes) {
-                // Filter out others
-                if (!id.startsWith(currentPath)) {
-                    graph.removeNode(id);
-                }
-            }
 
             function ensureArray(value) {
                 if (typeof value === 'string') {

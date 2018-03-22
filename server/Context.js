@@ -79,7 +79,7 @@ class Context extends BaseContext{
     }
 }
 
-Context.byHostAndUrl = function (host,originalUrl,serverOptions) {
+Context.byHostAndDataspacesUrl = function (host, originalUrl, serverOptions) {
     return new BaseContext(host,originalUrl,serverOptions)
 };
 

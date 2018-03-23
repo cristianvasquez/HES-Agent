@@ -275,10 +275,11 @@ class HES extends express.Router {
                         });
 
                 } else if (meta.query) {
+
                     let options = {
                         uri: meta.query.endpoint,
                         qs: {
-                            query: fu.readFile(meta.query.sparql),
+                            query: fu.readFile(context.getLocalDirForResource(meta.query.sparql)),
                             "default-graph-uri": meta.query['default-graph-uri']
                         },
                         headers: {
@@ -377,9 +378,7 @@ function buildIndex( processorOptions, serverOptions, req, res) {
         }
     }
 
-    // result["discover"] = buildLink(context.getCurrentPath()+'/discover', 'Container');
     result["dependencies"] = buildLink(context.getCurrentPath()+'/dependencies', 'DependencyGraph') ;
-
     return result
 }
 

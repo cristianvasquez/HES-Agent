@@ -1,0 +1,4 @@
+@prefix ex: <http://example.com/> .
+
+ex:music_player a ex:Device ;
+    ex:name "Music player" .

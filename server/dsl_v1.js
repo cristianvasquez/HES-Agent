@@ -46,7 +46,6 @@ class DSL_V1 {
         return graph.overallOrder();
     }
 
-
     toRelativePath(someDirectory){
         return someDirectory.replaceAll(this.serverOptions.workSpacePath,'');
     }

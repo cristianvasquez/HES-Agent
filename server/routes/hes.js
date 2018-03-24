@@ -11,9 +11,6 @@ const handlebars = require('handlebars');
 
 /**
  * Uses processorOptions as constructor
- *
- * Builds dependency tree the first time is needed.
- * In the meantime this is refreshed through the *\/operations endpoint
  */
 class HES extends express.Router {
 
@@ -399,22 +396,26 @@ function renderError(res, error) {
     res.status(500).json(jsonError);
 }
 
+function isJSON (str){
+    // basic test: "does this look like JSON?"
+    let regex = /^[ \r\n\t]*[{\[]/
+    return regex.test(str)
+}
+
+
 // This is too ugly something is wrong with this design.
 function renderSupportedContentypes(context, contentType, body, res) {
-
     if (contentType === 'application/x-json+ld') {
-        try {
-            body = JSON.parse(body); // It's already Json
+        if (isJSON(body)){
             body["@id"] = context.getCurrentPath();
-        } catch (e) {
+        } else {
             body = turtle2JsonLD(body); // tries turtle to Json
             body["@id"] = context.getCurrentPath();
         }
         res.json(body);
     } else if (contentType === 'text/turtle') {
-        try {   // If this succeeds, it was Json that needs to be turtle
+        if (isJSON(body)){
             body = jsonld2Turtle(JSON.parse(body));
-        } catch (e) {
         }
         res.header("Content-Type", contentType);
         res.end(body, 'utf-8');

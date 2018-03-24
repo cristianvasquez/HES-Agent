@@ -1,0 +1,98 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Hes Party
+  license:
+    name: MIT
+paths:
+  /party/guests:
+    get:
+      summary: List all guests
+      operationId: listGuests
+      tags:
+        - guests
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      x-hes:
+          inference:
+            data: /party/guests/*/foaf.turtle
+            query: /lib/query_all.n3
+      responses:
+        '200':
+          description: A paged array of guests
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Guests"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /party/guests/{guestId}:
+    get:
+      summary: Info for a specific guest
+      operationId: showGuestById
+      tags:
+        - guests
+      parameters:
+        - name: guestId
+          in: path
+          required: true
+          description: The id of the guest to retrieve
+          schema:
+            type: string
+      x-hes:
+        inference:
+          data: /party/guests/{guestId}/foaf.turtle
+          query: /lib/query_all.n3
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guests"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Guest:
+      type: object
+      properties:
+        uri:
+          type: string
+        name:
+          type: string
+        tag:
+          type: string
+    Guests:
+      type: array
+      items:
+        $ref: "#/components/schemas/Guest"
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+type: string

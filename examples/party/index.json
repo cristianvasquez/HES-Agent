@@ -3,7 +3,7 @@
     "@vocab": "http://www.example.org#"
   },
   "features": {
-    "applications": {
+    "apps": {
       "description": "Generates an index of all the applications of the house",
       "Content-Type": "text/html",
       "handlebars": "./index.html.handlebars",
@@ -13,8 +13,6 @@
       "withUrls":{
         "people": "./*/foaf.turtle"
       }
-    },
-    "relations":"https://www.w3.org/2000/10/swap/test/gedcom/gedcom-relations.n3",
-    "imaginary_families":"https://www.w3.org/2000/10/swap/test/gedcom/gedcom-facts.n3"
+    }
   }
 }

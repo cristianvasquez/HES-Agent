@@ -2,7 +2,7 @@
 
 ex:alice a ex:Person ;
     ex:name "Alice" ;
-    ex:has ex:music_player .
+    ex:has ex:alice_phone .
 
 ex:alice_phone a ex:Device ;
     ex:name "Alice superadvanced phone" .

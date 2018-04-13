@@ -7,14 +7,14 @@
       "description": "The images and names of the characters",
       "inference": {
         "data": ["./data/*"],
-        "query": "./query_images.n3"
+        "query": "/queries/query_images.n3"
       }
     },
     "infered_relations":{
       "description": "Some rules relating relationships. One's father's sister is ones' aunt, and so on",
       "inference": {
         "data": ["./data/*", "./rules/*"],
-        "query": "./query_all.n3"
+        "query": "/queries/query_all.n3"
       }
     }
   }

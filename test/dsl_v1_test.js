@@ -159,6 +159,15 @@ describe("toDereferenciables", function () {
         ].sort());
     });
 
+    it("A pattern is expanded according to a glob with relative.", function () {
+        let result = dsl_v1.toDereferenciables(workSpacePath+"/files", "../example/*/people");
+        expect(result.sort()).to.deep.equal([
+            'http://example.org/' + serverOptions.appEntrypoint + '/example/pattern_1/people',
+            'http://example.org/' + serverOptions.appEntrypoint + '/example/pattern_2/people',
+            "http://example.org/resource/example/pattern_3/people",
+        ].sort());
+    });
+
 });
 
 describe("dsl-interpreter", function () {
@@ -349,13 +358,13 @@ describe("dsl-interpreter", function () {
     });
 
     it("example_06_javascript", function () {
-        let input = getFeature('example_06', 'javascript');
+        let input = getFeature('example_06', 'javascript_hook.js');
         let expanded = {
             "Content-Type": "text/javascript",
             "description": "generate a javascript hook",
             "handlebars": "http://example.org/resource/example_06/app/source.js.handlebars",
             "context": {
-                "data": "http://example.org/dataspaces/example_06/data"
+                "url": "http://example.org/dataspaces/example_06/data"
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_06'), input);
@@ -369,8 +378,8 @@ describe("dsl-interpreter", function () {
             "description": "Expose a web page via template",
             "handlebars": "http://example.org/resource/example_06/app/index.html.handlebars",
             "context": {
-                "title":"hello world",
-                "javascript": "http://example.org/dataspaces/example_06/javascript"
+                "javascript": "http://example.org/dataspaces/example_06/javascript_hook.js",
+                "title": "Example 06"
             }
         };
         let result = dsl_v1.expandMeta(path.join(__dirname + '/../workspace/example_06'), input);
@@ -436,7 +445,7 @@ describe("dependency graphs", function () {
             "/example_05/second_operation",
             "/example_06/data",
             "/example_06/html",
-            "/example_06/javascript",
+            "/example_06/javascript_hook.js",
             "/lib/socrates"].sort();
         let workSpacePath = path.join(__dirname, '/../workspace');
         let dsl = getDslWithContext(workSpacePath);

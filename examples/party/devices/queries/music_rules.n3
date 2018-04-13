@@ -1,0 +1,10 @@
+@prefix ex: <http://example.com/> .
+
+@forAll ex:likes.
+{
+  ?person ex:likes ?song.
+}
+  log:implies
+{
+  ?person ex:likes ?song
+}.

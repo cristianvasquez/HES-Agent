@@ -1,5 +1,5 @@
 @prefix ex: <http://example.com/> .
 
-ex:bob ex:likes "Song 2" ;
-         ex:likes "Song 3" ;
-         ex:likes "Song 4" .
+ex:bob  ex:likes "A Song For Old Times" ;
+        ex:likes "Night Fever" ;
+        ex:likes "He Knows They Can't Hold Us" .

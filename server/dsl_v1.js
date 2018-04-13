@@ -396,6 +396,7 @@ class DSL_V1 {
      */
     toDereferenciables(dirRelativeTo, value) {
 
+        //console.log('expanding many',dirRelativeTo,value);
         // External URL
         if (validUrl.is_web_uri(value)) { // other uri resources
             return [value]
@@ -429,6 +430,7 @@ class DSL_V1 {
         }
 
         if (results.length > 0) {
+            //console.log('found:',results.length);
             return results;
         }
 

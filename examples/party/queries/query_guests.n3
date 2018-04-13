@@ -1,0 +1,11 @@
+@prefix ex: <http://example.com/> .
+
+{
+  ?guest a ex:Person;
+    ex:memberOf ex:party;
+    ex:name ?name.
+}
+  =>
+{
+  ?guest ex:name ?name.
+}.

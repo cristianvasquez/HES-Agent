@@ -1,0 +1,10 @@
+@prefix ex: <http://example.com/> .
+
+{
+  ?device a ex:Device;
+    ex:name ?name.
+}
+=>
+{
+  ?device ex:name ?name.
+}.

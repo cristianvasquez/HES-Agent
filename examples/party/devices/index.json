@@ -2,17 +2,26 @@
   "@context": {
     "@vocab": "http://www.example.org#"
   },
-  "music_everyone_likes": {
-    "description": "Play music that everyone likes",
-    "handlebars": "./index.html.handlebars",
-    "context": {
-      "title":"People in the house"
-    },
-    "with":{
-      "people": "../*/foaf.turtle"
-    }
-  },
   "features": {
-
+    "all_devices": {
+      "description": "Current devices",
+      "inference": {
+        "data": [
+          "/people/*/*",
+          "./data/*"
+        ],
+        "query": "./queries/query_devices.n3"
+      }
+    },
+    "playlist": {
+      "description": "Playlists",
+      "inference": {
+        "data": [
+          "/people/*/*",
+          "./data/*"
+        ],
+        "query": "./queries/query_music.n3"
+      }
+    }
   }
 }

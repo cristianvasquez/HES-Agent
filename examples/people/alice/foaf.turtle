@@ -4,5 +4,5 @@ ex:alice a ex:Person ;
     ex:name "Alice" ;
     ex:has ex:music_player .
 
-ex:music_player a ex:Device ;
-    ex:name "Music player" .
+ex:alice_phone a ex:Device ;
+    ex:name "Alice superadvanced phone" .

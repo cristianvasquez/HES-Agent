@@ -3,26 +3,33 @@
     "@vocab": "http://www.example.org#"
   },
   "features": {
-
-    "guest_list":{
+    "guests":{
       "description": "A guest list with all names",
       "inference": {
         "data": [
-          "../people/*/foaf.turtle",
-          "./devices/*"
+          "/people/*/*",
+          "./data/*"
         ],
-        "query": "/lib/query_all.n3"
+        "query": "./queries/query_guests.n3"
       }
     },
     "who_is_in": {
-      "description": "Generates an index of all the applications of the house",
+      "description": "Populates a web page with the guests",
       "Content-Type": "text/html",
-      "handlebars": "./index.html.handlebars",
+      "handlebars": "./apps/guests.html.handlebars",
       "context": {
-        "title":"People in the house"
+        "title":"Party Guests"
       },
-      "withUrls":{
-        "people": "../people/*/foaf.turtle"
+      "withUrl":{
+        "javascript": "./javascript_hook.js"
+      }
+    },
+    "javascript_hook.js": {
+      "description": "A javascript hook",
+      "Content-Type": "text/javascript",
+      "handlebars": "./apps/source.js.handlebars",
+      "withUrl": {
+        "url":"./guests"
       }
     }
   }

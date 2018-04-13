@@ -3,17 +3,20 @@
     "@vocab": "http://www.example.org#"
   },
   "features": {
-    "images_and_names":{
-      "description": "The images and names of the characters",
+    "foaf":{
+      "description": "Foaf for adams family",
       "inference": {
         "data": ["./data/*"],
-        "query": "/queries/query_images.n3"
+        "query": "/queries/query_foaf.n3"
       }
     },
     "infered_relations":{
       "description": "Some rules relating relationships. One's father's sister is ones' aunt, and so on",
       "inference": {
-        "data": ["./data/*", "./rules/*"],
+        "data": [
+          "./data/*",
+          "./rules/*"
+        ],
         "query": "/queries/query_all.n3"
       }
     }

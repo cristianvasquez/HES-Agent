@@ -4,28 +4,28 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/>.
 
 :eudora foaf:name "Eudora Addams" ;
-    gc:spouseIn :family_adams_1 ;
+    gc:spouseIn :first_generation ;
     :gender :F .
 
 :uncle foaf:name "Uncle Fester" ;
     :gender :M ;
-    gc:childIn :family_adams_1 .
+    gc:childIn :first_generation .
 
 :gomez foaf:name "Gomez Addams" ;
     :gender :M ;
-    gc:childIn :family_adams_1 ;
-    gc:spouseIn :family_adams_2 .
+    gc:childIn :first_generation ;
+    gc:spouseIn :second_generation .
 
 :morticia foaf:name "Morticia A. Addams" ;
     :gender :F ;
-    gc:spouseIn :family_adams_2 .
+    gc:spouseIn :second_generation .
 
 :pugsley foaf:name "Pugsley Addams" ;
     :gender :M ;
-    gc:childIn :family_adams_2 .
+    gc:childIn :second_generation .
 
 :wednesday foaf:name "Wednesday Friday Addams" ;
-    gc:childIn :family_adams_2 ;
+    gc:childIn :second_generation ;
     :gender :F .
 
 :lurch foaf:name "Lurch" ;

@@ -5,6 +5,7 @@
     ?a foaf:name ?name.
 } =>
 {
-    ?a foaf:img ?image.
-    ?a foaf:name ?name
+    ?a a foaf:Person .
+    ?a foaf:img ?image .
+    ?a foaf:name ?name .
 }.

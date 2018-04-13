@@ -3,10 +3,17 @@
     "@vocab": "http://www.example.org#"
   },
   "features": {
+    "images_and_names":{
+      "description": "The images and names of the characters",
+      "inference": {
+        "data": ["./data/*"],
+        "query": "./query_images.n3"
+      }
+    },
     "infered_relations":{
       "description": "Some rules relating relationships. One's father's sister is ones' aunt, and so on",
       "inference": {
-        "data": ["./family.n3", "relation_rules.n3"],
+        "data": ["./data/*", "./rules/*"],
         "query": "./query_all.n3"
       }
     }

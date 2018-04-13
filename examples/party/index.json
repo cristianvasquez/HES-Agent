@@ -3,7 +3,18 @@
     "@vocab": "http://www.example.org#"
   },
   "features": {
-    "apps": {
+
+    "guest_list":{
+      "description": "A guest list with all names",
+      "inference": {
+        "data": [
+          "../people/*/foaf.turtle",
+          "./devices/*"
+        ],
+        "query": "/lib/query_all.n3"
+      }
+    },
+    "who_is_in": {
       "description": "Generates an index of all the applications of the house",
       "Content-Type": "text/html",
       "handlebars": "./index.html.handlebars",
@@ -11,7 +22,7 @@
         "title":"People in the house"
       },
       "withUrls":{
-        "people": "./*/foaf.turtle"
+        "people": "../people/*/foaf.turtle"
       }
     }
   }

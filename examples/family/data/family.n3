@@ -1,0 +1,39 @@
+@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <gedcom-relations.n3#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+
+:eudora foaf:name "Eudora Addams" ;
+    gc:spouseIn :family_adams_1 ;
+    :gender :F .
+
+:uncle foaf:name "Uncle Fester" ;
+    :gender :M ;
+    gc:childIn :family_adams_1 .
+
+:gomez foaf:name "Gomez Addams" ;
+    :gender :M ;
+    gc:childIn :family_adams_1 ;
+    gc:spouseIn :family_adams_2 .
+
+:morticia foaf:name "Morticia A. Addams" ;
+    :gender :F ;
+    gc:spouseIn :family_adams_2 .
+
+:pugsley foaf:name "Pugsley Addams" ;
+    :gender :M ;
+    gc:childIn :family_adams_2 .
+
+:wednesday foaf:name "Wednesday Friday Addams" ;
+    gc:childIn :family_adams_2 ;
+    :gender :F .
+
+:lurch foaf:name "Lurch" ;
+    :gender :M .
+
+:thing foaf:name "Thing" ;
+    :romanceWith :ladyfingers ;
+    :gender :M .
+
+:ladyfingers foaf:name "Lady Fingers" ;
+    :gender :F .

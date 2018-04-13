@@ -1,0 +1,10 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+
+{
+    ?a foaf:img ?image.
+    ?a foaf:name ?name.
+} =>
+{
+    ?a foaf:img ?image.
+    ?a foaf:name ?name
+}.

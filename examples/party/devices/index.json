@@ -1,0 +1,18 @@
+{
+  "@context": {
+    "@vocab": "http://www.example.org#"
+  },
+  "music_everyone_likes": {
+    "description": "Play music that everyone likes",
+    "handlebars": "./index.html.handlebars",
+    "context": {
+      "title":"People in the house"
+    },
+    "with":{
+      "people": "../*/foaf.turtle"
+    }
+  },
+  "features": {
+
+  }
+}

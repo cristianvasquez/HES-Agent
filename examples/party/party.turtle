@@ -1,4 +1,7 @@
 @prefix ex: <http://example.com/> .
 
+ex:party a ex:Group ;
+    ex:name "The party" .
+
 ex:alice ex:memberOf ex:party .
 ex:bob ex:memberOf ex:party .

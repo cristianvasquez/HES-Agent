@@ -9,17 +9,15 @@ const port = process.env.PORT || '3000';
 var config = {
 
     schemas:{
-        // hEyeSchema:path.join(__dirname, './schemas/dsl_v1.schema.json'),
         metaOperationSchema:path.join(__dirname, './schemas/dsl_v1_meta.schema.json')
-        // crudOperationsSchema:path.join(__dirname, './schemas/dsl_v1_crud.schema.json')
     },
 
     serverOptions:{
+        // uriqa:"www.example.com",
         port:port,
         appEntrypoint: appEntrypoint,
         resourcesEntryPoint: resourcesEntryPoint,
         workSpacePath: workSpacePath,
-        tmpFolder: "tmp",
         verbose: false,
         indexFile: 'index.json',
     },
@@ -43,4 +41,5 @@ var config = {
         "hes": "http://cristianvasquez.github.io/hes#"
     },
 };
+
 module.exports = config;

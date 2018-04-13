@@ -2,8 +2,10 @@
 /**
  * Module dependencies.
  */
-const serverOptions = require("../config").serverOptions;
-const defaultEyeOptions = require("../config").defaultEyeOptions;
+
+const defaultConfig = require("../config");
+
+
 const program = require('commander');
 const fu = require('../server/persistence');
 const pjson = require('../package.json');
@@ -14,30 +16,26 @@ const Context = require('../server/Context');
 
 program
     .version(pjson.version, '-v, --version')
-    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', defaultEyeOptions.eyePath)
+    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', defaultConfig.defaultEyeOptions.eyePath)
     .option('--verbose', 'verbose mode');
-
-function setOptions(options, absolutePath) {
-    defaultEyeOptions.eyePath = program.eye;
-    serverOptions.port = options.port;
-    serverOptions.appEntrypoint = options.app;
-    serverOptions.workSpacePath = absolutePath;
-    serverOptions.verbose = program.verbose;
-}
 
 program
     .command('serve <directory>')
     .description('start a server')
-    .option('-a, --app <app_entrypoint>', 'API entrypoint', serverOptions.appEntrypoint)
-    .option('-p, --port <port>', 'server port', serverOptions.port)
+    .option('-a, --app <app_entrypoint>', 'API entrypoint', defaultConfig.serverOptions.appEntrypoint)
+    .option('-p, --port <port>', 'server port', defaultConfig.serverOptions.port)
+    .option('-u, --uriqa <port>', 'URIQA', undefined)
+
     .action(function(directory, options){
         let absolutePath = path.resolve(directory);
         // Check directory
         if (fu.exists(absolutePath)){
             console.log('Starting Hydra eye server\n');
-            setOptions(options, absolutePath);
-            console.log('Workspace: [%s]\nRoot :%s',serverOptions.workSpacePath, JSON.stringify(fu.readDir(serverOptions.workSpacePath), 2));
-            serve();
+            let config = getConfig(options, absolutePath);
+            console.log('Workspace: [%s]\nRoot :%s',
+                config.serverOptions.workSpacePath,
+                JSON.stringify(fu.readDir(config.serverOptions.workSpacePath), 2));
+            serve(config);
         } else {
             console.error("Cannot open directory [%s]",directory);
         }
@@ -48,11 +46,11 @@ program
     .description('describes the workspace')
     .action(function(directory, options){
         let absolutePath = path.resolve(directory);
+
         // Check directory
         if (fu.exists(absolutePath)){
-            console.log('Listing services\n');
-            setOptions(options, absolutePath);
-            validateWorkspace(absolutePath);
+            let config = getConfig(options, absolutePath);
+            validateWorkspace(config);
         } else {
             console.error("Cannot open directory [%s]",directory);
         }
@@ -65,6 +63,18 @@ program
         console.log('command %s not recognized (hes --help)',command);
     });
 
+function getConfig(options, absolutePath) {
+    let config = require("../config");
+    config.defaultEyeOptions.eyePath = program.eye;
+    config.serverOptions.port = options.port;
+    config.serverOptions.appEntrypoint = options.app;
+    config.serverOptions.uriqa = options.uriqa;
+
+    config.serverOptions.workSpacePath = absolutePath;
+    config.serverOptions.verbose = program.verbose;
+    return config;
+}
+
 if (!process.argv.slice(2).length) {
     program.outputHelp();
 }
@@ -72,20 +82,20 @@ if (!process.argv.slice(2).length) {
 program.parse(process.argv);
 
 // Only call when the config is set up
-function serve(){
+function serve(config){
 
-    let app = require('../server/app');
     let http = require('http');
     let reasoner = require('../server/reasoning');
 
-    reasoner.invokeEye(defaultEyeOptions.eyePath + " --version")
+    reasoner.invokeEye(config.defaultEyeOptions.eyePath + " --version")
         .then(function (result) {
             console.log(result.stderr);
 
             /**
              * Get port from environment and store in Express.
              */
-            let port = normalizePort(serverOptions.port);
+            let app = require('../server/app')(config);
+            let port = normalizePort(config.serverOptions.port);
             app.set('port', port);
 
             /**
@@ -158,30 +168,23 @@ function serve(){
 
         })
         .catch(function (error) {
-            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", defaultEyeOptions.eyePath);
+            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", config.defaultEyeOptions.eyePath);
             console.error(error)
         });
 
 }
 
 
-function validateWorkspace(absolutePath){
-
-    let request = {
-        headers:{
-            host:"example:3000"
-        },
-        originalUrl:'/'+serverOptions.appEntrypoint+"/some/url/there"
-    };
+function validateWorkspace(config){
 
     // All files
-    let context = new Context(request);
+    let context = new Context.byHostAndDataspacesUrl("example:3000",'/',config.serverOptions);
     let dsl_v1 = new DSL_V1(context);
-    let dependencyGraph = dsl_v1.buildLocalDependencyGraph(absolutePath);
+    let dependencyGraph = dsl_v1.buildLocalDependencyGraph(config.serverOptions.workSpacePath);
     console.log(JSON.stringify(dependencyGraph,null,2));
 
     let pattern = "**";
-    let all = {mark: true, sync:true, absolute:true, nodir:true, cwd:absolutePath};
+    let all = {mark: true, sync:true, absolute:true, nodir:true, cwd:config.serverOptions.workSpacePath};
     const Glob = require("glob").Glob
     let allFiles = new Glob(pattern, all).found;
 

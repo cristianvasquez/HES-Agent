@@ -19,16 +19,23 @@ class BaseContext {
         this.originalUrl = originalUrl.replace(/\/$/, "");
     }
 
+    getHost(){
+        if (this.serverOptions.uriqa){
+            return this.serverOptions.uriqa;
+        }
+        return this.host;
+    }
+
     getApiRoot(){
-        return "http://" +this.host + "/" + this.serverOptions.appEntrypoint;
+        return "http://" +this.getHost() + "/" + this.serverOptions.appEntrypoint;
     }
 
     getResourcesRoot(){
-        return "http://" +this.host + "/" + this.serverOptions.resourcesEntryPoint;
+        return "http://" +this.getHost() + "/" + this.serverOptions.resourcesEntryPoint;
     }
 
     getCurrentPath(){
-        return "http://" +this.host + this.originalUrl.replace(/\/$/, "");
+        return "http://" +this.getHost() + this.originalUrl.replace(/\/$/, "");
     }
 
     getLocalHref(){
@@ -52,19 +59,19 @@ class BaseContext {
     }
 
     getTail(){
-        return new BaseContext(this.host,this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')),this.serverOptions);
+        return new BaseContext(this.getHost(),this.originalUrl.substr(0, this.originalUrl.lastIndexOf('/')),this.serverOptions);
     }
 
     toResourcePath(someLocalDir){
-        return someLocalDir.replaceAll(this.serverOptions.workSpacePath, "http://" +this.host +'/'+ this.serverOptions.resourcesEntryPoint);
+        return someLocalDir.replaceAll(this.serverOptions.workSpacePath, "http://" +this.getHost() +'/'+ this.serverOptions.resourcesEntryPoint);
     }
 
     toApiPath(someLocalDir){
-        return someLocalDir.replaceAll(this.serverOptions.workSpacePath, "http://" +this.host +'/'+ this.serverOptions.appEntrypoint);
+        return someLocalDir.replaceAll(this.serverOptions.workSpacePath, "http://" +this.getHost() +'/'+ this.serverOptions.appEntrypoint);
     }
 
     getContextForURL(someURI){
-        return new BaseContext(this.host, '/' +this.serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''),this.serverOptions);
+        return new BaseContext(this.getHost(), '/' +this.serverOptions.appEntrypoint + someURI.replaceAll( this.getApiRoot(),''),this.serverOptions);
     }
 
     isLocalApiPath(someURL){
@@ -75,7 +82,7 @@ class BaseContext {
 
 class Context extends BaseContext{
     constructor(req,serverOptions) {
-        super(req.headers.host,req.originalUrl,serverOptions);
+        super(req.headers.host, req.originalUrl, serverOptions);
     }
 }
 

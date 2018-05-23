@@ -16,7 +16,7 @@ const Context = require('../server/Context');
 
 program
     .version(pjson.version, '-v, --version')
-    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', defaultConfig.defaultEyeOptions.eyePath)
+    .option('-e, --eye <eye_path>', 'Path to the eye reasoner', defaultConfig.eyeOptions.eyePath)
     .option('--verbose', 'verbose mode');
 
 program
@@ -65,7 +65,7 @@ program
 
 function getConfig(options, absolutePath) {
     let config = require("../config");
-    config.defaultEyeOptions.eyePath = program.eye;
+    config.eyeOptions.eyePath = program.eye;
     config.serverOptions.port = options.port;
     config.serverOptions.appEntrypoint = options.app;
     config.serverOptions.uriqa = options.uriqa;
@@ -87,7 +87,7 @@ function serve(config){
     let http = require('http');
     let reasoner = require('../server/reasoning');
 
-    reasoner.invokeEye(config.defaultEyeOptions.eyePath + " --version")
+    reasoner.invokeEye(config.eyeOptions.eyePath + " --version")
         .then(function (result) {
             console.log(result.stderr);
 
@@ -168,7 +168,7 @@ function serve(config){
 
         })
         .catch(function (error) {
-            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", config.defaultEyeOptions.eyePath);
+            console.error("ERROR: could not start the reasoner [EYE_PATH:%s]", config.eyeOptions.eyePath);
             console.error(error)
         });
 

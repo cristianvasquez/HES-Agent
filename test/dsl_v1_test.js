@@ -23,7 +23,6 @@ let request = {
     originalUrl: '/' + defaultServerOptions.appEntrypoint + "/some/url/there"
 };
 
-
 function getServerOptions(workSpacePath) {
     let serverOptions = JSON.parse(JSON.stringify(defaultServerOptions));
     serverOptions.workSpacePath = workSpacePath;

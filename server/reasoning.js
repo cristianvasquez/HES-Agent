@@ -12,12 +12,12 @@ function getEyeCommand(inference){
     if (config.serverOptions.verbose){
         console.log(JSON.stringify(inference,null,2));
     }
-    let command = config.defaultEyeOptions.eyePath;
+    let command = config.eyeOptions.eyePath;
 
     /**
      * Handle flags
      */
-    let flags = config.defaultEyeOptions.defaultFlags.join(" ");
+    let flags = config.eyeOptions.defaultFlags.join(" ");
     if (inference['options']){
         if (inference['options']["proof"]){
             flags = "";
@@ -83,7 +83,7 @@ function invokeEye(command, fullOutput = true) {
             console.log(command);
         }
 
-        exec(command, config.defaultEyeOptions.command_arguments)
+        exec(command, config.eyeOptions.command_arguments)
             .then(function (result) {
                 let stdout = result.stdout;
                 let stderr = result.stderr;

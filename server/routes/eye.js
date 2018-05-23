@@ -27,7 +27,7 @@ router.get("/*", function (req, res, next) {
     if (command) {
         // A direct command to the eye reasoner
         res.header('Access-Control-Allow-Origin', '*');
-        Promise.resolve(reasoning.invokeEye(config.defaultEyeOptions.eyePath + ' ' + command, true))
+        Promise.resolve(reasoning.invokeEye(config.eyeOptions.eyePath + ' ' + command, true))
             .then(function (result) {
                 res.json(result);
             })

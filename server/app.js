@@ -4,12 +4,8 @@ let logger = require('morgan');
 let cookieParser = require('cookie-parser');
 
 let getAgent = function(config){
-
     let app = express();
-
-// Adds text/plain and text/turtle parsing
     let bodyParser = require('body-parser');
-
     app.use(bodyParser.text());
     app.use(bodyParser.text({ type: 'application/x-json+ld' }));
     app.use(bodyParser.text({ type: 'text/turtle' }));
@@ -21,13 +17,14 @@ let getAgent = function(config){
     app.use(cookieParser());
     app.use(express.static(path.join(__dirname, 'public')));
 
-    let index = require('./routes/index');
+    const index = require('./routes/index');
     const HES = require('./routes/hes');
     const Flare = require('./routes/flare');
+
     app.use('/', index);
     app.use('/'+ config.serverOptions.resourcesEntryPoint, express.static(config.serverOptions.workSpacePath) );
-    app.use('/'+ config.serverOptions.appEntrypoint, new HES(config.defaultProcessorOptions,config.serverOptions) );
-    app.use('/flare', new Flare(config.defaultProcessorOptions, config.serverOptions));
+    app.use('/'+ config.serverOptions.appEntrypoint, new HES(config.processorOptions,config.serverOptions) );
+    app.use('/flare', new Flare(config.processorOptions, config.serverOptions));
     app.use('/apps', express.static(path.join(__dirname, './apps')));
     app.set('trust proxy', '127.0.0.1');
 
@@ -61,6 +58,5 @@ let getAgent = function(config){
     };
     return app;
 };
-
 
 module.exports = getAgent;

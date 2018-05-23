@@ -22,13 +22,13 @@ var config = {
         indexFile: 'index.json',
     },
 
-    defaultEyeOptions:{
+    eyeOptions:{
         command_arguments: {maxBuffer: 1024 * 500},
         eyePath: eyePath,
         defaultFlags:["--nope"]
     },
 
-    defaultProcessorOptions:{
+    processorOptions:{
         showFiles:true,
         showDirectories:true,
         defaultContentType:"application/x-json+ld",

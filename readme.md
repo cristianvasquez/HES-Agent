@@ -27,6 +27,8 @@ Built-in applications:
 
 First of all, you need to **install the EYE reasoner** ([Windows](http://eulersharp.sourceforge.net/README.Windows) – [OS X](http://eulersharp.sourceforge.net/README.MacOSX) – [Linux](http://eulersharp.sourceforge.net/README.Linux)).
 
+Or install it from the [source](https://github.com/josd/eye)
+
 (make sure that you can run this using '/bin/sh eye', or set the EYE_PATH environment variable) 
 
 Then, install the server package as follows:

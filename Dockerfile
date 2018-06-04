@@ -18,7 +18,7 @@ RUN apt-get -qq update && \
 # Install hydra eye server
 WORKDIR /usr/src/app
 
-RUN npm -g install h-eye
+RUN npm -g install hes-agent
 
 EXPOSE 3000
 

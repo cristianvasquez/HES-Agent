@@ -1,11 +1,12 @@
 {
-	"name": "h-eye",
-	"version": "1.3.8",
-	"description": "H-Eye Dataspaces",
+	"name": "hes-agent",
+	"version": "1.3.9",
+	"description": "HES Agent",
 	"keywords": [
 		"eye",
 		"reasoner",
 		"n3",
+		"agent",
 		"blackboards"
 	],
 	"license": "MIT",
@@ -15,7 +16,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cristianvasquez/H-Eye.git"
+		"url": "https://github.com/cristianvasquez/HES-Agent"
 	},
 	"scripts": {
 		"start": "node ./bin/www serve ./workspace",
@@ -36,7 +37,6 @@
 		"lodash": "^4.17.10",
 		"memory-cache": "^0.2.0",
 		"minimatch": "^3.0.4",
-		"mocha": "^5.2.0",
 		"morgan": "~1.8.1",
 		"node-glob": "^1.2.0",
 		"npm": "^5.10.0",
@@ -50,6 +50,7 @@
 	},
 	"devDependencies": {
 		"babel-preset-es2015": "^6.24.1",
+		"mocha": "^5.2.0",
 		"chai": "^4.1.2"
 	}
 }

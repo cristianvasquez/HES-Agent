@@ -1,8 +1,8 @@
-# H-Eye agent, Data driven applications
+# HES, Data driven applications
 
 Note: (To try the application without installing EYE reasoner, you can use the Docker version below)
 
-![](hes-client.png?raw=true)
+![](./docs/agent.png?raw=true)
 
 * TODO: Introduction
 * In the meantime: [examples](./workspace)
@@ -34,7 +34,7 @@ Or install it from the [source](https://github.com/josd/eye)
 Then, install the server package as follows:
 
 ``` bash
-$ [sudo] npm -g install h-eye
+$ [sudo] npm -g install hes-agent
 ```
 
 ### Running
@@ -76,10 +76,10 @@ http://localhost:3000/dataspaces/operations
 ## Run with docker
 
 
-### Start H-Eye on host port 3000:
+### Start HES on host port 3000:
 
 ```
-docker run --name=h-eye -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cristianvasquez/h-eye -t
+docker run --name=hes -p 3000:3000 -v $PWD/workspace:/usr/src/app/workspace cristianvasquez/hes-agent -t
 ```
 
 Running your image with -d runs the container in detached mode, leaving the container running in the background.
@@ -91,14 +91,14 @@ If you need to go inside the container you can use the exec command:
 ## Enter the container
 
 ```
-docker exec -it h-eye /bin/bash
+docker exec -it hes /bin/bash
 ```
 
 
 ### Stop the docker container
 
 ```
-docker rm -f h-eye
+docker rm -f hes
 ```
 
 ## Test if it's up
@@ -110,7 +110,7 @@ curl -i localhost:3000
 ### Build your own image
 
 ```
-docker build -t YOUR_USERNAME/h-eye .
+docker build -t YOUR_USERNAME/hes
 ```
 
 (to build a clean image from scratch use the --no-cache option)

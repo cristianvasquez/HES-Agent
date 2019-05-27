@@ -1,6 +1,6 @@
 {
   "id": "https://github.com/cristianvasquez/H-Eye/crud-operations#",
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "schema for a feature entry",
   "type": "object",
   "properties": {

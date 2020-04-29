@@ -1,6 +1,10 @@
 # HES agent
 
-Demo that generates APIs from data and N3 rules.  In this example, links are specified through a [JSON files](./examples/family) and operations refer to [rules](./examples/family/rules) and [data](./examples/family/data).
+Demo that generates APIs from data and N3 rules.  In this example, links are specified through JSON files and operations refer to N3 rules and RDF data.
+
+* [example json](./examples/family/index.json)
+* [example rule](./examples/family/rules)
+* [example data](./examples/family/data)
 
 The HES POC use [N3 Logic](http://infomesh.net/2002/notation3). Notation N3 is a rule-based language defined as a superset of turtle that adds support for additional constructs. Is possible, for instance, to describe a set of rules to generate new knowledge, extending the data.
 

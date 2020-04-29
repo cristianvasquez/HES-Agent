@@ -1,34 +1,24 @@
-# HES agent, data driven applications
+# HES agent
 
-The idea is to have agents that expose APIs formed as a stock of building blocks -or features- that can be shared by other agents so they `learn` from each other.
+Demo that generates APIs from data and N3 rules.  In this example, links are specified through a [JSON files](./examples/family) and operations refer to [rules](./examples/family/rules) and [data](./examples/family/data).
 
-HES was built from these requirements:
-
-1. The simplicity of a uniform Interface
-2. Portability of components by moving from program code to data
-3. Visibility of features by other service agents
-
-## Simplicity of a uniform Interface
-
-HES agents expose Hypermedia APIs, including the necessary information to navigate the functionality via including links with the responses. When using Hypermedia APIs, a client can discover the interfaces, which is particularly useful when clients and servers need to evolve independently. Also allows highly personalized APIs, shaping them according to the data.
-
-An excellent Hypermedia APIs introduction [here](https://rubenverborgh.github.io/WebFundamentals/web-apis).
-
-## Portability of components by moving from program code to data
-
-The HES agents use [N3 Logic](http://infomesh.net/2002/notation3). Notation N3 is a rule-based language defined as a superset of turtle that adds support for additional constructs. Is possible, for instance, to describe a set of rules to generate new knowledge, extending the data we have
+The HES POC use [N3 Logic](http://infomesh.net/2002/notation3). Notation N3 is a rule-based language defined as a superset of turtle that adds support for additional constructs. Is possible, for instance, to describe a set of rules to generate new knowledge, extending the data.
 
 ```
-   { ?bob is:ancestor ?maria } => { ?maria is:descendent ?bob }.
+  {
+    ?animal :eats :meat.
+    ?animal :eats :plants.
+  }
+  =>
+  {
+    ?animal a :omnivore.
+  }.
 ```
 
 The rules are stated using curly brackets `{}` and the implication symbol `=>.`
 
-In a typical reasoning operation, one combines data with rules and a query. The results are then serialized in [Json-LD](https://json-ld.org) to be consumed by applications. An agent might also expose their knowledge artifacts and features through the URLs.
+A typical reasoning operation combines data with rules and a query. The results are then serialized in [Json-LD](https://json-ld.org) to be consumed by applications. An agent might also expose their knowledge artifacts and features through the URLs.
 
-## Visibility of features by other service agents
-
-@TODO
 
 # Current operations
 
@@ -38,7 +28,7 @@ By default, the API is defined using `index.json` files to be recursively read f
 
 # Running the agent
 
-Note: (To try the application without installing EYE reasoner, you can use the Docker version below)
+Note: (To try the application without installing all this, you can use the Docker version below)
 
 ## Default entry points
 
@@ -144,6 +134,6 @@ docker build . -t YOUR_USERNAME/hes-agent
 
 (to build a clean image from scratch use the --no-cache option)
 
-# Anatomy of the agent
+# Components
 
 ![](./img/agent.png?raw=true)

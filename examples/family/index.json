@@ -3,14 +3,14 @@
     "@vocab": "http://www.example.org#"
   },
   "features": {
-    "foaf":{
+    "family_endpoint":{
       "description": "Foaf for adams family",
       "inference": {
         "data": ["./data/*"],
         "query": "/queries/query_foaf.n3"
       }
     },
-    "infered_relations":{
+    "extended_family_endpoint":{
       "description": "Some rules relating relationships. One's father's sister is ones' aunt, and so on",
       "inference": {
         "data": [

@@ -1,6 +1,6 @@
 # HES agent
 
-Demo that generates APIs from data and N3 rules.  In this example, links are specified through JSON files and operations refer to N3 rules and RDF data.
+Demo that generates APIs from data and N3 rules. In this example, links are specified through JSON files and responses are generated applying N3 rules to RDF data.
 
 * [example json](./examples/family/index.json)
 * [example rule](./examples/family/rules)

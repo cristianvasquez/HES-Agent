@@ -23,6 +23,7 @@ The rules are stated using curly brackets `{}` and the implication symbol `=>.`
 
 A typical reasoning operation combines data with rules and a query. The results are then serialized in [Json-LD](https://json-ld.org) to be consumed by applications. An agent might also expose their knowledge artifacts and features through the URLs.
 
+Other things can be specified directly in the json, such as queries to REST endpoints or rendering an application
 
 # Current operations
 

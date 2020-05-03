@@ -6,6 +6,8 @@ Demo that generates APIs from data and N3 rules. In this example, links are spec
 * [example rule](./examples/family/rules)
 * [example data](./examples/family/data)
 
+## N3 Logic 
+
 The HES POC use [N3 Logic](http://infomesh.net/2002/notation3). Notation N3 is a rule-based language defined as a superset of turtle that adds support for additional constructs. Is possible, for instance, to describe a set of rules to generate new knowledge, extending the data.
 
 ```
